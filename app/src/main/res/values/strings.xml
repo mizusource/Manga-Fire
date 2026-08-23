@@ -3,10 +3,10 @@
     <string name="app_name">Manga Fire</string>
 
     <!-- Navigation -->
-    <string name="home">Home</string>
-    <string name="library">Library</string>
-    <string name="downloads">Downloads</string>
-    <string name="profile">Profile</string>
+    <string name="home">آخر التحديثات</string>
+    <string name="library">المفضلة</string>
+    <string name="downloads">قائمة التحميل</string>
+    <string name="profile">قائمتي</string>
 
     <!-- Actions -->
     <string name="search_hint">Search manga...</string>
@@ -45,7 +45,7 @@
     <string name="guest">Continue as Guest</string>
 
     <!-- Settings -->
-    <string name="settings">Settings</string>
+    <string name="settings">الإعدادات</string>
     <string name="appearance">Appearance</string>
     <string name="theme">Theme</string>
     <string name="theme_dark">Dark</string>

@@ -4,51 +4,59 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mangaCard"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="220dp"
     android:layout_margin="8dp"
     app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="6dp"
-    app:strokeWidth="0dp">
-
-    <RelativeLayout
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <!-- صورة الغلاف -->
+        android:layout_height="match_parent">
         <ImageView
             android:id="@+id/mangaCover"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="match_parent"
             android:scaleType="centerCrop" />
-
-        <!-- حاوية النصوص -->
-        <LinearLayout
+        <!-- Gradient overlay -->
+        <View
             android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/gradient_bottom"
+            app:layout_constraintBottom_toBottomOf="parent" />
+        <!-- Status indicator (top left/right) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/mangaCover"
-            android:orientation="vertical"
-            android:padding="12dp">
-
-            <TextView
-                android:id="@+id/mangaTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:maxLines="2"
-                android:ellipsize="end" />
-
+            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="?attr/colorPrimary"
+            android:layout_margin="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
             <TextView
                 android:id="@+id/mangaStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:textColor="?attr/colorPrimary"
-                android:textSize="12sp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="4dp"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="10sp"
                 android:textStyle="bold" />
-        </LinearLayout>
-
-    </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+        <!-- Title Text -->
+        <TextView
+            android:id="@+id/mangaTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:padding="12dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

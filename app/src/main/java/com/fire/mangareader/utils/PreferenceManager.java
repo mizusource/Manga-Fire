@@ -79,6 +79,7 @@ public class PreferenceManager {
     public String getUserUid() { return prefs.getString(KEY_USER_UID, null); }
     public String getUserEmail() { return prefs.getString(KEY_USER_EMAIL, null); }
     public String getUserName() { return prefs.getString(KEY_USER_NAME, null); }
+    public void setUserName(String name) { prefs.edit().putString(KEY_USER_NAME, name).apply(); }
     public boolean isGuest() { return prefs.getBoolean(KEY_IS_GUEST, true); }
     public boolean isLoggedIn() { return getUserUid() != null; }
 

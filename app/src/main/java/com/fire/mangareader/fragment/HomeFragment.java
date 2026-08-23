@@ -15,7 +15,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.MangaAdapter;
 import com.fire.mangareader.model.Manga;
-import com.fire.mangareader.network.MangalikScraper;
+import com.fire.mangareader.network.MangaScraper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class HomeFragment extends Fragment {
         swipeRefresh.setRefreshing(true);
         progressBar.setVisibility(View.VISIBLE);
 
-        MangalikScraper.fetchLatestManga(new MangalikScraper.ScrapingCallback() {
+        MangaScraper.fetchLatestManga(new MangaScraper.ScrapingCallback() {
             @Override
             public void onSuccess(List<Manga> mangas) {
                 mangaList.clear();

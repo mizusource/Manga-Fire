@@ -1,0 +1,42 @@
+name: Android CI Build
+
+# متى يتم تشغيل البناء؟ عند الرفع أو يدوياً
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # هذا السطر مهم جداً لتتمكن من تشغيل البناء بضغطة زر من الموقع
+
+jobs:
+  build:
+    name: Build Manga Fire APK
+    runs-on: ubuntu-latest # استخدام سيرفر لينكس قوي لتجاوز مشاكل معمارية الهاتف
+
+    steps:
+      # 1. سحب كود المشروع من المستودع
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 2. إعداد بيئة جافا 17 (الضرورية لإصدار Gradle 8.2.2)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle # تفعيل الكاش لتسريع عمليات البناء المستقبلية
+
+      # 3. إعطاء صلاحية التشغيل لملف Gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 4. بناء نسخة الـ Release النهائية
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      # 6. استخراج الـ APK كملف جاهز للتحميل
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MangaFire-v1.0-Release
+          path: app/build/outputs/apk/release/*.apk

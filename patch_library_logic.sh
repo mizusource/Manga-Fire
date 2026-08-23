@@ -1,0 +1,4 @@
+sed -i 's/private TextView tvEmptyState;/private View emptyStateLayout;/g' app/src/main/java/com/fire/mangareader/activity/LibraryActivity.java
+sed -i 's/tvEmptyState = findViewById(R.id.tvEmptyState);/emptyStateLayout = findViewById(R.id.emptyStateLayout);\n        View btnExplore = findViewById(R.id.btnExplore);\n        if (btnExplore != null) btnExplore.setOnClickListener(v -> finish());/g' app/src/main/java/com/fire/mangareader/activity/LibraryActivity.java
+sed -i 's/tvEmptyState.setVisibility(View.VISIBLE);/emptyStateLayout.setVisibility(View.VISIBLE);/g' app/src/main/java/com/fire/mangareader/activity/LibraryActivity.java
+sed -i 's/tvEmptyState.setVisibility(View.GONE);/emptyStateLayout.setVisibility(View.GONE);/g' app/src/main/java/com/fire/mangareader/activity/LibraryActivity.java

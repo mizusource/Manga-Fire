@@ -1,0 +1,3 @@
+sed -i 's/settings.setLoadsImagesAutomatically(true);/settings.setLoadsImagesAutomatically(false); settings.setBlockNetworkImage(true);/g' app/src/main/java/com/fire/mangareader/activity/ChapterReaderActivity.java
+sed -i 's/settings.setLoadsImagesAutomatically(true);/settings.setLoadsImagesAutomatically(false); settings.setBlockNetworkImage(true);/g' app/src/main/java/com/fire/mangareader/activity/MainActivity.java
+sed -i 's/settings.setLoadsImagesAutomatically(true);/settings.setLoadsImagesAutomatically(false); settings.setBlockNetworkImage(true);/g' app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java

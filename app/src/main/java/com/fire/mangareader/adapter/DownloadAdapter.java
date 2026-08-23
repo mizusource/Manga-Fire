@@ -27,7 +27,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Downlo
     public DownloadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // إنشاء تصميم برمجي للبطاقة لتجنب الأخطاء
         android.widget.LinearLayout layout = new android.widget.LinearLayout(context);
-        layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        layout.setLayoutParams(new androidx.recyclerview.widget.RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
         layout.setPadding(32, 24, 32, 24);
         
@@ -62,7 +62,19 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Downlo
         DownloadedChapter chapter = downloadedList.get(position);
         
         // استخراج اسم المانجا من الرابط (مؤقتاً للتبسيط)
-        String mangaName = chapter.mangaUrl.replace("https://mangalik.net/manga/", "").replace("/", "").replace("-", " ");
+        String mangaName = "";
+        try {
+            android.net.Uri uri = android.net.Uri.parse(chapter.mangaUrl);
+            mangaName = uri.getLastPathSegment();
+            if (mangaName == null || mangaName.isEmpty()) {
+                java.util.List<String> segments = uri.getPathSegments();
+                if (segments.size() > 0) mangaName = segments.get(segments.size() - 1);
+            }
+            if (mangaName != null) mangaName = mangaName.replace("-", " ");
+            else mangaName = "Unknown Manga";
+        } catch (Exception e) {
+            mangaName = "Unknown Manga";
+        }
         
         holder.tvMangaTitle.setText(mangaName.toUpperCase());
         holder.tvChapterTitle.setText(chapter.chapterTitle);

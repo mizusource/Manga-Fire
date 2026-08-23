@@ -30,12 +30,15 @@ public class MainActivity extends AppCompatActivity {
     private com.google.android.material.navigation.NavigationView navView;
     private android.widget.ImageView btnMenuToggle;
  
-    private final String BASE_URL = "https://mangalik.net/";
+    private String BASE_URL = "https://mangalik.net/";
 
-    @Override
+    
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        BASE_URL = com.fire.mangareader.network.SourceManager.getActiveSource(this);
+        com.fire.mangareader.network.MangaScraper.BASE_URL = BASE_URL;
 
         rvLatestUpdates = findViewById(R.id.rvLatestUpdates);
         swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
@@ -54,14 +57,21 @@ public class MainActivity extends AppCompatActivity {
         navView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             
+        if (id == R.id.nav_source) {
+            showSourceSelectionDialog();
+            drawerLayout.closeDrawers();
+            return true;
+        }
             if (id == R.id.nav_home) {
                 // نحن في الرئيسية بالفعل
-            } else if (id == R.id.nav_favorites) {
+            } else if (id == R.id.nav_library) {
                 // الانتقال لشاشة المكتبة
                 startActivity(new Intent(MainActivity.this, LibraryActivity.class));
             } else if (id == R.id.nav_downloads) {
                 // الانتقال لشاشة التنزيلات
                 startActivity(new Intent(MainActivity.this, DownloadsActivity.class));
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
             } else if (id == R.id.nav_settings) {
                 // الانتقال لشاشة الإعدادات
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
@@ -73,6 +83,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         rvLatestUpdates.setLayoutManager(new GridLayoutManager(this, 3));
+        // Start Background Sync for Updates
+        androidx.work.PeriodicWorkRequest updateRequest = new androidx.work.PeriodicWorkRequest.Builder(
+                com.fire.mangareader.utils.UpdateCheckWorker.class, 12, java.util.concurrent.TimeUnit.HOURS)
+                .build();
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "MangaUpdateCheck",
+                androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                updateRequest);
         mangaList = new ArrayList<>();
         adapter = new MangaAdapter(this, mangaList);
         rvLatestUpdates.setAdapter(adapter);
@@ -81,14 +99,34 @@ public class MainActivity extends AppCompatActivity {
         loadHomePageViaWebView(false);
     }
 
+    private void setupRecentReading() {
+        android.view.View container = findViewById(R.id.recentReadingContainer);
+        androidx.recyclerview.widget.RecyclerView rvRecent = findViewById(R.id.rvRecentReading);
+        java.util.List<com.fire.mangareader.utils.RecentReadingManager.RecentItem> recentItems = com.fire.mangareader.utils.RecentReadingManager.getRecent(this);
+        
+        if (recentItems != null && !recentItems.isEmpty()) {
+            container.setVisibility(android.view.View.VISIBLE);
+            rvRecent.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
+            rvRecent.setAdapter(new com.fire.mangareader.adapter.RecentReadingAdapter(this, recentItems));
+        } else {
+            container.setVisibility(android.view.View.GONE);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupRecentReading();
+    }
+
     private void loadHomePageViaWebView(boolean isSilentRefresh) {
         if (!isSilentRefresh) mainProgressBar.setVisibility(View.VISIBLE);
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
-        android.webkit.WebView webView = new android.webkit.WebView(this);
+        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         
         // 👻 جعل المتصفح بحجم بكسل واحد وشفاف تماماً لكي لا يلاحظه المستخدم
-        webView.setLayoutParams(new android.view.ViewGroup.LayoutParams(1, 1));
+        webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
         webView.setAlpha(0.0f); 
         rootView.addView(webView);
 
@@ -96,37 +134,69 @@ public class MainActivity extends AppCompatActivity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
-        settings.setLoadsImagesAutomatically(true);
+        settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);
         settings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         
-        String agent = "Mozilla/5.0 (Linux; Android 14; SM-A366B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36";
+        String agent = android.webkit.WebSettings.getDefaultUserAgent(this);
         settings.setUserAgentString(agent);
+        com.fire.mangareader.network.MangaScraper.globalUserAgent = agent;
 
         android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.setAcceptThirdPartyCookies(webView, true);
 
+        webView.setWebChromeClient(new android.webkit.WebChromeClient());
         webView.setWebViewClient(new android.webkit.WebViewClient() {
-            @Override
+            
+            
+            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; runOnUiThread(() -> { mainProgressBar.setVisibility(View.GONE); swipeRefreshMain.setRefreshing(false); Toast.makeText(MainActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
+                rootView.removeView(webView);
+                try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
+            }
             public void onPageFinished(android.webkit.WebView view, String url) {
-                view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
+                String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
+                if (cookies != null) com.fire.mangareader.network.MangaScraper.globalCookies = cookies;
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
                     if (html == null || html.equals("null")) return;
 
-                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare")) {
+                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { runOnUiThread(() -> { mainProgressBar.setVisibility(View.GONE); webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); webView.setAlpha(0.01f); Toast.makeText(MainActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); });
                         return; 
                     }
 
-                    rootView.removeView(webView); 
-                    String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\\\", "");
+                    rootView.removeView(webView); try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {} 
+                    String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\u003E", ">").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\\\", "");
                     
                     parseHtmlLocally(cleanHtml, isSilentRefresh);
-                });
+                }); }, 2500);
             }
         });
         
         webView.loadUrl(BASE_URL);
     }
 
+    private void showSourceSelectionDialog() {
+        String[] sources = {"Manga Lik (mangalik.net)", "Manga-Starz (manga-starz.net)", "Mangatek (mangatek.com)", "Mangasid (mangasid.com)"};
+        String[] urls = {com.fire.mangareader.network.SourceManager.SOURCE_MANGALIK, com.fire.mangareader.network.SourceManager.SOURCE_MANGA_STARZ, com.fire.mangareader.network.SourceManager.SOURCE_MANGATEK, com.fire.mangareader.network.SourceManager.SOURCE_MANGASID};
+        int checkedItem = 0;
+        String activeSource = com.fire.mangareader.network.SourceManager.getActiveSource(this);
+        for (int i = 0; i < urls.length; i++) { if (activeSource.equals(urls[i])) checkedItem = i; }
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("اختر مصدر المانجا")
+            .setSingleChoiceItems(sources, checkedItem, (dialog, which) -> {
+                com.fire.mangareader.network.SourceManager.setActiveSource(MainActivity.this, urls[which]);
+                BASE_URL = urls[which];
+                com.fire.mangareader.network.MangaScraper.BASE_URL = BASE_URL;
+                dialog.dismiss();
+                
+                android.view.Menu menu = ((com.google.android.material.navigation.NavigationView) findViewById(R.id.nav_view)).getMenu();
+                android.view.MenuItem sourceItem = menu.findItem(R.id.nav_source);
+                if (sourceItem != null) sourceItem.setTitle("المصدر: " + com.fire.mangareader.network.SourceManager.getActiveSourceName(MainActivity.this));
+                
+                swipeRefreshMain.setRefreshing(true);
+                loadHomePageViaWebView(true);
+            })
+            .show();
+    }
     private void parseHtmlLocally(String html, boolean isSilentRefresh) {
         new Thread(() -> {
             try {

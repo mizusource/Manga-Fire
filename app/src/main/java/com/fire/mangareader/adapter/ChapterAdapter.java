@@ -31,10 +31,14 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     private List<String> readChapters = new ArrayList<>();
     private List<String> downloadedChapters = new ArrayList<>();
 
-    public ChapterAdapter(Context context, List<Chapter> chapters, String mangaUrl) {
+    private String mangaTitle, mangaCover;
+
+    public ChapterAdapter(Context context, List<Chapter> chapters, String mangaUrl, String mangaTitle, String mangaCover) {
         this.context = context;
         this.chapters = chapters;
         this.mangaUrl = mangaUrl;
+        this.mangaTitle = mangaTitle;
+        this.mangaCover = mangaCover;
     }
 
     public void setReadChapters(List<String> readChapters) {
@@ -87,6 +91,8 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             Intent intent = new Intent(context, ChapterReaderActivity.class);
             intent.putExtra("chapterUrl", chapter.getUrl());
             intent.putExtra("mangaUrl", mangaUrl);
+            intent.putExtra("mangaTitle", mangaTitle);
+            intent.putExtra("mangaCover", mangaCover);
             intent.putExtra("chapterTitle", chapter.getTitle());
             context.startActivity(intent);
         });
@@ -118,7 +124,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
 
                                 new Handler(Looper.getMainLooper()).post(() -> {
                                     downloadedChapters.remove(chapter.getUrl());
-                                    notifyItemChanged(position); 
+                                    int adapterPos = holder.getBindingAdapterPosition(); if (adapterPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) notifyItemChanged(adapterPos); 
                                     Toast.makeText(context, "تم حذف الفصل لتوفير المساحة 🗑️", Toast.LENGTH_SHORT).show();
                                 });
 
@@ -146,7 +152,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                             public void onSuccess() {
                                 holder.downloadProgress.setVisibility(View.GONE);
                                 downloadedChapters.add(chapter.getUrl());
-                                notifyItemChanged(position); 
+                                int adapterPos = holder.getBindingAdapterPosition(); if (adapterPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) notifyItemChanged(adapterPos); 
                             }
 
                             @Override
@@ -179,7 +185,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                                     readChapters.remove(chapter.getUrl());
                                     Toast.makeText(context, "تم إزالة علامة القراءة ✖️", Toast.LENGTH_SHORT).show();
                                 }
-                                notifyItemChanged(position); // تحديث لون البطاقة
+                                int adapterPos = holder.getBindingAdapterPosition(); if (adapterPos != androidx.recyclerview.widget.RecyclerView.NO_POSITION) notifyItemChanged(adapterPos); // تحديث لون البطاقة
                             });
                         } catch (Exception e) {
                             e.printStackTrace();

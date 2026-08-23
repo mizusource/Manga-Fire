@@ -1,0 +1,2 @@
+sed -i 's/view.evaluateJavascript/new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript/g' app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java
+sed -i 's/parseHtmlLocally(cleanHtml, isSilentBackgroundFetch); });/parseHtmlLocally(cleanHtml, isSilentBackgroundFetch); }); }, 2000);/g' app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java

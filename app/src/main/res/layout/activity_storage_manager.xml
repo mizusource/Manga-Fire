@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Storage Manager"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Progress Bar -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        android:layout_marginBottom="24dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Space Used"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="8dp"/>
+                
+            <ProgressBar
+                android:id="@+id/storageProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:progressDrawable="@drawable/custom_progress_bar"
+                android:max="100"
+                android:progress="0"
+                android:layout_marginBottom="12dp"/>
+                
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+                <TextView
+                    android:id="@+id/tvCacheSize"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cache: 0 MB"
+                    android:textColor="?attr/colorPrimary"/>
+                <TextView
+                    android:id="@+id/tvDownloadsSize"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Downloads: 0 MB"
+                    android:textColor="#FF9800"/>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClearCache"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Cache"
+        app:icon="@android:drawable/ic_menu_delete"
+        android:layout_marginBottom="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDeleteRead"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bulk Delete Read Chapters"
+        app:icon="@android:drawable/ic_menu_delete"
+        android:layout_marginBottom="12dp"/>
+        
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClearDownloads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear All Downloads"
+        app:icon="@android:drawable/ic_menu_delete"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:textColor="#F44336"
+        app:strokeColor="#F44336"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Auto Delete Toggle -->
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchAutoDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auto-delete after reading"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:padding="8dp"/>
+
+</LinearLayout>

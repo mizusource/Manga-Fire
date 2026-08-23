@@ -1,0 +1,12 @@
+        <!-- Brightness Slider -->
+        <SeekBar
+            android:id="@+id/brightnessSeekBar"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="-80dp"
+            android:max="255"
+            android:progress="128"
+            android:progressTint="#FF9800"
+            android:thumbTint="#FF9800"
+            android:rotation="270" />

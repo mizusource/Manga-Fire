@@ -42,7 +42,9 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaAdapter.MangaViewHol
         // تحميل صورة الغلاف عبر مكتبة Glide
         Glide.with(context)
              .load(manga.getCoverUrl())
-             .override(300, 400) // تقليل الدقة قليلاً لتسريع التحميل وتوفير الرام
+             .override(300, 400)
+             .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+             .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565) // تقليل الدقة قليلاً لتسريع التحميل وتوفير الرام
              .into(holder.mangaCover);
 
         // عند النقر على المانجا، افتح شاشة التفاصيل

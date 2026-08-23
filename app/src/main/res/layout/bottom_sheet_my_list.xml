@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface"
+    android:padding="24dp"
+    android:layoutDirection="rtl">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="قائمتي"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:id="@+id/statusWatching"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="اشاهدها حاليا"
+        android:textSize="18sp"
+        android:paddingVertical="12dp"
+        android:textColor="?attr/colorOnSurface"
+        android:background="?attr/selectableItemBackground"
+        android:drawableEnd="@android:drawable/ic_media_play" />
+
+    <TextView
+        android:id="@+id/statusPlan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ارغب بمشاهدتها"
+        android:textSize="18sp"
+        android:paddingVertical="12dp"
+        android:textColor="?attr/colorOnSurface"
+        android:background="?attr/selectableItemBackground"
+        android:drawableEnd="@android:drawable/ic_menu_add" />
+
+    <TextView
+        android:id="@+id/statusCompleted"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="تم مشاهدتها"
+        android:textSize="18sp"
+        android:paddingVertical="12dp"
+        android:textColor="?attr/colorOnSurface"
+        android:background="?attr/selectableItemBackground"
+        android:drawableEnd="@android:drawable/ic_menu_view" />
+
+    <TextView
+        android:id="@+id/statusDropped"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="لا ارغب بمشاهدتها"
+        android:textSize="18sp"
+        android:paddingVertical="12dp"
+        android:textColor="?attr/colorOnSurface"
+        android:background="?attr/selectableItemBackground"
+        android:drawableEnd="@android:drawable/ic_delete" />
+
+</LinearLayout>

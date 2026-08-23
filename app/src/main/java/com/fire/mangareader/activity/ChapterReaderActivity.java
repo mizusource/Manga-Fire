@@ -52,7 +52,10 @@ public class ChapterReaderActivity extends AppCompatActivity {
     private TextView tvCurrentPageSeek, tvTotalPagesSeek;
     private ImageButton btnNextChapter, btnPreviousChapter;
 
+    private SeekBar brightnessSeekBar;
     private boolean isUiVisible = false;
+    private boolean isHorizontalMode = false;
+    private androidx.recyclerview.widget.PagerSnapHelper snapHelper = new androidx.recyclerview.widget.PagerSnapHelper();
     private boolean isFilterActive = false;
     
     private String chapterUrl;
@@ -63,6 +66,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -75,6 +79,18 @@ public class ChapterReaderActivity extends AppCompatActivity {
         chapterUrl = getIntent().getStringExtra("chapterUrl");
         mangaUrl = getIntent().getStringExtra("mangaUrl");
         String chapterTitle = getIntent().getStringExtra("chapterTitle");
+        String mangaTitle = getIntent().getStringExtra("mangaTitle");
+        String mangaCover = getIntent().getStringExtra("mangaCover");
+
+        if (mangaTitle != null && mangaCover != null) {
+            com.fire.mangareader.utils.RecentReadingManager.RecentItem item = new com.fire.mangareader.utils.RecentReadingManager.RecentItem();
+            item.mangaUrl = mangaUrl;
+            item.mangaTitle = mangaTitle;
+            item.mangaCover = mangaCover;
+            item.chapterUrl = chapterUrl;
+            item.chapterTitle = chapterTitle;
+            com.fire.mangareader.utils.RecentReadingManager.addRecent(this, item);
+        }
 
         recyclerView = findViewById(R.id.recyclerView);
         colorFilterView = findViewById(R.id.colorFilterView);
@@ -83,7 +99,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
         tvChapterTitle = findViewById(R.id.tvChapterTitle);
         btnBack = findViewById(R.id.btnBack);
         btnEyeFilter = findViewById(R.id.btnEyeFilter);
-        scraperWebView = findViewById(R.id.scraperWebView);
+        scraperWebView = findViewById(R.id.scraperWebView); scraperWebView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
 
         pageSeekBar = findViewById(R.id.pageSeekBar);
         tvCurrentPageSeek = findViewById(R.id.tvCurrentPageSeek);
@@ -94,6 +110,19 @@ public class ChapterReaderActivity extends AppCompatActivity {
         if (chapterTitle != null) tvChapterTitle.setText(chapterTitle);
 
         loadingProgressBar = new ProgressBar(this);
+        brightnessSeekBar = findViewById(R.id.brightnessSeekBar);
+        brightnessSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                android.view.WindowManager.LayoutParams lp = getWindow().getAttributes();
+                float brightness = progress / 255.0f;
+                if (brightness < 0.05f) brightness = 0.05f; // Prevent completely black screen
+                lp.screenBrightness = brightness;
+                getWindow().setAttributes(lp);
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
         FrameLayout.LayoutParams pbParams = new FrameLayout.LayoutParams(150, 150, android.view.Gravity.CENTER);
         loadingProgressBar.setLayoutParams(pbParams);
         ((FrameLayout) findViewById(android.R.id.content)).addView(loadingProgressBar);
@@ -149,6 +178,35 @@ public class ChapterReaderActivity extends AppCompatActivity {
                 openNewChapter(prevChapterUrl, prevChapterTitle);
             } else {
                 Toast.makeText(this, "هذا هو الفصل الأول!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        ImageView btnToggleDirection = findViewById(R.id.btnToggleDirection);
+        btnToggleDirection.setOnClickListener(v -> {
+            isHorizontalMode = !isHorizontalMode;
+            if (isHorizontalMode) {
+                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+                layoutManager.setItemPrefetchEnabled(true);
+                layoutManager.setInitialPrefetchItemCount(5);
+                recyclerView.setLayoutManager(layoutManager);
+                recyclerView.setOnFlingListener(null);
+                snapHelper.attachToRecyclerView(recyclerView);
+                btnToggleDirection.setColorFilter(Color.GREEN);
+                Toast.makeText(this, "وضع القراءة: أفقي (مانجا)", Toast.LENGTH_SHORT).show();
+            } else {
+                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+                layoutManager.setItemPrefetchEnabled(true);
+                layoutManager.setInitialPrefetchItemCount(5);
+                recyclerView.setLayoutManager(layoutManager);
+                recyclerView.setOnFlingListener(null);
+                btnToggleDirection.setColorFilter(Color.WHITE);
+                Toast.makeText(this, "وضع القراءة: عمودي (ويب تون)", Toast.LENGTH_SHORT).show();
+            }
+            if (adapter != null && !tvPageIndicator.getText().toString().isEmpty()) {
+                try {
+                    int pos = Integer.parseInt(tvPageIndicator.getText().toString().split("/")[0].trim()) - 1;
+                    if (pos >= 0) layoutManager.scrollToPosition(pos);
+                } catch (Exception e) {}
             }
         });
 
@@ -297,7 +355,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
 
-        settings.setLoadsImagesAutomatically(true);
+        settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);
         settings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
@@ -306,8 +364,9 @@ public class ChapterReaderActivity extends AppCompatActivity {
         settings.setDisplayZoomControls(false);
         settings.setMediaPlaybackRequiresUserGesture(false);
 
-        String agent = "Mozilla/5.0 (Linux; Android 14; SM-A366B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36";
+        String agent = android.webkit.WebSettings.getDefaultUserAgent(this);
         settings.setUserAgentString(agent);
+        com.fire.mangareader.network.MangaScraper.globalUserAgent = agent;
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -334,12 +393,12 @@ public class ChapterReaderActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                view.evaluateJavascript(
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript(
                     "(function() { return document.documentElement.outerHTML; })();",
                     html -> {
                         if (html == null || html.equals("null")) return;
 
-                        if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare")) {
+                        if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) {
                             runOnUiThread(() -> {
                                 loadingProgressBar.setVisibility(View.GONE);
                                 scraperWebView.setVisibility(View.VISIBLE);
@@ -349,10 +408,10 @@ public class ChapterReaderActivity extends AppCompatActivity {
                         }
 
                         String cookies = CookieManager.getInstance().getCookie(url);
-                        String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\\"", "\"");
+                        String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\u003E", ">").replace("\\\"", "\"");
                         parseHtmlAndExtractImages(cleanHtml, cookies, url);
                     }
-                );
+                ); }, 2500);
             }
         });
     }
@@ -438,5 +497,24 @@ public class ChapterReaderActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }).start();
+    }
+    @Override
+    protected void onDestroy() {
+        if (scraperWebView != null) {
+            scraperWebView.destroy();
+            scraperWebView = null;
+        }
+        super.onDestroy();
+    }
+    @Override
+    public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
+        if (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN) {
+            recyclerView.smoothScrollBy(0, recyclerView.getHeight() / 2);
+            return true;
+        } else if (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP) {
+            recyclerView.smoothScrollBy(0, -recyclerView.getHeight() / 2);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

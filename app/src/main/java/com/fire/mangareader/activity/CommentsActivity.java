@@ -1,4 +1,5 @@
 package com.fire.mangareader.activity;
+import android.widget.ImageView;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -24,7 +25,7 @@ public class CommentsActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private EditText etComment;
     private CheckBox cbSpoiler;
-    private ImageButton btnSend;
+    private ImageView btnSend;
     
     private CommentAdapter adapter;
     private List<Comment> commentList;
@@ -34,15 +35,17 @@ public class CommentsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comments);
+        ImageView btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         mangaUrl = getIntent().getStringExtra("mangaUrl");
         db = FirebaseFirestore.getInstance();
 
         recyclerView = findViewById(R.id.commentsRecyclerView);
         etComment = findViewById(R.id.etComment);
-        cbSpoiler = findViewById(R.id.cbSpoiler);
         btnSend = findViewById(R.id.btnSendComment);
 
         commentList = new ArrayList<>();
@@ -83,25 +86,29 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void postComment() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Login is required to post comments.", Toast.LENGTH_LONG).show();
+            startActivity(new android.content.Intent(this, LoginActivity.class));
+            return;
+        }
+
         String text = etComment.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 
-        // التحقق من أن المستخدم مسجل دخول (لنجلب اسمه)
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        String username = (currentUser != null && currentUser.getDisplayName() != null) 
-                ? currentUser.getDisplayName() : "مستخدم مجهول";
+        String username = currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty() 
+                ? currentUser.getDisplayName() : "User";
 
         boolean isSpoiler = cbSpoiler.isChecked();
         long timestamp = System.currentTimeMillis();
 
         Comment newComment = new Comment(mangaUrl, username, text, timestamp, isSpoiler);
 
-        // رفع التعليق لقاعدة البيانات السحابية
         db.collection("comments").add(newComment)
                 .addOnSuccessListener(documentReference -> {
-                    etComment.setText(""); // تفريغ حقل النص
-                    cbSpoiler.setChecked(false); // إزالة التحديد عن الحرق
+                    etComment.setText("");
+                     
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "فشل إرسال التعليق", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to send comment", Toast.LENGTH_SHORT).show());
     }
 }

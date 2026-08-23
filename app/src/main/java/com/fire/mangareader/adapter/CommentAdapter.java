@@ -58,7 +58,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView username, date, commentText;
-        LinearLayout spoilerOverlay;
+        View spoilerOverlay;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

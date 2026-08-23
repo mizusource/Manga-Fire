@@ -1,0 +1,2 @@
+sed -i '/public static final String SOURCE_MANGA_STARZ = "https:\/\/manga-starz.net\/";/a \    public static final String SOURCE_MANGATEK = "https:\/\/mangatek.com\/";\n    public static final String SOURCE_MANGASID = "https:\/\/mangasid.com\/";' app/src/main/java/com/fire/mangareader/network/SourceManager.java
+sed -i '/if (url.equals(SOURCE_MANGA_STARZ)) return "Manga-Starz";/a \        if (url.equals(SOURCE_MANGATEK)) return "Mangatek";\n        if (url.equals(SOURCE_MANGASID)) return "Mangasid";' app/src/main/java/com/fire/mangareader/network/SourceManager.java

@@ -18,12 +18,13 @@ import java.util.List;
 public class LibraryActivity extends AppCompatActivity {
 
     private RecyclerView rvLibrary;
-    private TextView tvEmptyState;
+    private View emptyStateLayout;
     private MangaAdapter adapter;
     private List<Manga> favoriteList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
 
@@ -37,7 +38,9 @@ public class LibraryActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         rvLibrary = findViewById(R.id.rvLibrary);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
+        emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        View btnExplore = findViewById(R.id.btnExplore);
+        if (btnExplore != null) btnExplore.setOnClickListener(v -> finish());
 
         // عرض 3 مانجات في كل صف (مثل الرئيسية)
         rvLibrary.setLayoutManager(new GridLayoutManager(this, 3));
@@ -80,10 +83,10 @@ public class LibraryActivity extends AppCompatActivity {
 
                     // إظهار أو إخفاء رسالة "المكتبة فارغة"
                     if (favoriteList.isEmpty()) {
-                        tvEmptyState.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                         rvLibrary.setVisibility(View.GONE);
                     } else {
-                        tvEmptyState.setVisibility(View.GONE);
+                        emptyStateLayout.setVisibility(View.GONE);
                         rvLibrary.setVisibility(View.VISIBLE);
                     }
                 });

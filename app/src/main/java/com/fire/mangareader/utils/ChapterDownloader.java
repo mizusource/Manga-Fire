@@ -22,7 +22,6 @@ public class ChapterDownloader {
     public static void downloadChapter(Context context, String mangaTitle, String chapterTitle, List<String> imageUrls, String cookies, String referer, DownloadListener listener) {
         new Thread(() -> {
             try {
-                // 1. إنشاء مجلد مخفي للتطبيق داخل ملفات الهاتف
                 File appFolder = new File(context.getExternalFilesDir(null), "MangaFire_Downloads");
                 File mangaFolder = new File(appFolder, mangaTitle.replaceAll("[^a-zA-Z0-9أ-ي ]", ""));
                 File chapterFolder = new File(mangaFolder, chapterTitle.replaceAll("[^a-zA-Z0-9أ-ي ]", ""));
@@ -32,50 +31,61 @@ public class ChapterDownloader {
                 }
 
                 Handler mainHandler = new Handler(Looper.getMainLooper());
+                
+                java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(4);
+                java.util.List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>();
+                java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger(0);
 
-                // 2. تحميل الصور واحدة تلو الأخرى
                 for (int i = 0; i < imageUrls.size(); i++) {
-                    String imgUrl = imageUrls.get(i);
-                    File imageFile = new File(chapterFolder, (i + 1) + ".jpg");
+                    final int index = i;
+                    futures.add(executor.submit(() -> {
+                        try {
+                            String imgUrl = imageUrls.get(index);
+                            File imageFile = new File(chapterFolder, (index + 1) + ".jpg");
 
-                    // إذا كانت الصورة محملة مسبقاً، تخطاها
-                    if (imageFile.exists() && imageFile.length() > 0) {
-                        int finalI = i;
-                        mainHandler.post(() -> listener.onProgressUpdate(finalI + 1, imageUrls.size()));
-                        continue; 
-                    }
+                            if (imageFile.exists() && imageFile.length() > 0) {
+                                int currentProgress = count.incrementAndGet();
+                                mainHandler.post(() -> listener.onProgressUpdate(currentProgress, imageUrls.size()));
+                                return;
+                            }
 
-                    // 3. الاتصال بالموقع مع تمرير الكوكيز والهوية لكسر الحماية!
-                    HttpURLConnection connection = (HttpURLConnection) new URL(imgUrl).openConnection();
-                    connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14; SM-A366B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36");
-                    if (cookies != null && !cookies.isEmpty()) {
-                        connection.setRequestProperty("Cookie", cookies);
-                    }
-                    if (referer != null) {
-                        connection.setRequestProperty("Referer", referer);
-                    }
-                    
-                    connection.connect();
+                            HttpURLConnection connection = (HttpURLConnection) new URL(imgUrl).openConnection();
+                            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14; SM-A366B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36");
+                            if (cookies != null && !cookies.isEmpty()) {
+                                connection.setRequestProperty("Cookie", cookies);
+                            }
+                            if (referer != null) {
+                                connection.setRequestProperty("Referer", referer);
+                            }
+                            
+                            connection.connect();
 
-                    if (connection.getResponseCode() == 200) {
-                        InputStream input = connection.getInputStream();
-                        FileOutputStream output = new FileOutputStream(imageFile);
+                            if (connection.getResponseCode() == 200) {
+                                InputStream input = connection.getInputStream();
+                                FileOutputStream output = new FileOutputStream(imageFile);
 
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = input.read(buffer)) != -1) {
-                            output.write(buffer, 0, bytesRead);
+                                byte[] buffer = new byte[4096];
+                                int bytesRead;
+                                while ((bytesRead = input.read(buffer)) != -1) {
+                                    output.write(buffer, 0, bytesRead);
+                                }
+                                output.close();
+                                input.close();
+                            }
+                            
+                            int currentProgress = count.incrementAndGet();
+                            mainHandler.post(() -> listener.onProgressUpdate(currentProgress, imageUrls.size()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        output.close();
-                        input.close();
-                    }
-                    
-                    // تحديث شريط التحميل في الواجهة
-                    int finalI = i;
-                    mainHandler.post(() -> listener.onProgressUpdate(finalI + 1, imageUrls.size()));
+                    }));
                 }
 
-                // 4. إنهاء التحميل بنجاح
+                for (java.util.concurrent.Future<?> f : futures) {
+                    try { f.get(); } catch (Exception ignored) {}
+                }
+                executor.shutdown();
+
                 mainHandler.post(() -> listener.onComplete(chapterFolder.getAbsolutePath()));
 
             } catch (Exception e) {

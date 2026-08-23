@@ -1,0 +1,41 @@
+    <!-- Dark Neon Red -->
+    <color name="dn_red_primary">#FF1744</color>
+    <color name="dn_red_surface">#1A1A1A</color>
+    <color name="dn_red_background">#0A0A0A</color>
+
+    <!-- Dark Neon Purple -->
+    <color name="dn_purple_primary">#D500F9</color>
+    <color name="dn_purple_surface">#181024</color>
+    <color name="dn_purple_background">#0E0914</color>
+
+    <!-- Dark Neon Yellow -->
+    <color name="dn_yellow_primary">#FFEA00</color>
+    <color name="dn_yellow_surface">#242319</color>
+    <color name="dn_yellow_background">#14130C</color>
+
+    <!-- Classic White -->
+    <color name="cl_white_primary">#2979FF</color>
+    <color name="cl_white_surface">#FFFFFF</color>
+    <color name="cl_white_background">#F5F5F5</color>
+    <color name="cl_white_text">#121212</color>
+
+    <!-- Classic Red -->
+    <color name="cl_red_primary">#D32F2F</color>
+    <color name="cl_red_surface">#FFFFFF</color>
+    <color name="cl_red_background">#F5F5F5</color>
+
+    <!-- Classic Blue -->
+    <color name="cl_blue_primary">#1976D2</color>
+    <color name="cl_blue_surface">#FFFFFF</color>
+    <color name="cl_blue_background">#F5F5F5</color>
+
+    <!-- Classic Purple -->
+    <color name="cl_purple_primary">#7B1FA2</color>
+    <color name="cl_purple_surface">#FFFFFF</color>
+    <color name="cl_purple_background">#F5F5F5</color>
+
+    <!-- Classic Navy -->
+    <color name="cl_navy_primary">#5C6BC0</color>
+    <color name="cl_navy_surface">#1A237E</color>
+    <color name="cl_navy_background">#0D1342</color>
+    <color name="cl_navy_text">#E8EAF6</color>

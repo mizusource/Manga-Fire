@@ -1,0 +1,22 @@
+    <string-array name="theme_entries">
+        <item>Dark Neon Blue</item>
+        <item>Dark Neon Red</item>
+        <item>Dark Neon Purple</item>
+        <item>Dark Neon Yellow</item>
+        <item>Classic White</item>
+        <item>Classic Red</item>
+        <item>Classic Blue</item>
+        <item>Classic Purple</item>
+        <item>Classic Navy</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>dark_neon_blue</item>
+        <item>dark_neon_red</item>
+        <item>dark_neon_purple</item>
+        <item>dark_neon_yellow</item>
+        <item>classic_white</item>
+        <item>classic_red</item>
+        <item>classic_blue</item>
+        <item>classic_purple</item>
+        <item>classic_navy</item>
+    </string-array>

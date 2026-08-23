@@ -8,6 +8,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.tabs.TabLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -17,7 +18,7 @@ import com.fire.mangareader.adapter.ChapterAdapter;
 import com.fire.mangareader.database.AppDatabase;
 import com.fire.mangareader.database.LibraryItem;
 import com.fire.mangareader.model.Chapter;
-import com.fire.mangareader.network.MangalikScraper;
+import com.fire.mangareader.network.MangaScraper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,16 +33,16 @@ public class MangaDetailActivity extends AppCompatActivity {
     private RecyclerView chaptersRecycler;
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout; 
-    private FloatingActionButton fabFavorite, fabComments;
-    private FloatingActionButton btnRead;
+    private ImageView btnFavorite, btnComments;
     private Chapter nextChapterToRead = null;
     private String mangaUrl, mangaTitle, mangaCover;
     private ChapterAdapter chapterAdapter;
     private List<Chapter> chapterList;
     private boolean isFavorite = false;
 
-    @Override
+    
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manga_detail);
 
@@ -51,23 +52,67 @@ public class MangaDetailActivity extends AppCompatActivity {
 
         coverImage = findViewById(R.id.mangaCover);
         coverImageBlur = findViewById(R.id.mangaCoverBlur);
-        titleText = findViewById(R.id.mangaTitle);
+        titleText = findViewById(R.id.toolbarTitle);
+        TextView mangaTitleDetail = findViewById(R.id.mangaTitleDetail);
+        TextView authorText = findViewById(R.id.mangaAuthor);
+        if (mangaTitleDetail != null) mangaTitleDetail.setText(mangaTitle);
         statusText = findViewById(R.id.mangaStatus);
         descriptionText = findViewById(R.id.mangaDescription);
         chaptersRecycler = findViewById(R.id.chaptersRecyclerView);
         progressBar = findViewById(R.id.progressBar);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); 
-        fabFavorite = findViewById(R.id.fabFavorite);
-        fabComments = findViewById(R.id.fabComments);
-        btnRead = findViewById(R.id.btnRead);
+        btnFavorite = findViewById(R.id.btnFavorite);
+        btnComments = findViewById(R.id.btnComments);
 
         titleText.setText(mangaTitle);
+        ImageView btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+
+        TabLayout tabLayout = findViewById(R.id.tabLayout);
+        View detailsContainer = findViewById(R.id.detailsContainer);
+         
+
+        if (tabLayout != null) {
+            tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    if (tab.getPosition() == 0) {
+                        detailsContainer.setVisibility(View.VISIBLE);
+                        swipeRefreshLayout.setVisibility(View.GONE);
+                    } else {
+                        detailsContainer.setVisibility(View.GONE);
+                        swipeRefreshLayout.setVisibility(View.VISIBLE);
+                    }
+                }
+                @Override public void onTabUnselected(TabLayout.Tab tab) {}
+                @Override public void onTabReselected(TabLayout.Tab tab) {}
+            });
+        }
         
         Glide.with(this).load(mangaCover).override(15, 15).into(coverImageBlur);
-        Glide.with(this).load(mangaCover).into(coverImage);
+        
+        com.bumptech.glide.Glide.with(this).asBitmap().load(mangaCover).into(new com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+            @Override
+            public void onResourceReady(android.graphics.Bitmap resource, com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
+                coverImage.setImageBitmap(resource);
+                androidx.palette.graphics.Palette.from(resource).generate(palette -> {
+                    if (palette != null) {
+                        int defaultColor = android.graphics.Color.parseColor("#121212");
+                        int vibrantColor = palette.getVibrantColor(defaultColor);
+                        int darkVibrantColor = palette.getDarkVibrantColor(defaultColor);
+                        
+                        
+
+                        ImageView btnFavorite = findViewById(R.id.btnFavorite);
+                    }
+                });
+            }
+            @Override
+            public void onLoadCleared(android.graphics.drawable.Drawable placeholder) {}
+        });
 
         chapterList = new ArrayList<>();
-        chapterAdapter = new ChapterAdapter(this, chapterList, mangaUrl);
+        chapterAdapter = new ChapterAdapter(this, chapterList, mangaUrl, mangaTitle, mangaCover);
         chaptersRecycler.setLayoutManager(new LinearLayoutManager(this));
         chaptersRecycler.setAdapter(chapterAdapter);
 
@@ -79,30 +124,20 @@ public class MangaDetailActivity extends AppCompatActivity {
         checkFavoriteStatus();
         checkRoomCacheAndLoad();
 
-        fabFavorite.setOnClickListener(v -> toggleFavorite());
+        btnFavorite.setOnClickListener(v -> toggleFavorite());
 
-        fabComments.setOnClickListener(v -> {
+        View btnMyList = findViewById(R.id.btnMyList);
+        if (btnMyList != null) {
+            btnMyList.setOnClickListener(v -> showMyListBottomSheet());
+        }
+        btnComments.setOnClickListener(v -> {
             Intent intent = new Intent(MangaDetailActivity.this, CommentsActivity.class);
             intent.putExtra("mangaUrl", mangaUrl);
+                intent.putExtra("mangaTitle", mangaTitle);
+                intent.putExtra("mangaCover", mangaCover);
             startActivity(intent);
         });
 
-        btnRead.setOnClickListener(v -> {
-            if (nextChapterToRead != null) {
-                new Thread(() -> {
-                    com.fire.mangareader.database.ChapterState state = new com.fire.mangareader.database.ChapterState();
-                    state.chapterUrl = nextChapterToRead.getUrl();
-                    state.mangaUrl = mangaUrl;
-                    state.isRead = true;
-                    AppDatabase.getInstance(MangaDetailActivity.this).chapterStateDao().insert(state);
-                }).start();
-
-                Intent intent = new Intent(MangaDetailActivity.this, ChapterReaderActivity.class);
-                intent.putExtra("chapterUrl", nextChapterToRead.getUrl());
-                intent.putExtra("mangaUrl", mangaUrl);
-                startActivity(intent);
-            }
-        });
     }
 
     private void checkRoomCacheAndLoad() {
@@ -154,43 +189,14 @@ public class MangaDetailActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void updateSmartReadButton(List<com.fire.mangareader.database.ChapterState> states) {
-        if (chapterList == null || chapterList.isEmpty()) {
-            // 🚀 تم الاستغناء عن النص وجعل الزر باهتاً في حال عدم وجود فصول
-            btnRead.setEnabled(false);
-            btnRead.setAlpha(0.5f);
-            return;
-        }
-        
-        btnRead.setEnabled(true);
-        btnRead.setAlpha(1.0f);
-        nextChapterToRead = null;
-
-        java.util.Map<String, com.fire.mangareader.database.ChapterState> stateMap = new java.util.HashMap<>();
-        for (com.fire.mangareader.database.ChapterState s : states) stateMap.put(s.chapterUrl, s);
-
-        for (int i = chapterList.size() - 1; i >= 0; i--) {
-            Chapter currentChapter = chapterList.get(i);
-            com.fire.mangareader.database.ChapterState state = stateMap.get(currentChapter.getUrl());
-            
-            if (state == null || !state.isCompleted) {
-                nextChapterToRead = currentChapter;
-                break;
-            }
-        }
-
-        if (nextChapterToRead == null) {
-            nextChapterToRead = chapterList.get(0);
-        }
-    }
 
     private void loadMangaDetailsViaWebView(boolean isSilentBackgroundFetch) {
         if (!isSilentBackgroundFetch) progressBar.setVisibility(View.VISIBLE);
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
-        android.webkit.WebView webView = new android.webkit.WebView(this);
+        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         
-        webView.setLayoutParams(new android.view.ViewGroup.LayoutParams(1, 1));
+        webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
         webView.setAlpha(0.0f); 
         rootView.addView(webView);
 
@@ -199,7 +205,7 @@ public class MangaDetailActivity extends AppCompatActivity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         
-        settings.setLoadsImagesAutomatically(true);
+        settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);
         settings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
@@ -209,18 +215,26 @@ public class MangaDetailActivity extends AppCompatActivity {
         settings.setCacheMode(android.webkit.WebSettings.LOAD_DEFAULT);
         settings.setMediaPlaybackRequiresUserGesture(false); 
 
-        String agent = "Mozilla/5.0 (Linux; Android 14; SM-A366B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36";
+        String agent = android.webkit.WebSettings.getDefaultUserAgent(this);
         settings.setUserAgentString(agent);
-        MangalikScraper.globalUserAgent = agent; 
+        MangaScraper.globalUserAgent = agent; 
 
         android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.setAcceptThirdPartyCookies(webView, true);
 
+        webView.setWebChromeClient(new android.webkit.WebChromeClient());
         webView.setWebViewClient(new android.webkit.WebViewClient() {
-            @Override
+            
+            
+            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; runOnUiThread(() -> { progressBar.setVisibility(View.GONE); swipeRefreshLayout.setRefreshing(false); Toast.makeText(MangaDetailActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
+                rootView.removeView(webView);
+                try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
+            }
             public void onPageFinished(android.webkit.WebView view, String url) {
-                view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
+                String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
+                if (cookies != null) com.fire.mangareader.network.MangaScraper.globalCookies = cookies;
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
                     if (html == null || html.equals("null")) {
                         if (!isSilentBackgroundFetch) {
                             runOnUiThread(() -> {
@@ -232,16 +246,16 @@ public class MangaDetailActivity extends AppCompatActivity {
                         return;
                     }
 
-                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare")) {
+                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { runOnUiThread(() -> { progressBar.setVisibility(View.GONE); webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); webView.setAlpha(0.01f); Toast.makeText(MangaDetailActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); });
                         return; 
                     }
 
-                    rootView.removeView(webView); 
+                    rootView.removeView(webView); try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {} 
                     
-                    String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\r", " ").replace("\\\\", "");
+                    String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\u003E", ">").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\r", " ").replace("\\\\", "");
                     
                     parseHtmlLocally(cleanHtml, isSilentBackgroundFetch);
-                });
+                }); }, 2500);
             }
         });
         
@@ -263,6 +277,11 @@ public class MangaDetailActivity extends AppCompatActivity {
 
                 Element statusElement = doc.select(".post-status .summary-content, .post-status, .info-status, .imptdt").first();
                 String tempStatus = "مستمرة";
+                Element authorElement = doc.select(".author-content, .author-info, .manga-author, .post-content_item:contains(Author) .summary-content, .post-content_item:contains(المؤلف) .summary-content").first();
+                String tempAuthor = "غير معروف";
+                if (authorElement != null && !authorElement.text().trim().isEmpty()) {
+                    tempAuthor = authorElement.text().trim();
+                }
                 if (statusElement != null) {
                     String statusText = statusElement.text();
                     if (statusText.contains("مكتمل") || statusText.contains("Completed") || statusText.contains("End") || statusText.contains("انتهى")) {
@@ -294,11 +313,14 @@ public class MangaDetailActivity extends AppCompatActivity {
 
                 final String finalDesc = tempDescription;
                 final String finalStatus = tempStatus;
+                final String finalAuthor = tempAuthor;
 
                 runOnUiThread(() -> {
                     if (chapters.size() != chapterList.size() || chapterList.isEmpty()) {
                         descriptionText.setText(finalDesc);
-                        statusText.setText("الحالة: " + finalStatus);
+                        statusText.setText(finalStatus);
+                        TextView authorText = findViewById(R.id.mangaAuthor);
+                        if (authorText != null) authorText.setText(finalAuthor);
                         chapterList.clear();
                         chapterList.addAll(chapters);
                         chapterAdapter.notifyDataSetChanged();
@@ -322,10 +344,60 @@ public class MangaDetailActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void showMyListBottomSheet() {
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog = new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_my_list, null);
+        dialog.setContentView(view);
+        
+        String[] statuses = {"اشاهدها حاليا", "ارغب بمشاهدتها", "تم مشاهدتها", "لا ارغب بمشاهدتها"};
+        int[] ids = {R.id.statusWatching, R.id.statusPlan, R.id.statusCompleted, R.id.statusDropped};
+        
+        new Thread(() -> {
+            LibraryItem item = AppDatabase.getInstance(this).mangaDao().getItemById(mangaUrl);
+            final String currentStatus = (item != null && item.getStatus() != null) ? item.getStatus() : "";
+            runOnUiThread(() -> {
+                for (int i = 0; i < statuses.length; i++) {
+                    final String status = statuses[i];
+                    android.widget.TextView tv = view.findViewById(ids[i]);
+                    if (status.equals(currentStatus)) {
+                        tv.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+                    }
+                    tv.setOnClickListener(v -> {
+                        updateMangaStatus(status);
+                        dialog.dismiss();
+                    });
+                }
+            });
+        }).start();
+        dialog.show();
+    }
+
+    private void updateMangaStatus(String status) {
+        new Thread(() -> {
+            LibraryItem item = AppDatabase.getInstance(this).mangaDao().getItemById(mangaUrl);
+            if (item == null) {
+                item = new LibraryItem();
+                item.setMangaId(mangaUrl);
+                item.setTitle(mangaTitle);
+                item.setCoverUrl(mangaCover);
+                item.setAddedTime(System.currentTimeMillis());
+            }
+            item.setStatus(status);
+            item.setFavorite(true);
+            AppDatabase.getInstance(this).mangaDao().insert(item);
+            
+            isFavorite = true;
+            runOnUiThread(() -> {
+                ImageView btnFavorite = findViewById(R.id.btnFavorite);
+                if (btnFavorite != null) btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+                android.widget.Toast.makeText(MangaDetailActivity.this, "تمت الإضافة إلى: " + status, android.widget.Toast.LENGTH_SHORT).show();
+            });
+        }).start();
+    }
     private void checkFavoriteStatus() {
         new Thread(() -> {
             isFavorite = AppDatabase.getInstance(this).mangaDao().isFavorite(mangaUrl);
-            runOnUiThread(() -> fabFavorite.setImageResource(isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off));
+            runOnUiThread(() -> btnFavorite.setImageResource(isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off));
         }).start();
     }
 
@@ -344,14 +416,13 @@ public class MangaDetailActivity extends AppCompatActivity {
                     chapterAdapter.setReadChapters(readUrls);
                     chapterAdapter.setDownloadedChapters(downList);
                 }
-                updateSmartReadButton(states);
             });
         }).start();
     }
 
     private void toggleFavorite() {
         isFavorite = !isFavorite;
-        fabFavorite.setImageResource(isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
+        btnFavorite.setImageResource(isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
         new Thread(() -> {
             LibraryItem item = new LibraryItem();
             item.setMangaId(mangaUrl);

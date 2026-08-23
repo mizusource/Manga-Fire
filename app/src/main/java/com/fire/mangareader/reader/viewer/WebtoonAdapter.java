@@ -23,7 +23,7 @@ public class WebtoonAdapter extends RecyclerView.Adapter<WebtoonPageHolder> {
     @Override
     public WebtoonPageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         FrameLayout frameLayout = new FrameLayout(parent.getContext());
-        frameLayout.setLayoutParams(new ViewGroup.LayoutParams(
+        frameLayout.setLayoutParams(new androidx.recyclerview.widget.RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));

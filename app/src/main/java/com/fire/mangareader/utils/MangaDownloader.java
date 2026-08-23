@@ -37,10 +37,10 @@ public class MangaDownloader {
         Handler mainHandler = new Handler(Looper.getMainLooper());
         
         mainHandler.post(() -> {
-            WebView webView = new WebView(context);
+            WebView webView = new WebView(context); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
             WebSettings settings = webView.getSettings();
             settings.setJavaScriptEnabled(true);
-            settings.setDomStorageEnabled(true);
+            settings.setDomStorageEnabled(true); settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);
             
             // استخدام الهوية الحقيقية للهاتف لكي لا يكتشفنا Cloudflare
             String agent = WebSettings.getDefaultUserAgent(context);
@@ -51,7 +51,7 @@ public class MangaDownloader {
             // مؤقت لإنهاء العملية إذا علق السيرفر
             Runnable timeoutTask = () -> {
                 if (listener != null) listener.onError("انتهى الوقت. السيرفر يرفض الاتصال.");
-                try { webView.destroy(); } catch (Exception ignored) {}
+                try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
             };
             mainHandler.postDelayed(timeoutTask, 40000);
 
@@ -105,7 +105,7 @@ public class MangaDownloader {
                                     if (imageUrls.isEmpty()) {
                                         mainHandler.post(() -> {
                                             if (listener != null) listener.onError("الروابط مشفرة أو فارغة.");
-                                            try { webView.destroy(); } catch (Exception ignored) {}
+                                            try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
                                         });
                                         return;
                                     }
@@ -116,16 +116,16 @@ public class MangaDownloader {
                                         throw new Exception("لا يمكن إنشاء مجلد الحفظ");
                                     }
 
-                                    for (int i = 0; i < imageUrls.size(); i++) {
+                                    java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(4); java.util.List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>(); java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger(0); for (int i = 0; i < imageUrls.size(); i++) { final int index = i; futures.add(executor.submit(() -> {
                                         // 🚀 نعتمد على OkHttp للتنزيل 
-                                        downloadImageFile(context, imageUrls.get(i), chapterUrl, new File(chapterFolder, i + ".jpg"));
+                                        try { downloadImageFile(context, imageUrls.get(index), chapterUrl, new File(chapterFolder, index + ".jpg")); } catch(Exception e) { e.printStackTrace(); }
                                         
-                                        int currentProgress = i + 1;
+                                        int currentProgress = count.incrementAndGet();
                                         int total = imageUrls.size();
                                         if (listener != null) {
                                             mainHandler.post(() -> listener.onProgressUpdate(currentProgress, total));
                                         }
-                                    }
+                                    })); } for (java.util.concurrent.Future<?> f : futures) { try { f.get(); } catch (Exception ignored) {} } executor.shutdown();
 
                                     DownloadedChapter downloaded = new DownloadedChapter();
                                     downloaded.chapterUrl = chapterUrl;
@@ -137,14 +137,14 @@ public class MangaDownloader {
                                     mainHandler.post(() -> {
                                         if (listener != null) listener.onSuccess();
                                         Toast.makeText(context, "تم تنزيل: " + chapterTitle, Toast.LENGTH_SHORT).show();
-                                        try { webView.destroy(); } catch (Exception ignored) {}
+                                        try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
                                     });
 
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     mainHandler.post(() -> {
                                         if (listener != null) listener.onError("فشل: " + e.getMessage());
-                                        try { webView.destroy(); } catch (Exception ignored) {}
+                                        try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
                                     });
                                 }
                             }).start();
@@ -162,34 +162,29 @@ public class MangaDownloader {
         if (fileUrl.startsWith("//")) {
             fileUrl = "https:" + fileUrl;
         }
+        
+        android.content.SharedPreferences prefs = context.getSharedPreferences("MangaFirePrefs", Context.MODE_PRIVATE);
+        int quality = prefs.getInt("image_quality_value", 100);
+        
+        String requestUrl = fileUrl;
+        
+        if (quality < 100) {
+            String encodedUrl = java.net.URLEncoder.encode(fileUrl, "UTF-8");
+            requestUrl = "https://wsrv.nl/?url=" + encodedUrl + "&q=" + quality + "&output=webp";
+        }
 
         Request request = new Request.Builder()
-                .url(fileUrl)
+                .url(requestUrl)
                 .header("Referer", chapterUrl) // مهم جداً لتخطي حظر الصور
                 .build();
 
         // تمرير الطلب لـ OkHttp الذي يملك كل الكوكيز والحيل
         Response response = MangaOkHttp.getClient().newCall(request).execute();
-
         if (!response.isSuccessful() || response.body() == null) {
             throw new Exception("HTTP Error: " + response.code());
         }
 
         byte[] imageBytes = response.body().bytes();
-        
-        android.content.SharedPreferences prefs = context.getSharedPreferences("MangaFirePrefs", Context.MODE_PRIVATE);
-        int quality = prefs.getInt("image_quality_value", 100);
-
-        if (quality < 100 && !fileUrl.toLowerCase().endsWith(".gif") && !fileUrl.toLowerCase().endsWith(".webp")) {
-            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-            if (bitmap != null) {
-                FileOutputStream fos = new FileOutputStream(outputFile);
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, fos);
-                fos.flush();
-                fos.close();
-                return;
-            }
-        } 
         
         FileOutputStream fos = new FileOutputStream(outputFile);
         fos.write(imageBytes);

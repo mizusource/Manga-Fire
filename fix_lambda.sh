@@ -1,0 +1,1 @@
+sed -i 's/downloadImageFile(context, imageUrls.get(index), chapterUrl, new File(chapterFolder, index + ".jpg"));/try { downloadImageFile(context, imageUrls.get(index), chapterUrl, new File(chapterFolder, index + ".jpg")); } catch(Exception e) { e.printStackTrace(); }/g' app/src/main/java/com/fire/mangareader/utils/MangaDownloader.java

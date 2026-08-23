@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.MangaAdapter;
 import com.fire.mangareader.model.Manga;
-import com.fire.mangareader.network.MangalikScraper;
+import com.fire.mangareader.network.MangaScraper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +25,10 @@ public class SearchActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
+        com.fire.mangareader.network.MangaScraper.BASE_URL = com.fire.mangareader.network.SourceManager.getActiveSource(this);
 
         searchView = findViewById(R.id.searchView);
         recyclerView = findViewById(R.id.recyclerView);
@@ -67,7 +69,7 @@ public class SearchActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
 
         // استخدام دالة البحث الموجودة في ملفك والتي تعتمد على Callback
-        MangalikScraper.searchManga(query, new MangalikScraper.ScrapingCallback() {
+        MangaScraper.searchManga(query, new MangaScraper.ScrapingCallback() {
             @Override
             public void onSuccess(List<Manga> mangas) {
                 progressBar.setVisibility(View.GONE);

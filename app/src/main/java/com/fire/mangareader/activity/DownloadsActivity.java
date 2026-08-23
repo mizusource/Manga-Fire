@@ -17,12 +17,13 @@ import java.util.List;
 public class DownloadsActivity extends AppCompatActivity {
 
     private RecyclerView rvDownloads;
-    private TextView tvEmptyState;
+    private View emptyStateLayout;
     private DownloadAdapter adapter;
     private List<DownloadedChapter> downloadedList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_downloads);
 
@@ -35,7 +36,9 @@ public class DownloadsActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         rvDownloads = findViewById(R.id.rvDownloads);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
+        emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        View btnExplore = findViewById(R.id.btnExplore);
+        if (btnExplore != null) btnExplore.setOnClickListener(v -> finish());
 
         rvDownloads.setLayoutManager(new LinearLayoutManager(this));
         downloadedList = new ArrayList<>();
@@ -56,10 +59,10 @@ public class DownloadsActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
 
                     if (downloadedList.isEmpty()) {
-                        tvEmptyState.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                         rvDownloads.setVisibility(View.GONE);
                     } else {
-                        tvEmptyState.setVisibility(View.GONE);
+                        emptyStateLayout.setVisibility(View.GONE);
                         rvDownloads.setVisibility(View.VISIBLE);
                     }
                 });

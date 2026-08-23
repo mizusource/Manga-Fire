@@ -21,6 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
@@ -40,16 +41,19 @@ public class SettingsActivity extends AppCompatActivity {
             PreferenceManager prefs = new PreferenceManager(requireContext());
 
             // 1. تغيير الثيم
-            ListPreference themePref = findPreference("theme");
+            ListPreference themePref = findPreference("app_theme");
             if (themePref != null) {
                 themePref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    prefs.setTheme((String) newValue);
-                    requireActivity().recreate();
+                    android.content.SharedPreferences sp = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+                    sp.edit().putString("app_theme", (String) newValue).apply();
+                    
+                    Intent intent = new Intent(requireContext(), MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    requireActivity().finish();
                     return true;
                 });
             }
-
-            // 2. تغيير اللغة
             ListPreference langPref = findPreference("language");
             if (langPref != null) {
                 langPref.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -64,46 +68,17 @@ public class SettingsActivity extends AppCompatActivity {
                 });
             }
 
+            Preference storageManager = findPreference("storage_manager");
+            if (storageManager != null) {
+                storageManager.setOnPreferenceClickListener(preference -> {
+                    startActivity(new Intent(requireContext(), StorageManagerActivity.class));
+                    return true;
+                });
+            }
             SwitchPreferenceCompat wifiPref = findPreference("wifi_only");
             if (wifiPref != null) {
                 wifiPref.setOnPreferenceChangeListener((preference, newValue) -> {
                     prefs.setWifiOnly((Boolean) newValue);
-                    return true;
-                });
-            }
-
-            Preference clearCache = findPreference("clear_cache");
-            if (clearCache != null) {
-                clearCache.setOnPreferenceClickListener(preference -> {
-                    new Thread(() -> {
-                        com.bumptech.glide.Glide.get(requireContext()).clearDiskCache();
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(requireContext(), getString(R.string.clear_cache) + " تم", Toast.LENGTH_SHORT).show());
-                    }).start();
-                    return true;
-                });
-            }
-
-            Preference clearDownloads = findPreference("clear_downloads");
-            if (clearDownloads != null) {
-                clearDownloads.setOnPreferenceClickListener(preference -> {
-                    com.fire.mangareader.database.AppDatabase db = com.fire.mangareader.database.AppDatabase.getInstance(requireContext());
-                    new Thread(() -> {
-                        java.util.List<com.fire.mangareader.database.DownloadedChapter> downloads = db.downloadDao().getAllDownloads();
-                        for (com.fire.mangareader.database.DownloadedChapter chapter : downloads) {
-                            File folder = new File(chapter.localFolderPath);
-                            if (folder.exists() && folder.isDirectory()) {
-                                File[] files = folder.listFiles();
-                                if (files != null) {
-                                    for (File f : files) f.delete();
-                                }
-                                folder.delete();
-                            }
-                        }
-                        db.downloadDao().deleteAll();
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(requireContext(), getString(R.string.clear_downloads) + " تم", Toast.LENGTH_SHORT).show());
-                    }).start();
                     return true;
                 });
             }

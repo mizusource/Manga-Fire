@@ -17,52 +17,103 @@
             android:layout_height="wrap_content"
             android:background="?attr/colorSurface"
             app:elevation="4dp">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/mainToolbar"
+            
+            <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_scrollFlags="scroll|enterAlways">
+                android:layout_height="match_parent"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
+                app:contentScrim="?attr/colorSurface"
+                app:expandedTitleMarginStart="48dp"
+                app:expandedTitleMarginEnd="64dp"
+                app:title="آخر التحديثات"
+                app:collapsedTitleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+                app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Display1">
                 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    
-                    <ImageView
-                        android:id="@+id/btnMenuToggle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:padding="12dp"
-                        android:src="@android:drawable/ic_menu_sort_by_size"
-                        app:tint="?attr/colorOnSurface" />
+                <View 
+                    android:layout_width="match_parent" 
+                    android:layout_height="match_parent" 
+                    android:background="@drawable/bg_appbar" 
+                    android:alpha="0.3"
+                    app:layout_collapseMode="parallax" />
 
+                <LinearLayout
+                    android:id="@+id/recentReadingContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginTop="?attr/actionBarSize"
+                    app:layout_collapseMode="parallax">
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toEndOf="@id/btnMenuToggle"
-                        android:layout_marginStart="8dp"
-                        android:text="Manga Fire 🔥"
+                        android:text="Continue Reading"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-                        
-                    <ImageView
-                        android:id="@+id/btnSearch"
+                        android:padding="8dp"/>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvRecentReading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:clipToPadding="false"/>
+                </LinearLayout>
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:scrollbars="none"
+                    android:layout_marginTop="160dp"
+                    android:paddingHorizontal="8dp">
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginEnd="8dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:padding="12dp"
-                        android:src="@android:drawable/ic_menu_search"
-                        app:tint="?attr/colorOnSurface" />
-                </RelativeLayout>
-            </androidx.appcompat.widget.Toolbar>
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الكل" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:background="@drawable/bg_chip_selected" android:textColor="@android:color/white" android:layout_marginEnd="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="أكشن" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:background="@drawable/bg_chip_unselected" android:textColor="?attr/colorOnSurface" android:layout_marginEnd="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مانهوا" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:background="@drawable/bg_chip_unselected" android:textColor="?attr/colorOnSurface" android:layout_marginEnd="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="إيسيكاي" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:background="@drawable/bg_chip_unselected" android:textColor="?attr/colorOnSurface" android:layout_marginEnd="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مغامرة" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:background="@drawable/bg_chip_unselected" android:textColor="?attr/colorOnSurface" android:layout_marginEnd="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="خيال" android:paddingHorizontal="16dp" android:paddingVertical="8dp" android:background="@drawable/bg_chip_unselected" android:textColor="?attr/colorOnSurface" android:layout_marginEnd="8dp"/>
+                    </LinearLayout>
+                </HorizontalScrollView>
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/mainToolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    app:layout_collapseMode="pin">
+                    
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <ImageView
+                            android:id="@+id/btnMenuToggle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="12dp"
+                            android:src="@android:drawable/ic_menu_sort_by_size"
+                            app:tint="?attr/colorOnSurface" />
+                        <ImageView
+                            android:id="@+id/btnSearch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="12dp"
+                            android:src="@drawable/ic_search"
+                            app:tint="?attr/colorOnSurface" />
+                    </RelativeLayout>
+                </androidx.appcompat.widget.Toolbar>
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -80,7 +131,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
-                    android:padding="4dp" />
+                    android:padding="4dp"
+                    android:layoutAnimation="@anim/layout_animation_fall_down" />
 
                 <ProgressBar
                     android:id="@+id/mainProgressBar"
@@ -102,6 +154,6 @@
         android:background="?attr/colorSurface"
         app:itemTextColor="?attr/colorOnSurface"
         app:itemIconTint="?attr/colorOnSurfaceVariant"
-        app:menu="@menu/drawer_menu" />
-
+        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/nav_header" />
 </androidx.drawerlayout.widget.DrawerLayout>
