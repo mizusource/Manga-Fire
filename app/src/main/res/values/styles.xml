@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- الثيم الأساسي الفاخر للتطبيق (الوضع الليلي) -->
+    <style name="Theme.Animeista.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">@color/deep_sky_blue_500</item>
+        <item name="colorPrimaryVariant">@color/deep_sky_blue_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <item name="colorSecondary">@color/atomic_tangerine</item>
+        <item name="colorSecondaryVariant">@color/atomic_tangerine_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <item name="android:colorBackground">@color/black_pearl_700</item>
+        <item name="colorOnBackground">@color/white_dim</item>
+        
+        <item name="colorSurface">@color/black_pearl_500</item>
+        <item name="colorOnSurface">@color/cloud_blue</item>
+        
+        <!-- 🚀 الألوان الناقصة التي كانت تسبب الكراش -->
+        <item name="colorSurfaceVariant">@color/black_pearl_300</item>
+        <item name="colorOnSurfaceVariant">@color/gray_500</item>
+        <item name="colorOutline">@color/gray_300</item>
+        
+        <item name="colorError">@color/red</item>
+        <item name="colorOnError">@color/black</item>
+        
+        <item name="android:statusBarColor">@color/black_pearl_700</item>
+        <item name="android:navigationBarColor">@color/black_pearl_700</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <item name="colorControlHighlight">@color/black_pearl_300</item>
+    </style>
+
+    <!-- ثيم شاشة البداية (Splash Screen) -->
+    <style name="Theme.MangaFire.Splash" parent="Theme.Animeista.Dark">
+        <item name="android:windowBackground">@color/black_pearl_700</item>
+        <item name="android:statusBarColor">@color/black_pearl_700</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+</resources>

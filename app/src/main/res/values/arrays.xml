@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 🚀 تم إزالة مصفوفات الثيم -->
+    <string-array name="language_entries">
+        <item>العربية</item>
+        <item>English</item>
+    </string-array>
+    <string-array name="language_values">
+        <item>ar</item>
+        <item>en</item>
+    </string-array>
+    
+    <string-array name="direction_entries">
+        <item>من اليمين لليسار</item>
+        <item>من اليسار لليمين</item>
+    </string-array>
+    <string-array name="direction_values">
+        <item>rtl</item>
+        <item>ltr</item>
+    </string-array>
+</resources>

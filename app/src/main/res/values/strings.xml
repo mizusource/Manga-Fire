@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Manga Fire</string>
+
+    <!-- Navigation -->
+    <string name="home">Home</string>
+    <string name="library">Library</string>
+    <string name="downloads">Downloads</string>
+    <string name="profile">Profile</string>
+
+    <!-- Actions -->
+    <string name="search_hint">Search manga...</string>
+    <string name="chapters">Chapters</string>
+    <string name="description">Description</string>
+    <string name="status">Status</string>
+    <string name="read">Read</string>
+    <string name="download">Download</string>
+    <string name="favorite">Favorite</string>
+    <string name="unfavorite">Unfavorite</string>
+    <string name="share">Share</string>
+    <string name="retry">Retry</string>
+
+    <!-- Messages -->
+    <string name="loading">Loading...</string>
+    <string name="error_loading">Error loading data</string>
+    <string name="no_results">No results found</string>
+    <string name="no_description">No description available</string>
+    <string name="no_chapters">No chapters available</string>
+    <string name="no_downloads">No downloads yet</string>
+    <string name="no_favorites">No favorites yet</string>
+    <string name="no_history">No reading history</string>
+
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="logout">Logout</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="display_name">Display Name</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="no_account">Don\'t have an account? Register</string>
+    <string name="has_account">Already have an account? Login</string>
+    <string name="or_login_with">Or login with</string>
+    <string name="guest">Continue as Guest</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme">Theme</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_system">System Default</string>
+    <string name="language">Language</string>
+    <string name="lang_english">English</string>
+    <string name="lang_arabic">Arabic</string>
+    <string name="reading_settings">Reading Settings</string>
+    <string name="reading_direction">Reading Direction</string>
+    <string name="direction_ltr">Left to Right</string>
+    <string name="direction_rtl">Right to Left</string>
+    <string name="download_settings">Download Settings</string>
+    <string name="wifi_only">Download on Wi-Fi only</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="clear_downloads">Clear All Downloads</string>
+    <string name="about">About</string>
+    <string name="version">Version 1.0</string>
+
+    <!-- Tabs -->
+    <string name="tab_favorites">Favorites</string>
+    <string name="tab_history">History</string>
+
+    <!-- Download -->
+    <string name="download_started">Download started</string>
+    <string name="download_complete">Download complete</string>
+    <string name="download_failed">Download failed</string>
+    <string name="delete_download">Delete download?</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+      
+          <!-- Settings Extra Strings -->
+    <string name="theme_summary">Choose app theme</string>
+    <string name="language_summary">Choose app language</string>
+    <string name="maintenance">Maintenance</string>
+    <string name="clear_cache_summary">Clear image cache</string>
+    <string name="clear_downloads_summary">Delete all downloaded chapters</string>
+    <string name="account">Account</string>
+    <string name="logout_summary">Sign out of your account</string>
+    <string name="app_version_summary">Manga Fire v1.0</string>
+
+    <!-- Profile & Stats -->
+    <string name="favorites_count">Favorites</string>
+    <string name="read_count">Read Chapters</string>
+    <string name="downloads_count">Downloads</string>
+    <string name="edit_name">Edit Name</string>
+    <string name="edit_bio">Edit Bio</string>
+    <string name="default_bio">Passionate Manga Reader ⚡</string>
+</resources>
