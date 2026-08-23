@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Manga Fire</string>
+
+    <!-- Navigation -->
+    <string name="home">الرئيسية</string>
+    <string name="library">المكتبة</string>
+    <string name="downloads">التنزيلات</string>
+    <string name="profile">البروفايل</string>
+
+    <!-- Actions -->
+    <string name="search_hint">ابحث عن مانهوا...</string>
+    <string name="chapters">الفصول</string>
+    <string name="description">الوصف</string>
+    <string name="status">الحالة</string>
+    <string name="read">قراءة</string>
+    <string name="download">تنزيل</string>
+    <string name="favorite">إضافة للمفضلة</string>
+    <string name="unfavorite">إزالة من المفضلة</string>
+    <string name="share">مشاركة</string>
+    <string name="retry">إعادة المحاولة</string>
+
+    <!-- Messages -->
+    <string name="loading">جاري التحميل...</string>
+    <string name="error_loading">خطأ في تحميل البيانات</string>
+    <string name="no_results">لا توجد نتائج</string>
+    <string name="no_description">لا يوجد وصف متاح</string>
+    <string name="no_chapters">لا توجد فصول متاحة</string>
+    <string name="no_downloads">لا توجد فصول محملة</string>
+    <string name="no_favorites">لا توجد مانجا مفضلة</string>
+    <string name="no_history">لا يوجد سجل قراءة</string>
+
+    <!-- Auth -->
+    <string name="login">تسجيل الدخول</string>
+    <string name="register">إنشاء حساب</string>
+    <string name="logout">تسجيل الخروج</string>
+    <string name="email">البريد الإلكتروني</string>
+    <string name="password">كلمة المرور</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="display_name">اسم المستخدم</string>
+    <string name="forgot_password">نسيت كلمة المرور؟</string>
+    <string name="no_account">ليس لديك حساب؟ سجل الآن</string>
+    <string name="has_account">لديك حساب بالفعل؟ سجل دخولك</string>
+    <string name="or_login_with">أو الدخول باستخدام</string>
+    <string name="guest">المتابعة كزائر</string>
+
+    <!-- Settings -->
+    <string name="settings">الإعدادات</string>
+    <string name="appearance">المظهر</string>
+    <string name="theme">الثيم</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_system">تلقائي حسب النظام</string>
+    <string name="language">اللغة</string>
+    <string name="lang_english">English</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="reading_settings">إعدادات القراءة</string>
+    <string name="reading_direction">اتجاه القراءة</string>
+    <string name="direction_ltr">من اليسار لليمين</string>
+    <string name="direction_rtl">من اليمين لليسار</string>
+    <string name="download_settings">إعدادات التنزيل</string>
+    <string name="wifi_only">التنزيل عبر Wi-Fi فقط</string>
+    <string name="clear_cache">مسح الذاكرة المؤقتة</string>
+    <string name="clear_downloads">مسح جميع التنزيلات</string>
+    <string name="about">حول التطبيق</string>
+    <string name="version">الإصدار 1.0</string>
+
+    <!-- Tabs -->
+    <string name="tab_favorites">المفضلة</string>
+    <string name="tab_history">السجل</string>
+
+    <!-- Download -->
+    <string name="download_started">بدأ التنزيل</string>
+    <string name="download_complete">اكتمل التنزيل</string>
+    <string name="download_failed">فشل التنزيل</string>
+    <string name="delete_download">هل تريد حذف الفصل؟</string>
+    <string name="cancel">إلغاء</string>
+    <string name="delete">حذف</string>
+    
+        <!-- Settings Extra Strings (Arabic) -->
+    <string name="theme_summary">اختر مظهر التطبيق</string>
+    <string name="language_summary">اختر لغة التطبيق</string>
+    <string name="maintenance">الصيانة</string>
+    <string name="clear_cache_summary">مسح الذاكرة المؤقتة للصور لتوفير المساحة</string>
+    <string name="clear_downloads_summary">حذف جميع الفصول المحملة من الهاتف</string>
+    <string name="account">الحساب</string>
+    <string name="logout_summary">تسجيل الخروج من حسابك الحالي</string>
+    <string name="app_version_summary">Manga Fire v1.0</string>
+
+    <!-- Profile & Stats -->
+    <string name="favorites_count">المفضلة</string>
+    <string name="read_count">الفصول المقروءة</string>
+    <string name="downloads_count">التنزيلات</string>
+    <string name="edit_name">تغيير الاسم</string>
+    <string name="edit_bio">تعديل البايو</string>
+    <string name="default_bio">قارئ شغوف بالمانها والمانجا ⚡</string>
+</resources>
