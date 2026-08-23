@@ -1,0 +1,199 @@
+package com.fire.mangareader.utils;
+
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.webkit.CookieManager;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import com.fire.mangareader.database.AppDatabase;
+import com.fire.mangareader.database.DownloadedChapter;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class MangaDownloader {
+
+    public interface DownloadListener {
+        void onProgressUpdate(int current, int total);
+        void onSuccess();
+        void onError(String errorMessage);
+    }
+
+    public static void downloadChapter(Context context, String mangaUrl, String chapterUrl, String chapterTitle, DownloadListener listener) {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        
+        mainHandler.post(() -> {
+            WebView webView = new WebView(context);
+            WebSettings settings = webView.getSettings();
+            settings.setJavaScriptEnabled(true);
+            settings.setDomStorageEnabled(true);
+            
+            // استخدام الهوية الحقيقية للهاتف لكي لا يكتشفنا Cloudflare
+            String agent = WebSettings.getDefaultUserAgent(context);
+            settings.setUserAgentString(agent);
+
+            CookieManager.getInstance().setAcceptCookie(true);
+
+            // مؤقت لإنهاء العملية إذا علق السيرفر
+            Runnable timeoutTask = () -> {
+                if (listener != null) listener.onError("انتهى الوقت. السيرفر يرفض الاتصال.");
+                try { webView.destroy(); } catch (Exception ignored) {}
+            };
+            mainHandler.postDelayed(timeoutTask, 40000);
+
+            webView.setWebViewClient(new WebViewClient() {
+                boolean isProcessing = false;
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    if (isProcessing) return;
+                    
+                    // نعطي السيرفر مهلة لمعالجة حماية Adscore وجلب الصور المخفية
+                    mainHandler.postDelayed(() -> {
+                        if (isProcessing) return;
+                        
+                        view.evaluateJavascript("window.scrollTo(0, document.body.scrollHeight);", null);
+                        
+                        view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
+                            if (html == null || html.equals("null")) return;
+                            
+                            // التحقق مما إذا كانت الحماية لا تزال تعمل
+                            if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("adscore")) {
+                                return; 
+                            }
+
+                            isProcessing = true;
+                            mainHandler.removeCallbacks(timeoutTask); 
+
+                            // حفظ الكوكيز الجديدة التي أصدرتها الحماية
+                            CookieManager.getInstance().flush();
+
+                            String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\\\", "");
+                            
+                            new Thread(() -> {
+                                try {
+                                    Document doc = Jsoup.parse(cleanHtml, chapterUrl);
+                                    Elements imgs = doc.select(".reading-content img, .page-break img, #readerarea img, .image-container img, .blocks-gallery-item img");
+                                    List<String> imageUrls = new ArrayList<>();
+                                    
+                                    for (Element img : imgs) {
+                                        String src = img.attr("data-src");
+                                        if (src.isEmpty() || src.startsWith("data:image")) src = img.attr("data-lazy-src");
+                                        if (src.isEmpty() || src.startsWith("data:image")) src = img.attr("src");
+                                        
+                                        src = src.trim();
+                                        if (!src.isEmpty() && !src.startsWith("data:image") && !src.contains("logo") && !src.contains("spinner") && !src.contains("loader")) {
+                                            if (src.startsWith("//")) src = "https:" + src;
+                                            imageUrls.add(src);
+                                        }
+                                    }
+
+                                    if (imageUrls.isEmpty()) {
+                                        mainHandler.post(() -> {
+                                            if (listener != null) listener.onError("الروابط مشفرة أو فارغة.");
+                                            try { webView.destroy(); } catch (Exception ignored) {}
+                                        });
+                                        return;
+                                    }
+
+                                    File mangaFolder = new File(context.getFilesDir(), String.valueOf(mangaUrl.hashCode()));
+                                    File chapterFolder = new File(mangaFolder, String.valueOf(chapterUrl.hashCode()));
+                                    if (!chapterFolder.exists() && !chapterFolder.mkdirs()) {
+                                        throw new Exception("لا يمكن إنشاء مجلد الحفظ");
+                                    }
+
+                                    for (int i = 0; i < imageUrls.size(); i++) {
+                                        // 🚀 نعتمد على OkHttp للتنزيل 
+                                        downloadImageFile(context, imageUrls.get(i), chapterUrl, new File(chapterFolder, i + ".jpg"));
+                                        
+                                        int currentProgress = i + 1;
+                                        int total = imageUrls.size();
+                                        if (listener != null) {
+                                            mainHandler.post(() -> listener.onProgressUpdate(currentProgress, total));
+                                        }
+                                    }
+
+                                    DownloadedChapter downloaded = new DownloadedChapter();
+                                    downloaded.chapterUrl = chapterUrl;
+                                    downloaded.mangaUrl = mangaUrl;
+                                    downloaded.chapterTitle = chapterTitle;
+                                    downloaded.localFolderPath = chapterFolder.getAbsolutePath();
+                                    AppDatabase.getInstance(context).downloadDao().insert(downloaded);
+
+                                    mainHandler.post(() -> {
+                                        if (listener != null) listener.onSuccess();
+                                        Toast.makeText(context, "تم تنزيل: " + chapterTitle, Toast.LENGTH_SHORT).show();
+                                        try { webView.destroy(); } catch (Exception ignored) {}
+                                    });
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    mainHandler.post(() -> {
+                                        if (listener != null) listener.onError("فشل: " + e.getMessage());
+                                        try { webView.destroy(); } catch (Exception ignored) {}
+                                    });
+                                }
+                            }).start();
+                        });
+                    }, 2500); 
+                }
+            });
+            webView.loadUrl(chapterUrl);
+        });
+    }
+
+    // 🚀 دالة التحميل تعتمد على محرك OkHttp القوي المجهز مسبقاً!
+    private static void downloadImageFile(Context context, String fileUrl, String chapterUrl, File outputFile) throws Exception {
+        fileUrl = fileUrl.trim().replace(" ", "%20");
+        if (fileUrl.startsWith("//")) {
+            fileUrl = "https:" + fileUrl;
+        }
+
+        Request request = new Request.Builder()
+                .url(fileUrl)
+                .header("Referer", chapterUrl) // مهم جداً لتخطي حظر الصور
+                .build();
+
+        // تمرير الطلب لـ OkHttp الذي يملك كل الكوكيز والحيل
+        Response response = MangaOkHttp.getClient().newCall(request).execute();
+
+        if (!response.isSuccessful() || response.body() == null) {
+            throw new Exception("HTTP Error: " + response.code());
+        }
+
+        byte[] imageBytes = response.body().bytes();
+        
+        android.content.SharedPreferences prefs = context.getSharedPreferences("MangaFirePrefs", Context.MODE_PRIVATE);
+        int quality = prefs.getInt("image_quality_value", 100);
+
+        if (quality < 100 && !fileUrl.toLowerCase().endsWith(".gif") && !fileUrl.toLowerCase().endsWith(".webp")) {
+            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+            if (bitmap != null) {
+                FileOutputStream fos = new FileOutputStream(outputFile);
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, fos);
+                fos.flush();
+                fos.close();
+                return;
+            }
+        } 
+        
+        FileOutputStream fos = new FileOutputStream(outputFile);
+        fos.write(imageBytes);
+        fos.flush();
+        fos.close();
+    }
+}
