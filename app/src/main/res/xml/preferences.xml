@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/appearance">
+        <ListPreference
+            android:key="language"
+            android:title="@string/language"
+            android:summary="@string/language_summary"
+            android:entries="@array/language_entries"
+            android:entryValues="@array/language_values"
+            android:defaultValue="ar" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/reading_settings">
+        <ListPreference
+            android:key="reading_direction"
+            android:title="@string/reading_direction"
+            android:entries="@array/direction_entries"
+            android:entryValues="@array/direction_values"
+            android:defaultValue="rtl" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/download_settings">
+        <SwitchPreferenceCompat
+            android:key="wifi_only"
+            android:title="@string/wifi_only"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/maintenance">
+        <Preference
+            android:key="clear_cache"
+            android:title="@string/clear_cache"
+            android:summary="@string/clear_cache_summary" />
+        <Preference
+            android:key="clear_downloads"
+            android:title="@string/clear_downloads"
+            android:summary="@string/clear_downloads_summary" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/account">
+        <Preference
+            android:key="logout"
+            android:title="@string/logout"
+            android:summary="@string/logout_summary" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/about">
+        <Preference
+            android:title="@string/version"
+            android:summary="@string/app_version_summary" />
+    </PreferenceCategory>
+</PreferenceScreen>
