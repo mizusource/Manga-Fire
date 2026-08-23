@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- لون الشريط (رمادي غامق يميل للسواد) -->
+    <solid android:color="#1E1E1E"/>
+    <!-- جعل الحواف دائرية تماماً -->
+    <corners android:radius="30dp"/>
+</shape>
