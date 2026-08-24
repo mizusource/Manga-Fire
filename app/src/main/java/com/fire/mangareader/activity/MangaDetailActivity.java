@@ -233,8 +233,8 @@ public class MangaDetailActivity extends AppCompatActivity {
             }
             public void onPageFinished(android.webkit.WebView view, String url) {
                 String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
-                if (cookies != null) com.fire.mangareader.network.MangaScraper.globalCookies = cookies;
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
+                if (cookies != null) { com.fire.mangareader.network.MangaScraper.globalCookies = cookies; getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().putString("cloudflare_cookies", cookies).apply(); }
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { try { if (document.getElementById(\"manga-chapters-holder\") && document.getElementById(\"manga-chapters-holder\").innerHTML.trim() === \"\") { var req = new XMLHttpRequest(); req.open(\"POST\", window.location.href + (window.location.href.endsWith(\"/\") ? \"\" : \"/\") + \"ajax/chapters/\", false); req.send(); if (req.status === 200) { document.getElementById(\"manga-chapters-holder\").innerHTML = req.responseText; } } } catch(e){} return document.documentElement.outerHTML; })();", html -> {
                     if (html == null || html.equals("null")) {
                         if (!isSilentBackgroundFetch) {
                             runOnUiThread(() -> {
@@ -292,6 +292,44 @@ public class MangaDetailActivity extends AppCompatActivity {
                 List<Chapter> chapters = new ArrayList<>();
                 Elements chapterElements = doc.select("li.wp-manga-chapter, .listing-chapters_wrap li, ul.main.version-chap li, .chapters-list li, .row-content-chapter li, #manga-chapters-holder li, .l-chapters li, .eplister li, #chapterlist li, .chbox");
                 if (chapterElements.isEmpty()) chapterElements = doc.select(".row-content-chapter a, .chapter-lieb a, .listing-chapters_wrap a, #manga-chapters-holder a[href*='chapter'], .eplister a, #chapterlist a");
+                if (chapterElements.isEmpty()) {
+                    try {
+                        org.jsoup.nodes.Document ajaxDoc = org.jsoup.Jsoup.connect(mangaUrl + (mangaUrl.endsWith("/") ? "" : "/") + "ajax/chapters/")
+                            .userAgent(com.fire.mangareader.network.MangaScraper.globalUserAgent)
+                            .header("Cookie", com.fire.mangareader.network.MangaScraper.globalCookies)
+                            .post();
+                        chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, .row-content-chapter li, a[href*='chapter']");
+                    } catch (Exception e) {}
+                }
+                if (chapterElements.isEmpty()) {
+                    String mangaId = "";
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("manga_id'\\s*:\\s*'(\\d+)'").matcher(html);
+                    if (m.find()) mangaId = m.group(1);
+                    else {
+                        m = java.util.regex.Pattern.compile("manga_id\\s*=\\s*(\\d+)").matcher(html);
+                        if (m.find()) mangaId = m.group(1);
+                        else {
+                             org.jsoup.nodes.Element holder = doc.selectFirst("#manga-chapters-holder");
+                             if (holder != null) {
+                                 m = java.util.regex.Pattern.compile("data-id=\"(\\d+)\"").matcher(holder.outerHtml());
+                                 if (m.find()) mangaId = m.group(1);
+                             }
+                        }
+                    }
+                    if (!mangaId.isEmpty()) {
+                        try {
+                            java.net.URL urlObj = new java.net.URL(mangaUrl);
+                            String ajaxUrl = urlObj.getProtocol() + "://" + urlObj.getHost() + "/wp-admin/admin-ajax.php";
+                            org.jsoup.nodes.Document ajaxDoc = org.jsoup.Jsoup.connect(ajaxUrl)
+                                .userAgent(com.fire.mangareader.network.MangaScraper.globalUserAgent)
+                                .header("Cookie", com.fire.mangareader.network.MangaScraper.globalCookies)
+                                .data("action", "manga_get_chapters")
+                                .data("manga", mangaId)
+                                .post();
+                            chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, .row-content-chapter li, a[href*='chapter']");
+                        } catch (Exception e) {}
+                    }
+                }
 
                 for (Element el : chapterElements) {
                     Element link = el.tagName().equals("a") ? el : el.select("a").first();

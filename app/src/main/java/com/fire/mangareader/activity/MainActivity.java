@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        com.fire.mangareader.network.MangaScraper.globalCookies = getSharedPreferences("AppPrefs", MODE_PRIVATE).getString("cloudflare_cookies", "");
         BASE_URL = com.fire.mangareader.network.SourceManager.getActiveSource(this);
         com.fire.mangareader.network.MangaScraper.BASE_URL = BASE_URL;
 
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
             }
             public void onPageFinished(android.webkit.WebView view, String url) {
                 String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
-                if (cookies != null) com.fire.mangareader.network.MangaScraper.globalCookies = cookies;
+                if (cookies != null) { com.fire.mangareader.network.MangaScraper.globalCookies = cookies; getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().putString("cloudflare_cookies", cookies).apply(); }
                 new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
                     if (html == null || html.equals("null")) return;
 

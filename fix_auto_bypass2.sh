@@ -1,0 +1,2 @@
+sed -i 's/scraperWebView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT));/scraperWebView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));/g' app/src/main/java/com/fire/mangareader/activity/ChapterReaderActivity.java
+sed -i 's/scraperWebView.setAlpha(1.0f);/scraperWebView.setAlpha(0.01f);/g' app/src/main/java/com/fire/mangareader/activity/ChapterReaderActivity.java

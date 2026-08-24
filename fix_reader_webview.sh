@@ -1,0 +1,1 @@
+sed -i 's/scraperWebView.setVisibility(View.VISIBLE);/scraperWebView.setVisibility(View.VISIBLE); scraperWebView.setLayoutParams(new android.widget.RelativeLayout.LayoutParams(1, 1)); scraperWebView.setAlpha(0.01f);/g' app/src/main/java/com/fire/mangareader/activity/ChapterReaderActivity.java

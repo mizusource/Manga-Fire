@@ -401,7 +401,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
                         if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) {
                             runOnUiThread(() -> {
                                 loadingProgressBar.setVisibility(View.GONE);
-                                scraperWebView.setVisibility(View.VISIBLE);
+                                scraperWebView.setVisibility(View.VISIBLE); scraperWebView.setLayoutParams(new android.widget.RelativeLayout.LayoutParams(1, 1)); scraperWebView.setAlpha(0.01f);
                                 Toast.makeText(ChapterReaderActivity.this, "يرجى حل اختبار الحماية لفتح الفصل", Toast.LENGTH_LONG).show();
                             });
                             return; 
