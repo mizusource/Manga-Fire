@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,19 +13,10 @@ import com.fire.mangareader.R;
 import com.fire.mangareader.utils.PreferenceManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import android.net.Uri;
-import com.google.firebase.auth.ActionCodeSettings;
-import android.content.SharedPreferences;
-
 
 public class LoginActivity extends AppCompatActivity {
-
     private EditText etEmail, etPassword;
-    
-    private Button btnLogin, btnMagicLink;
-
-    private TextView tvRegister, tvGuest;
-    private ProgressBar progressBar;
+    private Button btnLogin, btnGoToRegister;
     private FirebaseAuth mAuth;
 
     @Override
@@ -37,24 +26,13 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
-
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
-        
         btnLogin = findViewById(R.id.btnLogin);
-        btnMagicLink = findViewById(R.id.btnMagicLink);
-        
-        btnMagicLink.setOnClickListener(v -> sendMagicLink());
-        
-        checkEmailLink();
-
-        tvRegister = findViewById(R.id.tvRegister);
-        tvGuest = findViewById(R.id.tvGuest);
-        progressBar = findViewById(R.id.progressBar);
+        btnGoToRegister = findViewById(R.id.btnGoToRegister);
 
         btnLogin.setOnClickListener(v -> loginUser());
-        tvRegister.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
-        tvGuest.setOnClickListener(v -> continueAsGuest());
+        btnGoToRegister.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
     }
 
     private void loginUser() {
@@ -62,16 +40,14 @@ public class LoginActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "يرجى تعبئة جميع الحقول", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
-                    progressBar.setVisibility(View.GONE);
                     btnLogin.setEnabled(true);
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
@@ -83,81 +59,8 @@ public class LoginActivity extends AppCompatActivity {
                             finish();
                         }
                     } else {
-                        Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "فشل تسجيل الدخول: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-    }
-
-    
-    private void sendMagicLink() {
-        String email = etEmail.getText().toString().trim();
-        if (email.isEmpty()) {
-            Toast.makeText(this, "يرجى إدخال البريد الإلكتروني لإرسال الرابط", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        progressBar.setVisibility(View.VISIBLE);
-        btnMagicLink.setEnabled(false);
-        
-        ActionCodeSettings actionCodeSettings = ActionCodeSettings.newBuilder()
-                .setUrl("https://mangafire.page.link/login")
-                .setHandleCodeInApp(true)
-                .setAndroidPackageName(getPackageName(), true, "12")
-                .build();
-                
-        mAuth.sendSignInLinkToEmail(email, actionCodeSettings)
-                .addOnCompleteListener(task -> {
-                    progressBar.setVisibility(View.GONE);
-                    btnMagicLink.setEnabled(true);
-                    if (task.isSuccessful()) {
-                        Toast.makeText(this, "تم إرسال رابط الدخول إلى بريدك الإلكتروني", Toast.LENGTH_LONG).show();
-                        SharedPreferences prefs = getSharedPreferences("MagicLinkPrefs", MODE_PRIVATE);
-                        prefs.edit().putString("email", email).apply();
-                    } else {
-                        Toast.makeText(this, "خطأ: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-    }
-    
-    private void checkEmailLink() {
-        Intent intent = getIntent();
-        if (intent != null && intent.getData() != null) {
-            String emailLink = intent.getData().toString();
-            if (mAuth.isSignInWithEmailLink(emailLink)) {
-                SharedPreferences prefs = getSharedPreferences("MagicLinkPrefs", MODE_PRIVATE);
-                String email = prefs.getString("email", "");
-                
-                if (email.isEmpty()) {
-                    Toast.makeText(this, "تعذر العثور على البريد الإلكتروني، يرجى المحاولة مجدداً", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                
-                progressBar.setVisibility(View.VISIBLE);
-                mAuth.signInWithEmailLink(email, emailLink)
-                        .addOnCompleteListener(task -> {
-                            progressBar.setVisibility(View.GONE);
-                            if (task.isSuccessful()) {
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                if (user != null) {
-                                    PreferenceManager prefManager = new PreferenceManager(this);
-                                    prefManager.saveUser(user.getUid(), user.getEmail(),
-                                            user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(), false);
-                                    Toast.makeText(this, "تم تسجيل الدخول بنجاح عبر الرابط السحري", Toast.LENGTH_LONG).show();
-                                    startActivity(new Intent(this, MainActivity.class));
-                                    finish();
-                                }
-                            } else {
-                                Toast.makeText(this, "فشل الدخول بالرابط: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
-            }
-        }
-    }
-
-    private void continueAsGuest() {
-        PreferenceManager prefs = new PreferenceManager(this);
-        prefs.saveUser("guest", "guest@mangafire.com", "Guest", true);
-        startActivity(new Intent(this, MainActivity.class));
-        finish();
     }
 }

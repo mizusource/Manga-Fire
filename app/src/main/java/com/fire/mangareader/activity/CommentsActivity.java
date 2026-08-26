@@ -24,7 +24,7 @@ import java.util.List;
 public class CommentsActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private EditText etComment;
-    private CheckBox cbSpoiler;
+    
     private ImageView btnSend;
     
     private CommentAdapter adapter;
@@ -107,7 +107,7 @@ public class CommentsActivity extends AppCompatActivity {
         String username = currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty() 
                 ? currentUser.getDisplayName() : "User";
 
-        boolean isSpoiler = cbSpoiler.isChecked();
+        boolean isSpoiler = false;
         long timestamp = System.currentTimeMillis();
 
         Comment newComment = new Comment(mangaUrl, username, text, timestamp, isSpoiler);

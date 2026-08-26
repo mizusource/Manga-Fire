@@ -37,6 +37,8 @@ android {
 }
 
 dependencies {
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
     implementation "androidx.palette:palette:1.0.0"
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

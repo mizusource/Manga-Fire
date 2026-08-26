@@ -3,6 +3,9 @@ package com.fire.mangareader.activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
+
+import com.facebook.shimmer.ShimmerFrameLayout;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,7 +28,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private SearchView searchView;
     private RecyclerView recyclerView;
-    private ProgressBar progressBar;
+    private ShimmerFrameLayout shimmerView;
     private MangaAdapter adapter;
     private List<Manga> searchResults;
     private Chip chipGlobalSearch;
@@ -41,7 +44,7 @@ public class SearchActivity extends AppCompatActivity {
 
         searchView = findViewById(R.id.searchView);
         recyclerView = findViewById(R.id.recyclerView);
-        progressBar = findViewById(R.id.progressBar);
+        shimmerView = findViewById(R.id.shimmerView);
         chipGlobalSearch = findViewById(R.id.chipGlobalSearch);
         tvSourceStatus = findViewById(R.id.tvSourceStatus);
 
@@ -88,7 +91,8 @@ public class SearchActivity extends AppCompatActivity {
     private void performSearch(final String query) {
         if (query == null || query.trim().isEmpty()) return;
 
-        progressBar.setVisibility(View.VISIBLE);
+        shimmerView.setVisibility(View.VISIBLE);
+        shimmerView.startShimmer();
         searchResults.clear();
         adapter.notifyDataSetChanged();
 
@@ -96,7 +100,8 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onSuccess(List<Manga> mangas) {
                 runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    shimmerView.stopShimmer();
+                    shimmerView.setVisibility(View.GONE);
                     if (mangas != null && !mangas.isEmpty()) {
                         searchResults.addAll(mangas);
                         adapter.notifyDataSetChanged();
@@ -116,12 +121,14 @@ public class SearchActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailed() {
-                                progressBar.setVisibility(View.GONE);
+                                shimmerView.stopShimmer();
+                    shimmerView.setVisibility(View.GONE);
                                 Toast.makeText(SearchActivity.this, "فشل تجاوز الحماية", Toast.LENGTH_SHORT).show();
                             }
                         }).show();
                     } else {
-                        progressBar.setVisibility(View.GONE);
+                        shimmerView.stopShimmer();
+                    shimmerView.setVisibility(View.GONE);
                         Toast.makeText(SearchActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });

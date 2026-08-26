@@ -39,6 +39,23 @@ import java.util.List;
 import java.util.Set;
 
 public class ChapterReaderActivity extends AppCompatActivity {
+    private android.widget.TextView tvReadingTimer;
+    private long readingStartTime;
+    private android.os.Handler timerHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - readingStartTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+            if (tvReadingTimer != null) {
+                tvReadingTimer.setText(String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds));
+            }
+            timerHandler.postDelayed(this, 1000);
+        }
+    };
+
 
     private WebtoonRecyclerView recyclerView;
     private WebtoonAdapter adapter;
@@ -78,6 +95,11 @@ public class ChapterReaderActivity extends AppCompatActivity {
         }
         
         setContentView(R.layout.activity_chapter_reader);
+
+        tvReadingTimer = findViewById(R.id.tvReadingTimer);
+        readingStartTime = System.currentTimeMillis();
+        timerHandler.postDelayed(timerRunnable, 1000);
+
 
         chapterUrl = getIntent().getStringExtra("chapterUrl");
         mangaUrl = getIntent().getStringExtra("mangaUrl");
@@ -596,6 +618,11 @@ public class ChapterReaderActivity extends AppCompatActivity {
             scraperWebView.destroy();
             scraperWebView = null;
         }
+        
+        if (timerHandler != null) {
+            timerHandler.removeCallbacks(timerRunnable);
+        }
+
         super.onDestroy();
     }
     @Override

@@ -1,47 +1,38 @@
 import re
 
-with open('app/src/main/java/com/fire/mangareader/activity/MainActivity.java', 'r') as f:
+with open("app/src/main/java/com/fire/mangareader/activity/MainActivity.java", "r") as f:
     content = f.read()
 
+# Add imports for Facebook Shimmer and LinearLayoutManager
 imports = """
-import androidx.viewpager2.widget.ViewPager2;
-import com.fire.mangareader.adapter.HeroBannerAdapter;
+import com.facebook.shimmer.ShimmerFrameLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.ImageView;
 """
-content = content.replace('import com.fire.mangareader.adapter.MangaAdapter;', 'import com.fire.mangareader.adapter.MangaAdapter;\n' + imports)
+content = content.replace("import androidx.recyclerview.widget.RecyclerView;", "import androidx.recyclerview.widget.RecyclerView;" + imports)
 
-vars_replacement = """
-    private RecyclerView rvLatestUpdates;
-    private ViewPager2 vpHeroBanner;
+# Replace ProgressBar with ShimmerFrameLayout
+content = content.replace("private ProgressBar mainProgressBar;", "private ShimmerFrameLayout mainShimmerView;\n    private ImageView btnToggleView;\n    private boolean isListView = false;")
+content = content.replace("mainProgressBar = findViewById(R.id.mainProgressBar);", "mainShimmerView = findViewById(R.id.mainShimmerView);\n        btnToggleView = findViewById(R.id.btnToggleView);")
+
+# Update setVisibility
+content = content.replace("mainProgressBar.setVisibility(View.VISIBLE);", "mainShimmerView.setVisibility(View.VISIBLE);\n        mainShimmerView.startShimmer();")
+content = content.replace("mainProgressBar.setVisibility(View.GONE);", "if(mainShimmerView != null) {\n                            mainShimmerView.stopShimmer();\n                            mainShimmerView.setVisibility(View.GONE);\n                        }")
+
+# Add click listener for toggle
+init_toggle = """        btnToggleView.setOnClickListener(v -> {
+            isListView = !isListView;
+            if (isListView) {
+                btnToggleView.setImageResource(android.R.drawable.ic_menu_gallery);
+                rvLatestUpdates.setLayoutManager(new LinearLayoutManager(this));
+            } else {
+                btnToggleView.setImageResource(android.R.drawable.ic_menu_sort_by_size);
+                rvLatestUpdates.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 3));
+            }
+            adapter.setListView(isListView);
+        });
 """
-content = content.replace('private RecyclerView rvLatestUpdates;', vars_replacement)
+content = content.replace("rvLatestUpdates.setAdapter(adapter);", "rvLatestUpdates.setAdapter(adapter);\n" + init_toggle)
 
-init_replacement = """
-        rvLatestUpdates = findViewById(R.id.rvLatestUpdates);
-        vpHeroBanner = findViewById(R.id.vpHeroBanner);
-"""
-content = content.replace('rvLatestUpdates = findViewById(R.id.rvLatestUpdates);', init_replacement)
-
-parse_html_replacement = """
-                    runOnUiThread(() -> {
-                        mainProgressBar.setVisibility(View.GONE);
-                        swipeRefreshMain.setRefreshing(false);
-                        
-                        // تخصيص المانجات المميزة (Hero Banner) من أول 5 مانجات
-                        if (fetchedList.size() >= 5) {
-                            java.util.List<Manga> heroList = new ArrayList<>(fetchedList.subList(0, 5));
-                            HeroBannerAdapter heroAdapter = new HeroBannerAdapter(MainActivity.this, heroList);
-                            vpHeroBanner.setAdapter(heroAdapter);
-                            
-                            // إزالة المانجات التي ظهرت في البانر من قائمة التحديثات العادية لتجنب التكرار
-                            fetchedList.subList(0, 5).clear();
-                        }
-                        
-                        mangaList.clear();
-                        mangaList.addAll(fetchedList);
-                        adapter.notifyDataSetChanged();
-                    });
-"""
-content = re.sub(r'runOnUiThread\(\(\) -> \{\s*mainProgressBar.setVisibility\(View.GONE\);\s*swipeRefreshMain.setRefreshing\(false\);\s*mangaList.clear\(\);\s*mangaList.addAll\(fetchedList\);\s*adapter.notifyDataSetChanged\(\);\s*\}\);', parse_html_replacement, content, flags=re.DOTALL)
-
-with open('app/src/main/java/com/fire/mangareader/activity/MainActivity.java', 'w') as f:
+with open("app/src/main/java/com/fire/mangareader/activity/MainActivity.java", "w") as f:
     f.write(content)

@@ -67,12 +67,8 @@
             android:padding="8dp"
             android:clipToPadding="false" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminateTint="?attr/colorPrimary"
+<include layout="@layout/layout_shimmer_mangas" 
+            android:id="@+id/shimmerView" 
             android:visibility="gone" />
             
     </FrameLayout>

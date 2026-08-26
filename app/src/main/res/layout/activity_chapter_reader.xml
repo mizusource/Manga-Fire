@@ -48,7 +48,27 @@
         android:id="@+id/colorFilterView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone" /> 
+        android:visibility="gone" />
+
+        <!-- عداد وقت القراءة -->
+        <TextView
+            android:id="@+id/tvReadingTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="24dp"
+            android:background="#A6000000"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:elevation="4dp"
+            android:visibility="visible" />
+ 
 
     <!-- القائمة العلوية والسفلية (التي تظهر وتختفي عند لمس الشاشة) -->
     <FrameLayout

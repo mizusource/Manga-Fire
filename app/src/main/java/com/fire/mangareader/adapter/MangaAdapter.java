@@ -18,6 +18,12 @@ import java.util.List;
 public class MangaAdapter extends RecyclerView.Adapter<MangaAdapter.MangaViewHolder> {
     private Context context;
     private List<Manga> mangaList;
+    private boolean isListView = false;
+
+    public void setListView(boolean isListView) {
+        this.isListView = isListView;
+        notifyDataSetChanged();
+    }
 
     public MangaAdapter(Context context, List<Manga> mangaList) {
         this.context = context;
@@ -27,7 +33,8 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaAdapter.MangaViewHol
     @NonNull
     @Override
     public MangaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_manga_grid, parent, false);
+        int layoutId = isListView ? R.layout.item_manga_list : R.layout.item_manga_grid;
+        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
         return new MangaViewHolder(view);
     }
 

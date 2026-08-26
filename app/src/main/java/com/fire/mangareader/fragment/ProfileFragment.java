@@ -92,8 +92,8 @@ public class ProfileFragment extends Fragment {
         profileBanner = view.findViewById(R.id.profileBanner);
         tvUserName = view.findViewById(R.id.tvUserName);
         tvUserEmail = view.findViewById(R.id.tvUserEmail);
-        tvBio = view.findViewById(R.id.tvBio);
-        tvRank = view.findViewById(R.id.tvRank); 
+        
+         
         tvFavCount = view.findViewById(R.id.tvFavCount);
         tvReadCount = view.findViewById(R.id.tvReadCount);
         tvDownloadsCount = view.findViewById(R.id.tvDownloadsCount);

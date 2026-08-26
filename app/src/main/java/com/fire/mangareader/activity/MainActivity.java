@@ -8,6 +8,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.facebook.shimmer.ShimmerFrameLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.ImageView;
+
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.MangaAdapter;
@@ -16,6 +20,8 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.fire.mangareader.adapter.HeroBannerAdapter;
 
 import com.fire.mangareader.model.Manga;
+import com.fire.mangareader.utils.TelegramManager;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,7 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 vpHeroBanner;
 
     private SwipeRefreshLayout swipeRefreshMain;
-    private ProgressBar mainProgressBar;
+    private ShimmerFrameLayout mainShimmerView;
+    private ImageView btnToggleView;
+    private boolean isListView = false;
     private MangaAdapter adapter;
     private List<Manga> mangaList;
     private androidx.drawerlayout.widget.DrawerLayout drawerLayout;
@@ -54,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
         vpHeroBanner = findViewById(R.id.vpHeroBanner);
 
         swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
-        mainProgressBar = findViewById(R.id.mainProgressBar);
+        mainShimmerView = findViewById(R.id.mainShimmerView);
+        btnToggleView = findViewById(R.id.btnToggleView);
         drawerLayout = findViewById(R.id.drawer_layout);
         navView = findViewById(R.id.nav_view);
         btnMenuToggle = findViewById(R.id.btnMenuToggle);
@@ -88,9 +97,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, DownloadsActivity.class));
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+            } else if (id == R.id.nav_admin) {
+                startActivity(new Intent(MainActivity.this, AdminDashboardActivity.class));
             } else if (id == R.id.nav_settings) {
                 // الانتقال لشاشة الإعدادات
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            } else if (id == R.id.nav_telegram) {
+                com.fire.mangareader.utils.TelegramManager.openTelegramChannel(MainActivity.this, "speedmanga");
             }
 
             // إغلاق القائمة بعد اختيار أي عنصر
@@ -111,33 +124,26 @@ public class MainActivity extends AppCompatActivity {
         mangaList = new ArrayList<>();
         adapter = new MangaAdapter(this, mangaList);
         rvLatestUpdates.setAdapter(adapter);
+        btnToggleView.setOnClickListener(v -> {
+            isListView = !isListView;
+            if (isListView) {
+                btnToggleView.setImageResource(android.R.drawable.ic_menu_gallery);
+                rvLatestUpdates.setLayoutManager(new LinearLayoutManager(this));
+            } else {
+                btnToggleView.setImageResource(android.R.drawable.ic_menu_sort_by_size);
+                rvLatestUpdates.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 3));
+            }
+            adapter.setListView(isListView);
+        });
+
 
         swipeRefreshMain.setOnRefreshListener(() -> loadHomePageViaWebView(true));
         loadHomePageViaWebView(false);
     }
 
-    private void setupRecentReading() {
-        android.view.View container = findViewById(R.id.recentReadingContainer);
-        androidx.recyclerview.widget.RecyclerView rvRecent = findViewById(R.id.rvRecentReading);
-        java.util.List<com.fire.mangareader.utils.RecentReadingManager.RecentItem> recentItems = com.fire.mangareader.utils.RecentReadingManager.getRecent(this);
-        
-        if (recentItems != null && !recentItems.isEmpty()) {
-            container.setVisibility(android.view.View.VISIBLE);
-            rvRecent.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
-            rvRecent.setAdapter(new com.fire.mangareader.adapter.RecentReadingAdapter(this, recentItems));
-        } else {
-            container.setVisibility(android.view.View.GONE);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setupRecentReading();
-    }
-
     private void loadHomePageViaWebView(boolean isSilentRefresh) {
-        if (!isSilentRefresh) mainProgressBar.setVisibility(View.VISIBLE);
+        if (!isSilentRefresh) mainShimmerView.setVisibility(View.VISIBLE);
+        mainShimmerView.startShimmer();
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
         android.webkit.WebView webView = new android.webkit.WebView(this);
@@ -166,7 +172,10 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(new android.webkit.WebViewClient() {
             
             
-            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; runOnUiThread(() -> { mainProgressBar.setVisibility(View.GONE); swipeRefreshMain.setRefreshing(false); Toast.makeText(MainActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
+            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; runOnUiThread(() -> { if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        } swipeRefreshMain.setRefreshing(false); Toast.makeText(MainActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
                 rootView.removeView(webView);
                 try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
             }
@@ -176,7 +185,10 @@ public class MainActivity extends AppCompatActivity {
                 new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
                     if (html == null || html.equals("null")) return;
 
-                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { runOnUiThread(() -> { mainProgressBar.setVisibility(View.GONE); webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); webView.setAlpha(0.01f); Toast.makeText(MainActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); });
+                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { runOnUiThread(() -> { if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        } webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); webView.setAlpha(0.01f); Toast.makeText(MainActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); });
                         return; 
                     }
 
@@ -238,14 +250,20 @@ public class MainActivity extends AppCompatActivity {
                         if (!isSilentRefresh) Toast.makeText(MainActivity.this, "لم نتمكن من جلب الفصول الرئيسية.", Toast.LENGTH_SHORT).show();
                     }
                     
-                    mainProgressBar.setVisibility(View.GONE);
+                    if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        }
                     swipeRefreshMain.setRefreshing(false);
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    mainProgressBar.setVisibility(View.GONE);
+                    if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        }
                     swipeRefreshMain.setRefreshing(false);
                     Toast.makeText(MainActivity.this, "حدث خطأ في قراءة بيانات الموقع", Toast.LENGTH_SHORT).show();
                 });

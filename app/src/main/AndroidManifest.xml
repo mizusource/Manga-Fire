@@ -9,7 +9,9 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
 
-    <application
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<application
         android:name=".MangaApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -52,6 +54,11 @@
         <activity android:name=".activity.LibraryActivity" />
         <activity android:name=".activity.StorageManagerActivity" android:exported="false" />
 
+    
+        <service android:name=".service.DownloadService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+            <activity android:name=".activity.AdminDashboardActivity"  />
     </application>
 </manifest>
 
