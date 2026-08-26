@@ -2,7 +2,7 @@
 <resources>
 
     <!-- الثيم الأساسي الفاخر للتطبيق (الوضع الليلي) -->
-    <style name="Theme.Animeista.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Animeista.Dark" parent="Theme.Material3.DayNight.NoActionBar">
         
         <item name="colorPrimary">@color/deep_sky_blue_500</item>
         <item name="colorPrimaryVariant">@color/deep_sky_blue_700</item>
@@ -76,7 +76,7 @@
     </style>
 
     <!-- Classic Light Themes -->
-    <style name="Theme.Animeista.ClassicWhite" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Animeista.ClassicWhite" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/cl_white_primary</item>
         <item name="colorSecondary">@color/cl_white_primary</item>
         <item name="android:colorBackground">@color/cl_white_background</item>

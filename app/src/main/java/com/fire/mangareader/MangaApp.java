@@ -3,11 +3,15 @@ package com.fire.mangareader;
 import android.app.Application;
 import com.fire.mangareader.utils.AppAdminSettings;
 import com.fire.mangareader.utils.CacheManager;
+import com.fire.mangareader.utils.CrashHandler;
 
 public class MangaApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // Initialize CrashHandler to prevent silent crashes and log them
+        Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(this));
+
         // Initialize remote settings and listeners
         AppAdminSettings.initialize(this);
         // Clean old cache if exceeding 100MB
