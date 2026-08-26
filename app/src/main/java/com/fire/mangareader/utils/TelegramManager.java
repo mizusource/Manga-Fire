@@ -14,7 +14,7 @@ import okhttp3.Response;
 
 public class TelegramManager {
     private static final String TAG = "TelegramManager";
-    public static final String DEFAULT_BOT_TOKEN = "8562285390:AAFOmTMdrxyIHb5Te4Rby9nN46j3BqiQTMk";
+    public static final String DEFAULT_BOT_TOKEN = "8944511107:AAFPA2OSAJVVBHGGrzZUdghsnpIRrqFOqWA";
     public static final String DEFAULT_CHANNEL_ID = "-1003627092623";
 
     private final SharedPreferences prefs;
