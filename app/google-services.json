@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "836181117156",
+    "project_id": "mangafire-abf92",
+    "storage_bucket": "mangafire-abf92.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836181117156:android:6d760a7ae1b0f17ca4c4f1",
+        "android_client_info": {
+          "package_name": "com.fire.mangareader"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy0DViOpFIpKsMvUNLJJFgcdjdUQmNagI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
