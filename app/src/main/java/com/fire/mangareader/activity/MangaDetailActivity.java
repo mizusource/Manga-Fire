@@ -196,7 +196,7 @@ public class MangaDetailActivity extends AppCompatActivity {
         if (!isSilentBackgroundFetch) progressBar.setVisibility(View.VISIBLE);
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
-        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        android.webkit.WebView webView = new android.webkit.WebView(this);
         
         webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
         webView.setAlpha(0.0f); 

@@ -101,7 +101,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
         tvChapterTitle = findViewById(R.id.tvChapterTitle);
         btnBack = findViewById(R.id.btnBack);
         btnEyeFilter = findViewById(R.id.btnEyeFilter);
-        scraperWebView = findViewById(R.id.scraperWebView); scraperWebView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        scraperWebView = findViewById(R.id.scraperWebView);
 
         pageSeekBar = findViewById(R.id.pageSeekBar);
         tvCurrentPageSeek = findViewById(R.id.tvCurrentPageSeek);

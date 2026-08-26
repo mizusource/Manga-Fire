@@ -37,7 +37,7 @@ public class MangaDownloader {
         Handler mainHandler = new Handler(Looper.getMainLooper());
         
         mainHandler.post(() -> {
-            WebView webView = new WebView(context); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+            WebView webView = new WebView(context);
             WebSettings settings = webView.getSettings();
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true); settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);

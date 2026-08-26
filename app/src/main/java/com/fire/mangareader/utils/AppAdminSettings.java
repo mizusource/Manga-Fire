@@ -58,6 +58,10 @@ public class AppAdminSettings {
         loadFromLocal();
 
         try {
+            if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() == null) {
+                // User is not logged in, skip fetching remote settings to avoid Permission Denied logs.
+                return;
+            }
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FIREBASE_PATH);
             ref.addValueEventListener(new ValueEventListener() {
                 @Override

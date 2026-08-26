@@ -58,11 +58,6 @@ public class MainActivity extends AppCompatActivity {
         navView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             
-        if (id == R.id.nav_source) {
-            showSourceSelectionDialog();
-            drawerLayout.closeDrawers();
-            return true;
-        }
             if (id == R.id.nav_home) {
                 // نحن في الرئيسية بالفعل
             } else if (id == R.id.nav_library) {
@@ -125,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         if (!isSilentRefresh) mainProgressBar.setVisibility(View.VISIBLE);
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
-        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        android.webkit.WebView webView = new android.webkit.WebView(this);
         
         // 👻 جعل المتصفح بحجم بكسل واحد وشفاف تماماً لكي لا يلاحظه المستخدم
         webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
@@ -176,37 +171,6 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl(BASE_URL);
     }
 
-    private void showSourceSelectionDialog() {
-        String[] sources = {
-            "Manga Lik (mangalik.net)",
-            "Manga-Starz (manga-starz.net)",
-            "Mangatek (mangatek.com)",
-            "Mangasid (mangasid.com)",
-            "LekManga (lekmanga.net)",
-            "SwatManga (swatmanga.co)",
-            "MangaPro (mangapro.me)"
-        };
-        String[] urls = com.fire.mangareader.network.SourceManager.getAllSources();
-        int checkedItem = 0;
-        String activeSource = com.fire.mangareader.network.SourceManager.getActiveSource(this);
-        for (int i = 0; i < urls.length; i++) { if (activeSource.equals(urls[i])) checkedItem = i; }
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("اختر مصدر المانجا")
-            .setSingleChoiceItems(sources, checkedItem, (dialog, which) -> {
-                com.fire.mangareader.network.SourceManager.setActiveSource(MainActivity.this, urls[which]);
-                BASE_URL = urls[which];
-                com.fire.mangareader.network.MangaScraper.BASE_URL = BASE_URL;
-                dialog.dismiss();
-                
-                android.view.Menu menu = ((com.google.android.material.navigation.NavigationView) findViewById(R.id.nav_view)).getMenu();
-                android.view.MenuItem sourceItem = menu.findItem(R.id.nav_source);
-                if (sourceItem != null) sourceItem.setTitle("المصدر: " + com.fire.mangareader.network.SourceManager.getActiveSourceName(MainActivity.this));
-                
-                swipeRefreshMain.setRefreshing(true);
-                loadHomePageViaWebView(true);
-            })
-            .show();
-    }
     private void parseHtmlLocally(String html, boolean isSilentRefresh) {
         new Thread(() -> {
             try {

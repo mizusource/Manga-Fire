@@ -142,10 +142,12 @@ public class SettingsActivity extends AppCompatActivity {
             ListPreference downloadQualityPref = findPreference("download_quality");
             if (downloadQualityPref != null) {
                 com.fire.mangareader.model.DownloadQuality currentQuality = com.fire.mangareader.model.DownloadQuality.fromPreferences(requireContext());
-                downloadQualityPref.setSummary(currentQuality.getArabicName() + " (" + currentQuality.getDescription() + ")");
+                String summaryText = currentQuality.getArabicName() + " (" + currentQuality.getDescription() + ")";
+                downloadQualityPref.setSummary(summaryText.replace("%", "%%"));
                 downloadQualityPref.setOnPreferenceChangeListener((preference, newValue) -> {
                     com.fire.mangareader.model.DownloadQuality q = com.fire.mangareader.model.DownloadQuality.valueOf((String) newValue);
-                    downloadQualityPref.setSummary(q.getArabicName() + " (" + q.getDescription() + ")");
+                    String newSummary = q.getArabicName() + " (" + q.getDescription() + ")";
+                    downloadQualityPref.setSummary(newSummary.replace("%", "%%"));
                     Toast.makeText(requireContext(), "تم ضبط جودة التنزيل على: " + q.getArabicName(), Toast.LENGTH_SHORT).show();
                     return true;
                 });
