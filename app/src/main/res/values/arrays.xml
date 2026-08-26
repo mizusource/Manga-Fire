@@ -40,4 +40,14 @@
         <item>classic_purple</item>
         <item>classic_navy</item>
     </string-array>
+    <string-array name="download_quality_entries">
+        <item>جودة فائقة الوضوح (الأصلية HQ - بدون ضغط)</item>
+        <item>جودة متوازنة (موصى بها - توفير 60%)</item>
+        <item>جودة فائقة التوفير (اقتصادية LQ - توفير 80%)</item>
+    </string-array>
+    <string-array name="download_quality_values">
+        <item>HIGH</item>
+        <item>MEDIUM</item>
+        <item>LOW</item>
+    </string-array>
 </resources>

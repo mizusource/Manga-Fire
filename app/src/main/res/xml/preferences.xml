@@ -29,17 +29,50 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/download_settings">
+        <ListPreference
+            android:key="download_quality"
+            android:title="جودة التنزيل (Download Quality)"
+            android:summary="اختر الدقة ومستوى ضغط الصور لتوفير المساحة والإنترنت"
+            android:entries="@array/download_quality_entries"
+            android:entryValues="@array/download_quality_values"
+            android:defaultValue="MEDIUM" />
         <SwitchPreferenceCompat
             android:key="wifi_only"
             android:title="@string/wifi_only"
             android:defaultValue="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Storage Management">
+    <PreferenceCategory android:title="التخزين والذاكرة المؤقتة (Storage &amp; Cache)">
+        <Preference
+            android:key="clear_cache"
+            android:title="تنظيف الذاكرة المؤقتة (Clear Cache)"
+            android:summary="جاري حساب الحجم..." />
         <Preference
             android:key="storage_manager"
-            android:title="Storage Manager"
-            android:summary="Manage cache, downloads, and auto-delete settings" />
+            android:title="مدير التخزين والتنزيلات (Storage Manager)"
+            android:summary="إدارة الفصول المحملة والمساحة المستهلكة" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="مجتمع وتليجرام (Telegram Community)">
+        <Preference
+            android:key="telegram_channel"
+            android:title="قناة تليجرام الرسمية (Telegram Channel)"
+            android:summary="انضم لمتابعة آخر التحديثات والفصول الجديدة" />
+        <Preference
+            android:key="telegram_test"
+            android:title="اختبار اتصال بوت تليجرام (Test Bot)"
+            android:summary="التحقق من إعدادات وتوكن البوت" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="النسخ الاحتياطي والاستعادة (Backup &amp; Restore)">
+        <Preference
+            android:key="backup_export"
+            android:title="تصدير نسخة احتياطية (Export Backup)"
+            android:summary="حفظ المفضلة وسجل القراءة كملف JSON" />
+        <Preference
+            android:key="backup_import"
+            android:title="استعادة نسخة احتياطية (Restore Backup)"
+            android:summary="استيراد المفضلة وسجل القراءة من ملف JSON" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/account">

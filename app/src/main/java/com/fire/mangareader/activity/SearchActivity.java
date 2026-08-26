@@ -3,6 +3,7 @@ package com.fire.mangareader.activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -12,6 +13,7 @@ import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.MangaAdapter;
 import com.fire.mangareader.model.Manga;
 import com.fire.mangareader.network.MangaScraper;
+import com.google.android.material.chip.Chip;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,8 @@ public class SearchActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private MangaAdapter adapter;
     private List<Manga> searchResults;
+    private Chip chipGlobalSearch;
+    private TextView tvSourceStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,8 @@ public class SearchActivity extends AppCompatActivity {
         searchView = findViewById(R.id.searchView);
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
+        chipGlobalSearch = findViewById(R.id.chipGlobalSearch);
+        tvSourceStatus = findViewById(R.id.tvSourceStatus);
 
         searchResults = new ArrayList<>();
         adapter = new MangaAdapter(this, searchResults);
@@ -40,6 +46,15 @@ public class SearchActivity extends AppCompatActivity {
         // عرض النتائج في شبكة (Grid) من عمودين لتناسب تصميم بطاقة المانجا
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         recyclerView.setAdapter(adapter);
+
+        updateSourceStatusText();
+
+        chipGlobalSearch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            updateSourceStatusText();
+            if (searchView.getQuery() != null && !searchView.getQuery().toString().trim().isEmpty()) {
+                performSearch(searchView.getQuery().toString().trim());
+            }
+        });
 
         // التركيز التلقائي على مربع البحث لتسهيل الكتابة فور فتح الشاشة
         searchView.requestFocus();
@@ -60,6 +75,14 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
+    private void updateSourceStatusText() {
+        if (chipGlobalSearch.isChecked()) {
+            tvSourceStatus.setText("جميع المصادر (Global)");
+        } else {
+            tvSourceStatus.setText(com.fire.mangareader.network.SourceManager.getActiveSourceName(this));
+        }
+    }
+
     private void performSearch(String query) {
         if (query == null || query.trim().isEmpty()) return;
 
@@ -68,22 +91,40 @@ public class SearchActivity extends AppCompatActivity {
         searchResults.clear();
         adapter.notifyDataSetChanged();
 
-        // استخدام دالة البحث الموجودة في ملفك والتي تعتمد على Callback
-        MangaScraper.searchManga(query, new MangaScraper.ScrapingCallback() {
-            @Override
-            public void onSuccess(List<Manga> mangas) {
-                progressBar.setVisibility(View.GONE);
-                if (mangas != null && !mangas.isEmpty()) {
-                    searchResults.addAll(mangas);
-                    adapter.notifyDataSetChanged();
+        if (chipGlobalSearch.isChecked()) {
+            MangaScraper.searchAllSources(query, new MangaScraper.ScrapingCallback() {
+                @Override
+                public void onSuccess(List<Manga> mangas) {
+                    progressBar.setVisibility(View.GONE);
+                    if (mangas != null && !mangas.isEmpty()) {
+                        searchResults.addAll(mangas);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
-            }
 
-            @Override
-            public void onError(String errorMessage) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(SearchActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onError(String errorMessage) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(SearchActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            MangaScraper.searchManga(query, new MangaScraper.ScrapingCallback() {
+                @Override
+                public void onSuccess(List<Manga> mangas) {
+                    progressBar.setVisibility(View.GONE);
+                    if (mangas != null && !mangas.isEmpty()) {
+                        searchResults.addAll(mangas);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(SearchActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }

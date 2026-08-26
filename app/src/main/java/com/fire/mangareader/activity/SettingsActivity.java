@@ -34,6 +34,51 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+
+        private androidx.activity.result.ActivityResultLauncher<String> exportLauncher;
+        private androidx.activity.result.ActivityResultLauncher<String[]> importLauncher;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            exportLauncher = registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),
+                    uri -> {
+                        if (uri != null) {
+                            com.fire.mangareader.utils.BackupManager.exportBackup(requireContext(), uri, new com.fire.mangareader.utils.BackupManager.BackupCallback() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                                }
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+            );
+
+            importLauncher = registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+                    uri -> {
+                        if (uri != null) {
+                            com.fire.mangareader.utils.BackupManager.importBackup(requireContext(), uri, new com.fire.mangareader.utils.BackupManager.BackupCallback() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                                }
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+            );
+        }
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.preferences, rootKey);
@@ -75,6 +120,55 @@ public class SettingsActivity extends AppCompatActivity {
                     return true;
                 });
             }
+
+            // 🧹 تنظيف الذاكرة المؤقتة (Cache Manager)
+            Preference clearCachePref = findPreference("clear_cache");
+            if (clearCachePref != null) {
+                String formattedSize = com.fire.mangareader.utils.CacheManager.getFormattedCacheSize(requireContext());
+                clearCachePref.setSummary("الحجم المستهلك حالياً: " + formattedSize);
+                clearCachePref.setOnPreferenceClickListener(preference -> {
+                    boolean success = com.fire.mangareader.utils.CacheManager.clearAppCache(requireContext());
+                    if (success) {
+                        Toast.makeText(requireContext(), "تم تنظيف الذاكرة المؤقتة وتسريع التطبيق بنجاح ✨", Toast.LENGTH_SHORT).show();
+                        clearCachePref.setSummary("الحجم المستهلك حالياً: " + com.fire.mangareader.utils.CacheManager.getFormattedCacheSize(requireContext()));
+                    } else {
+                        Toast.makeText(requireContext(), "الذاكرة المؤقتة فارغة بالفعل", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                });
+            }
+
+            // 📥 جودة التنزيل
+            ListPreference downloadQualityPref = findPreference("download_quality");
+            if (downloadQualityPref != null) {
+                com.fire.mangareader.model.DownloadQuality currentQuality = com.fire.mangareader.model.DownloadQuality.fromPreferences(requireContext());
+                downloadQualityPref.setSummary(currentQuality.getArabicName() + " (" + currentQuality.getDescription() + ")");
+                downloadQualityPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    com.fire.mangareader.model.DownloadQuality q = com.fire.mangareader.model.DownloadQuality.valueOf((String) newValue);
+                    downloadQualityPref.setSummary(q.getArabicName() + " (" + q.getDescription() + ")");
+                    Toast.makeText(requireContext(), "تم ضبط جودة التنزيل على: " + q.getArabicName(), Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+            }
+
+            // ✈️ تليجرام
+            Preference telegramChannelPref = findPreference("telegram_channel");
+            if (telegramChannelPref != null) {
+                telegramChannelPref.setOnPreferenceClickListener(preference -> {
+                    com.fire.mangareader.utils.TelegramManager.openTelegramChannel(requireContext(), "https://t.me/SpeedManga");
+                    return true;
+                });
+            }
+
+            Preference telegramTestPref = findPreference("telegram_test");
+            if (telegramTestPref != null) {
+                telegramTestPref.setOnPreferenceClickListener(preference -> {
+                    com.fire.mangareader.utils.TelegramManager tm = new com.fire.mangareader.utils.TelegramManager(requireContext());
+                    Toast.makeText(requireContext(), "توكن البوت: " + (tm.getBotToken().isEmpty() ? "غير مضبوط" : "متصل ✔️"), Toast.LENGTH_LONG).show();
+                    return true;
+                });
+            }
+
             SwitchPreferenceCompat wifiPref = findPreference("wifi_only");
             if (wifiPref != null) {
                 wifiPref.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -97,6 +191,22 @@ public class SettingsActivity extends AppCompatActivity {
                 showImageQualityDialog();
                 return true;
             });
+
+            Preference backupExport = findPreference("backup_export");
+            if (backupExport != null) {
+                backupExport.setOnPreferenceClickListener(preference -> {
+                    exportLauncher.launch("mangafire_backup_" + System.currentTimeMillis() + ".json");
+                    return true;
+                });
+            }
+
+            Preference backupImport = findPreference("backup_import");
+            if (backupImport != null) {
+                backupImport.setOnPreferenceClickListener(preference -> {
+                    importLauncher.launch(new String[]{"application/json", "text/*", "*/*"});
+                    return true;
+                });
+            }
 
             Preference logout = findPreference("logout");
             if (logout != null) {

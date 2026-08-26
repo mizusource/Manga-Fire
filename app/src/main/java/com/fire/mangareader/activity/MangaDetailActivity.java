@@ -123,6 +123,8 @@ public class MangaDetailActivity extends AppCompatActivity {
         loadReadChapters();
         checkFavoriteStatus();
         checkRoomCacheAndLoad();
+        loadAniListMetadata();
+        setupRatingButtons();
 
         btnFavorite.setOnClickListener(v -> toggleFavorite());
 
@@ -456,6 +458,143 @@ public class MangaDetailActivity extends AppCompatActivity {
                 }
             });
         }).start();
+    }
+
+    private void loadAniListMetadata() {
+        if (mangaTitle == null || mangaTitle.isEmpty()) return;
+        com.fire.mangareader.utils.AniListManager.fetchMetadata(mangaTitle, new com.fire.mangareader.utils.AniListManager.AniListCallback() {
+            @Override
+            public void onSuccess(com.fire.mangareader.model.AniListMetadata metadata) {
+                runOnUiThread(() -> {
+                    TextView tvRatingScore = findViewById(R.id.tvRatingScore);
+                    TextView tvRatingCount = findViewById(R.id.tvRatingCount);
+                    TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);
+                    TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
+                    TextView tvAniListArtist = findViewById(R.id.tvAniListArtist);
+                    TextView tvAniListCountry = findViewById(R.id.tvAniListCountry);
+                    TextView tvAniListDates = findViewById(R.id.tvAniListDates);
+
+                    if (tvRatingScore != null && metadata.averageScore > 0) {
+                        double scoreOutOf10 = metadata.averageScore / 10.0;
+                        tvRatingScore.setText(String.format(java.util.Locale.US, "%.1f/10", scoreOutOf10));
+                    }
+                    if (tvRatingCount != null && metadata.popularity > 0) {
+                        tvRatingCount.setText(metadata.popularity + " متابع 🌟");
+                    }
+                    if (tvAniListFormat != null && metadata.format != null) {
+                        tvAniListFormat.setText(metadata.format);
+                    }
+                    if (tvAniListAuthor != null && metadata.author != null) {
+                        tvAniListAuthor.setText("المؤلف: " + metadata.author);
+                    }
+                    if (tvAniListArtist != null && metadata.artist != null) {
+                        tvAniListArtist.setText("الرسام: " + metadata.artist);
+                    }
+                    if (tvAniListCountry != null && metadata.countryOfOrigin != null) {
+                        tvAniListCountry.setText("دولة المنشأ: " + metadata.countryOfOrigin);
+                    }
+                    if (tvAniListDates != null) {
+                        tvAniListDates.setText("الإصدار: " + metadata.getFormattedDates());
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                // Silently fallback to scraper data
+            }
+        });
+    }
+
+    private void setupRatingButtons() {
+        View btnAddRating = findViewById(R.id.btnAddRating);
+        if (btnAddRating != null) {
+            btnAddRating.setOnClickListener(v -> showMultiCriteriaRatingDialog());
+        }
+
+        View btnViewStats = findViewById(R.id.btnViewStats);
+        if (btnViewStats != null) {
+            btnViewStats.setOnClickListener(v -> showRatingStatsDialog());
+        }
+    }
+
+    private void showMultiCriteriaRatingDialog() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("تقييم " + mangaTitle);
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(40, 20, 40, 10);
+
+        String[] criteria = {"التقييم العام (Overall)", "حبكة القصة (Story)", "الشخصيات (Characters)", "جودة الرسم (Art)"};
+        final android.widget.RatingBar[] ratingBars = new android.widget.RatingBar[4];
+
+        for (int i = 0; i < criteria.length; i++) {
+            android.widget.TextView tv = new android.widget.TextView(this);
+            tv.setText(criteria[i]);
+            tv.setTextSize(14);
+            tv.setPadding(0, 10, 0, 4);
+            layout.addView(tv);
+
+            android.widget.RatingBar rb = new android.widget.RatingBar(this, null, android.R.attr.ratingBarStyleSmall);
+            rb.setNumStars(5);
+            rb.setStepSize(0.5f);
+            rb.setRating(4.0f);
+            ratingBars[i] = rb;
+            layout.addView(rb);
+        }
+
+        builder.setView(layout);
+        builder.setPositiveButton("إرسال التقييم", (dialog, which) -> {
+            float overall = ratingBars[0].getRating() * 2.0f; // Scale to 10
+            float story = ratingBars[1].getRating() * 2.0f;
+            float characters = ratingBars[2].getRating() * 2.0f;
+            float art = ratingBars[3].getRating() * 2.0f;
+
+            com.fire.mangareader.utils.GlobalMangaStatsManager.submitRating(mangaUrl, mangaTitle, overall, story, characters, art, new com.fire.mangareader.utils.GlobalMangaStatsManager.RatingCallback() {
+                @Override
+                public void onSuccess(double newAverage, int totalVotes) {
+                    runOnUiThread(() -> {
+                        TextView tvRatingScore = findViewById(R.id.tvRatingScore);
+                        TextView tvRatingCount = findViewById(R.id.tvRatingCount);
+                        if (tvRatingScore != null) tvRatingScore.setText(String.format(java.util.Locale.US, "%.1f/10", newAverage));
+                        if (tvRatingCount != null) tvRatingCount.setText(totalVotes + " صوت");
+                        Toast.makeText(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> Toast.makeText(MangaDetailActivity.this, "تم حفظ تقييمك محلياً ✔️", Toast.LENGTH_SHORT).show());
+                }
+            });
+        });
+        builder.setNegativeButton("إلغاء", null);
+        builder.show();
+    }
+
+    private void showRatingStatsDialog() {
+        com.fire.mangareader.utils.GlobalMangaStatsManager.fetchStats(mangaUrl, new com.fire.mangareader.utils.GlobalMangaStatsManager.StatsCallback() {
+            @Override
+            public void onSuccess(com.fire.mangareader.utils.GlobalMangaStats stats) {
+                runOnUiThread(() -> {
+                    new androidx.appcompat.app.AlertDialog.Builder(MangaDetailActivity.this)
+                        .setTitle("إحصائيات وتقييمات " + mangaTitle)
+                        .setMessage("⭐ التقييم العام: " + String.format(java.util.Locale.US, "%.1f/10", stats.overallAverage) +
+                                   "\n📖 القصة: " + String.format(java.util.Locale.US, "%.1f/10", stats.storyAverage) +
+                                   "\n👤 الشخصيات: " + String.format(java.util.Locale.US, "%.1f/10", stats.charactersAverage) +
+                                   "\n🎨 الرسم: " + String.format(java.util.Locale.US, "%.1f/10", stats.artAverage) +
+                                   "\n\n👥 إجمالي المقيمين: " + stats.totalVotes)
+                        .setPositiveButton("حسناً", null)
+                        .show();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> Toast.makeText(MangaDetailActivity.this, "جاري تجهيز الإحصائيات...", Toast.LENGTH_SHORT).show());
+            }
+        });
     }
 
     private void toggleFavorite() {

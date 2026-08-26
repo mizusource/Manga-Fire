@@ -35,8 +35,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         holder.username.setText(comment.username);
         holder.commentText.setText(comment.text);
         
-        // تبسيط عرض التاريخ (يمكنك تحسينها لاحقاً لحساب الوقت الفعلي)
-        holder.date.setText("جديد"); 
+        // عرض الوقت النسبي الدقيق
+        holder.date.setText(com.fire.mangareader.utils.CommentUtils.getRelativeTime(comment.timestamp)); 
 
         // برمجة ميزة "الحرق" (Spoiler)
         if (comment.isSpoiler) {

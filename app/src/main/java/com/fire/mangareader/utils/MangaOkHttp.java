@@ -1,26 +1,36 @@
 package com.fire.mangareader.utils;
 
 import android.webkit.CookieManager;
+import com.fire.mangareader.network.FastDns;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.ConnectionPool;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 public class MangaOkHttp {
 
     private static OkHttpClient client;
 
-    public static OkHttpClient getClient() {
+    public static synchronized OkHttpClient getClient() {
         if (client == null) {
-            client = new OkHttpClient.Builder()
-                    .connectTimeout(30, TimeUnit.SECONDS)
-                    .readTimeout(30, TimeUnit.SECONDS)
+            OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                    .dns(FastDns.INSTANCE)
+                    .connectTimeout(45, TimeUnit.SECONDS)
+                    .readTimeout(45, TimeUnit.SECONDS)
+                    .writeTimeout(45, TimeUnit.SECONDS)
+                    .retryOnConnectionFailure(true)
+                    .followRedirects(true)
+                    .followSslRedirects(true)
+                    .connectionPool(new ConnectionPool(8, 5L, TimeUnit.MINUTES))
                     .cookieJar(new CookieJar() {
                         @Override
                         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
@@ -46,29 +56,42 @@ public class MangaOkHttp {
                             return cookies;
                         }
                     })
+                    // 🔄 Rate-limit & 429/403 Backoff Retry Interceptor
+                    .addInterceptor(chain -> {
+                        Request request = chain.request();
+                        Response response = chain.proceed(request);
+                        int retryCount = 0;
+                        while ((response.code() == 429 || response.code() == 403) && retryCount < 3) {
+                            response.close();
+                            retryCount++;
+                            try {
+                                Thread.sleep(retryCount * 1000L);
+                            } catch (InterruptedException ignored) {}
+                            response = chain.proceed(request);
+                        }
+                        return response;
+                    })
+                    // 🌐 Request Headers & User-Agent Interceptor
                     .addInterceptor(chain -> {
                         Request original = chain.request();
                         Request.Builder requestBuilder = original.newBuilder();
 
-                        // 1. تطبيق خدعة IgnoreGzipInterceptor (إلغاء Gzip اليدوي لتجنب حظر Cloudflare)
                         if ("gzip".equals(original.header("Accept-Encoding"))) {
                             requestBuilder.removeHeader("Accept-Encoding");
                         }
 
-                        // 2. تطبيق خدعة UserAgentInterceptor (تأمين هوية المتصفح لكل طلب)
                         if (original.header("User-Agent") == null) {
-                            requestBuilder.header("User-Agent", "Mozilla/5.0 (Linux; Android 14; SM-A366B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36");
+                            requestBuilder.header("User-Agent", com.fire.mangareader.network.MangaScraper.globalUserAgent);
                         }
 
-                        // 3. خداع السيرفر (Chrome Mimicry)
                         requestBuilder.header("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
                                 .header("Sec-Fetch-Dest", "image")
                                 .header("Sec-Fetch-Mode", "no-cors")
                                 .header("Sec-Fetch-Site", "cross-site");
 
                         return chain.proceed(requestBuilder.build());
-                    })
-                    .build();
+                    });
+            client = TlsCompat.enableTls12And13(builder).build();
         }
         return client;
     }

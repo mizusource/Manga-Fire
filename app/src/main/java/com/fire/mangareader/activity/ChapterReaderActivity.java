@@ -34,7 +34,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ChapterReaderActivity extends AppCompatActivity {
 
@@ -421,13 +423,53 @@ public class ChapterReaderActivity extends AppCompatActivity {
             try {
                 Document doc = Jsoup.parse(html);
                 List<String> pages = new ArrayList<>();
-                Elements images = doc.select(".reading-content img, .page-break img, #vungdoc img, .vung-doc img, .chapter-video-frame img");
-                
-                for (Element img : images) {
-                    String imgUrl = img.attr("data-src");
-                    if (imgUrl.isEmpty()) imgUrl = img.attr("src");
-                    if (!imgUrl.isEmpty() && !imgUrl.endsWith(".gif")) {
-                        pages.add(imgUrl.trim());
+                Set<String> uniqueUrls = new HashSet<>();
+
+                String[] selectors = {
+                    "div.reading-content img", "div.page-break img", ".wp-manga-chapter-img",
+                    "div.single-chapter img", ".reader-area img", "#readerarea img",
+                    ".read-container img", ".chapter-content img", ".reading-content-wrap img",
+                    "div.entry-content img", "div.entry-content p img", "div.text-center img",
+                    "div.text-left img", "div[id*='chapter'] img", "div[class*='chapter'] img",
+                    "#vungdoc img", ".vung-doc img", ".chapter-video-frame img", ".main-col img"
+                };
+
+                for (String sel : selectors) {
+                    Elements images = doc.select(sel);
+                    for (Element img : images) {
+                        String imgUrl = com.fire.mangareader.network.MangaScraper.extractImageUrlFromImgTag(img);
+                        if (com.fire.mangareader.network.MangaScraper.isChapterPageImage(imgUrl, img) && !uniqueUrls.contains(imgUrl)) {
+                            pages.add(com.fire.mangareader.network.MangaScraper.getHighResImageUrl(imgUrl));
+                            uniqueUrls.add(imgUrl);
+                        }
+                    }
+                    if (pages.size() >= 3) break;
+                }
+
+                if (pages.isEmpty()) {
+                    Elements allImages = doc.select("img");
+                    for (Element img : allImages) {
+                        String imgUrl = com.fire.mangareader.network.MangaScraper.extractImageUrlFromImgTag(img);
+                        if (com.fire.mangareader.network.MangaScraper.isChapterPageImage(imgUrl, img) && !uniqueUrls.contains(imgUrl)) {
+                            pages.add(com.fire.mangareader.network.MangaScraper.getHighResImageUrl(imgUrl));
+                            uniqueUrls.add(imgUrl);
+                        }
+                    }
+                }
+
+                if (pages.isEmpty()) {
+                    Elements scripts = doc.select("script");
+                    java.util.regex.Pattern regex = java.util.regex.Pattern.compile("https?://[^\\s\"'<>]+\\.(?:jpg|jpeg|png|webp|gif|avif)(?:\\?[^\\s\"'<>]*)?", java.util.regex.Pattern.CASE_INSENSITIVE);
+                    for (Element script : scripts) {
+                        String scriptHtml = script.html().replace("\\/", "/");
+                        java.util.regex.Matcher matcher = regex.matcher(scriptHtml);
+                        while (matcher.find()) {
+                            String foundUrl = matcher.group();
+                            if (com.fire.mangareader.network.MangaScraper.isChapterPageImage(foundUrl, null) && !uniqueUrls.contains(foundUrl)) {
+                                pages.add(com.fire.mangareader.network.MangaScraper.getHighResImageUrl(foundUrl));
+                                uniqueUrls.add(foundUrl);
+                            }
+                        }
                     }
                 }
 
@@ -442,6 +484,8 @@ public class ChapterReaderActivity extends AppCompatActivity {
                         pageSeekBar.setMax(total - 1);
                         tvTotalPagesSeek.setText(String.valueOf(total));
                         
+                        // 🚀 التحميل المسبق لصفحات الفصل التالي في الخلفية
+                        prefetchNextChapter(cookies);
                     } else {
                         Toast.makeText(ChapterReaderActivity.this, "لم يتم العثور على صور في هذا الفصل.", Toast.LENGTH_SHORT).show();
                     }
@@ -454,6 +498,53 @@ public class ChapterReaderActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+
+    private void prefetchNextChapter(String cookies) {
+        if (nextChapterUrl == null || nextChapterUrl.isEmpty()) return;
+        new Thread(() -> {
+            try {
+                Document doc = Jsoup.connect(nextChapterUrl)
+                        .userAgent(com.fire.mangareader.network.MangaScraper.globalUserAgent)
+                        .header("Cookie", cookies != null ? cookies : com.fire.mangareader.network.MangaScraper.globalCookies)
+                        .referrer(chapterUrl != null ? chapterUrl : nextChapterUrl)
+                        .timeout(10000)
+                        .get();
+                Elements images = doc.select(".reading-content img, .page-break img, #vungdoc img, .vung-doc img, .chapter-video-frame img");
+                int count = 0;
+                for (Element img : images) {
+                    if (count >= 4) break; // تحميل مسبق لأول 4 صفحات فقط لتوفير الموارد
+                    String imgUrl = img.attr("data-src");
+                    if (imgUrl.isEmpty()) imgUrl = img.attr("src");
+                    if (!imgUrl.isEmpty() && !imgUrl.endsWith(".gif")) {
+                        if (imgUrl.startsWith("//")) imgUrl = "https:" + imgUrl;
+                        java.io.File tempCacheFile = new java.io.File(getCacheDir(), "img_" + Math.abs(imgUrl.hashCode()) + ".jpg");
+                        if (!tempCacheFile.exists()) {
+                            okhttp3.Request req = new okhttp3.Request.Builder()
+                                    .url(imgUrl)
+                                    .header("Referer", nextChapterUrl)
+                                    .build();
+                            okhttp3.Response resp = com.fire.mangareader.utils.MangaOkHttp.getClient().newCall(req).execute();
+                            if (resp.isSuccessful() && resp.body() != null) {
+                                java.io.FileOutputStream fos = new java.io.FileOutputStream(tempCacheFile);
+                                fos.write(resp.body().bytes());
+                                fos.flush();
+                                fos.close();
+                            }
+                        }
+                        count++;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }).start();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && !isUiVisible) {
+            hideSystemUI();
+        }
     }
 
     private void hideSystemUI() {
@@ -509,10 +600,24 @@ public class ChapterReaderActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
         if (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN) {
-            recyclerView.smoothScrollBy(0, recyclerView.getHeight() / 2);
+            if (isHorizontalMode) {
+                int firstVisible = layoutManager.findFirstVisibleItemPosition();
+                if (firstVisible + 1 < adapter.getItemCount()) {
+                    recyclerView.smoothScrollToPosition(firstVisible + 1);
+                }
+            } else {
+                recyclerView.smoothScrollBy(0, (int) (recyclerView.getHeight() * 0.75f));
+            }
             return true;
         } else if (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP) {
-            recyclerView.smoothScrollBy(0, -recyclerView.getHeight() / 2);
+            if (isHorizontalMode) {
+                int firstVisible = layoutManager.findFirstVisibleItemPosition();
+                if (firstVisible - 1 >= 0) {
+                    recyclerView.smoothScrollToPosition(firstVisible - 1);
+                }
+            } else {
+                recyclerView.smoothScrollBy(0, -(int) (recyclerView.getHeight() * 0.75f));
+            }
             return true;
         }
         return super.onKeyDown(keyCode, event);

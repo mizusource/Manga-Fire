@@ -102,6 +102,8 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             PopupMenu popup = new PopupMenu(context, holder.btnMenu);
             popup.getMenu().add(0, 1, 0, isDownloaded ? "حذف التنزيل" : "تنزيل الفصل");
             popup.getMenu().add(0, 2, 0, isRead ? "تحديد كغير مقروء" : "تحديد كمقروء");
+            popup.getMenu().add(0, 3, 0, "📄 تصدير كـ PDF");
+            popup.getMenu().add(0, 4, 0, "📦 تصدير كـ CBZ");
             
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == 1) { 
@@ -191,11 +193,113 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                             e.printStackTrace();
                         }
                     }).start();
+                } else if (item.getItemId() == 3) {
+                    // 📄 تصدير كـ PDF
+                    handleChapterExport(chapter, com.fire.mangareader.utils.ExportFormat.PDF);
+                } else if (item.getItemId() == 4) {
+                    // 📦 تصدير كـ CBZ
+                    handleChapterExport(chapter, com.fire.mangareader.utils.ExportFormat.CBZ);
                 }
                 return true;
             });
             popup.show();
         });
+    }
+
+    private void handleChapterExport(Chapter chapter, com.fire.mangareader.utils.ExportFormat format) {
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(context);
+        progressDialog.setTitle("تصدير " + chapter.getTitle());
+        progressDialog.setMessage("جاري تجهيز صفحات الفصل وتصديره كـ " + format.name() + "...");
+        progressDialog.setProgressStyle(android.app.ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        // 1. فحص إذا كان الفصل محمل محلياً
+        File mangaFolder = new File(context.getFilesDir(), String.valueOf(mangaUrl.hashCode()));
+        File chapterFolder = new File(mangaFolder, String.valueOf(chapter.getUrl().hashCode()));
+
+        List<String> pagePaths = new ArrayList<>();
+        if (chapterFolder.exists() && chapterFolder.isDirectory()) {
+            File[] files = chapterFolder.listFiles();
+            if (files != null && files.length > 0) {
+                java.util.Arrays.sort(files, (f1, f2) -> f1.getName().compareTo(f2.getName()));
+                for (File f : files) {
+                    if (f.isFile() && (f.getName().endsWith(".jpg") || f.getName().endsWith(".png") || f.getName().endsWith(".webp"))) {
+                        pagePaths.add(f.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
+        com.fire.mangareader.utils.ChapterExportManager.ExportCallback callback = new com.fire.mangareader.utils.ChapterExportManager.ExportCallback() {
+            @Override
+            public void onProgress(int current, int total, String status) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    progressDialog.setMax(total);
+                    progressDialog.setProgress(current);
+                    progressDialog.setMessage(status);
+                });
+            }
+
+            @Override
+            public void onSuccess(File exportedFile, com.fire.mangareader.utils.ExportFormat expFormat) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    progressDialog.dismiss();
+                    new androidx.appcompat.app.AlertDialog.Builder(context)
+                        .setTitle("اكتمل التصدير بنجاح 🎉")
+                        .setMessage("تم حفظ الملف في مجلد التنزيلات:\n" + exportedFile.getName() + "\nالحجم: " + (exportedFile.length() / 1024) + " KB")
+                        .setPositiveButton("فتح الملف", (d, w) -> com.fire.mangareader.utils.ChapterExportManager.openFile(context, exportedFile, expFormat))
+                        .setNeutralButton("مشاركة", (d, w) -> com.fire.mangareader.utils.ChapterExportManager.shareFile(context, exportedFile, chapter.getTitle()))
+                        .setNegativeButton("إغلاق", null)
+                        .show();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(context, "فشل التصدير: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+        };
+
+        if (!pagePaths.isEmpty()) {
+            com.fire.mangareader.utils.ChapterExportManager.exportChapter(context, mangaTitle, chapter.getTitle(), chapter.getUrl(), pagePaths, format, "ORIGINAL", callback);
+        } else {
+            // التنزيل أولاً ثم التصدير
+            MangaDownloader.downloadChapter(context, mangaUrl, chapter.getUrl(), chapter.getTitle(), new MangaDownloader.DownloadListener() {
+                @Override
+                public void onProgressUpdate(int current, int total) {
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        progressDialog.setMax(total);
+                        progressDialog.setProgress(current);
+                        progressDialog.setMessage("جاري تحميل صفحات الفصل: " + current + " / " + total);
+                    });
+                }
+
+                @Override
+                public void onSuccess() {
+                    File[] downloadedFiles = chapterFolder.listFiles();
+                    List<String> dPaths = new ArrayList<>();
+                    if (downloadedFiles != null) {
+                        java.util.Arrays.sort(downloadedFiles, (f1, f2) -> f1.getName().compareTo(f2.getName()));
+                        for (File f : downloadedFiles) {
+                            if (f.isFile()) dPaths.add(f.getAbsolutePath());
+                        }
+                    }
+                    com.fire.mangareader.utils.ChapterExportManager.exportChapter(context, mangaTitle, chapter.getTitle(), chapter.getUrl(), dPaths, format, "ORIGINAL", callback);
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(context, "فشل تجهيز صفحات الفصل: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        }
     }
 
     @Override

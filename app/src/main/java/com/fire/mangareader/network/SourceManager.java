@@ -8,6 +8,21 @@ public class SourceManager {
     public static final String SOURCE_MANGA_STARZ = "https://manga-starz.net/";
     public static final String SOURCE_MANGATEK = "https://mangatek.com/";
     public static final String SOURCE_MANGASID = "https://mangasid.com/";
+    public static final String SOURCE_LEKMANGA = "https://lekmanga.net/";
+    public static final String SOURCE_SWATMANGA = "https://swatmanga.co/";
+    public static final String SOURCE_MANGAPRO = "https://mangapro.me/";
+
+    public static String[] getAllSources() {
+        return new String[]{
+            SOURCE_MANGALIK,
+            SOURCE_MANGA_STARZ,
+            SOURCE_MANGATEK,
+            SOURCE_MANGASID,
+            SOURCE_LEKMANGA,
+            SOURCE_SWATMANGA,
+            SOURCE_MANGAPRO
+        };
+    }
 
     public static String getActiveSource(Context context) {
         SharedPreferences prefs = context.getSharedPreferences("manga_prefs", Context.MODE_PRIVATE);
@@ -19,6 +34,9 @@ public class SourceManager {
         if (url.equals(SOURCE_MANGA_STARZ)) return "Manga-Starz";
         if (url.equals(SOURCE_MANGATEK)) return "Mangatek";
         if (url.equals(SOURCE_MANGASID)) return "Mangasid";
+        if (url.equals(SOURCE_LEKMANGA)) return "LekManga";
+        if (url.equals(SOURCE_SWATMANGA)) return "SwatManga";
+        if (url.equals(SOURCE_MANGAPRO)) return "MangaPro";
         return "Manga Lik";
     }
 
@@ -27,3 +45,4 @@ public class SourceManager {
         prefs.edit().putString("active_source", sourceUrl).apply();
     }
 }
+

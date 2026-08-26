@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 "MangaUpdateCheck",
                 androidx.work.ExistingPeriodicWorkPolicy.KEEP,
                 updateRequest);
+        com.fire.mangareader.activity.StorageManagerActivity.autoCleanOldCache(this);
         mangaList = new ArrayList<>();
         adapter = new MangaAdapter(this, mangaList);
         rvLatestUpdates.setAdapter(adapter);
@@ -176,8 +177,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showSourceSelectionDialog() {
-        String[] sources = {"Manga Lik (mangalik.net)", "Manga-Starz (manga-starz.net)", "Mangatek (mangatek.com)", "Mangasid (mangasid.com)"};
-        String[] urls = {com.fire.mangareader.network.SourceManager.SOURCE_MANGALIK, com.fire.mangareader.network.SourceManager.SOURCE_MANGA_STARZ, com.fire.mangareader.network.SourceManager.SOURCE_MANGATEK, com.fire.mangareader.network.SourceManager.SOURCE_MANGASID};
+        String[] sources = {
+            "Manga Lik (mangalik.net)",
+            "Manga-Starz (manga-starz.net)",
+            "Mangatek (mangatek.com)",
+            "Mangasid (mangasid.com)",
+            "LekManga (lekmanga.net)",
+            "SwatManga (swatmanga.co)",
+            "MangaPro (mangapro.me)"
+        };
+        String[] urls = com.fire.mangareader.network.SourceManager.getAllSources();
         int checkedItem = 0;
         String activeSource = com.fire.mangareader.network.SourceManager.getActiveSource(this);
         for (int i = 0; i < urls.length; i++) { if (activeSource.equals(urls[i])) checkedItem = i; }

@@ -129,29 +129,60 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
             }
 
         } else {
-            // 🌐 وضع الأونلاين (باستخدام OkHttp الخارق لجلب الصورة ثم عرضها كملف محلي)
+            // 🌐 وضع الأونلاين (التحقق من الكاش أولاً ثم التحميل السريع)
             new Thread(() -> {
                 try {
                     String finalUrl = currentUrl;
                     if (finalUrl.startsWith("//")) finalUrl = "https:" + finalUrl;
 
-                    Request request = new Request.Builder()
-                            .url(finalUrl)
-                            .header("Referer", refererUrl != null ? refererUrl : finalUrl)
-                            .build();
-
-                    Response response = com.fire.mangareader.utils.MangaOkHttp.getClient().newCall(request).execute();
-
-                    if (!response.isSuccessful() || response.body() == null) {
-                        throw new Exception("HTTP " + response.code());
-                    }
-
-                    // حفظ مؤقت للصورة في الـ Cache لعرضها
                     File tempCacheFile = new File(itemView.getContext().getCacheDir(), "img_" + Math.abs(finalUrl.hashCode()) + ".jpg");
-                    FileOutputStream fos = new FileOutputStream(tempCacheFile);
-                    fos.write(response.body().bytes());
-                    fos.flush();
-                    fos.close();
+
+                    if (!tempCacheFile.exists() || tempCacheFile.length() == 0) {
+                        Request request = new Request.Builder()
+                                .url(finalUrl)
+                                .header("Referer", refererUrl != null ? refererUrl : finalUrl)
+                                .build();
+
+                        Response response = com.fire.mangareader.utils.MangaOkHttp.getClient().newCall(request).execute();
+
+                        if (!response.isSuccessful() || response.body() == null) {
+                            throw new Exception("HTTP " + response.code());
+                        }
+
+                        byte[] bytes = response.body().bytes();
+
+                        // 🗜️ فحص إعداد جودة الصور (توفير البيانات)
+                        android.content.SharedPreferences prefs = itemView.getContext().getSharedPreferences("MangaFirePrefs", android.content.Context.MODE_PRIVATE);
+                        int quality = prefs.getInt("image_quality_value", 100);
+
+                        if (quality < 100 && !currentUrl.toLowerCase().endsWith(".gif")) {
+                            try {
+                                android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                if (bmp != null) {
+                                    FileOutputStream fos = new FileOutputStream(tempCacheFile);
+                                    bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, fos);
+                                    fos.flush();
+                                    fos.close();
+                                    bmp.recycle();
+                                } else {
+                                    FileOutputStream fos = new FileOutputStream(tempCacheFile);
+                                    fos.write(bytes);
+                                    fos.flush();
+                                    fos.close();
+                                }
+                            } catch (Exception e) {
+                                FileOutputStream fos = new FileOutputStream(tempCacheFile);
+                                fos.write(bytes);
+                                fos.flush();
+                                fos.close();
+                            }
+                        } else {
+                            FileOutputStream fos = new FileOutputStream(tempCacheFile);
+                            fos.write(bytes);
+                            fos.flush();
+                            fos.close();
+                        }
+                    }
 
                     new Handler(Looper.getMainLooper()).post(() -> {
                         progressBar.setVisibility(View.GONE);

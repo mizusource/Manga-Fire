@@ -86,6 +86,11 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void postComment() {
+        if (!com.fire.mangareader.utils.AppAdminSettings.commentsEnabled) {
+            Toast.makeText(this, "قسم التعليقات معطل مؤقتًا للصيانة: " + com.fire.mangareader.utils.AppAdminSettings.maintenanceMessage, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
             Toast.makeText(this, "Login is required to post comments.", Toast.LENGTH_LONG).show();
@@ -95,6 +100,9 @@ public class CommentsActivity extends AppCompatActivity {
 
         String text = etComment.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
+
+        // فلترة الكلمات غير اللائقة تلقائياً
+        text = com.fire.mangareader.utils.AppAdminSettings.filterProfanity(text);
 
         String username = currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty() 
                 ? currentUser.getDisplayName() : "User";

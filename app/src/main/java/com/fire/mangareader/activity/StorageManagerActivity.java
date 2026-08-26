@@ -46,6 +46,7 @@ public class StorageManagerActivity extends AppCompatActivity {
         btnClearCache.setOnClickListener(v -> {
             new Thread(() -> {
                 com.bumptech.glide.Glide.get(this).clearDiskCache();
+                deleteFolder(getCacheDir());
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Cache Cleared", Toast.LENGTH_SHORT).show();
                     calculateSizes();
@@ -110,9 +111,29 @@ public class StorageManagerActivity extends AppCompatActivity {
         }
     }
 
+    public static void autoCleanOldCache(android.content.Context context) {
+        new Thread(() -> {
+            try {
+                File cacheDir = context.getCacheDir();
+                if (cacheDir != null && cacheDir.exists()) {
+                    long now = System.currentTimeMillis();
+                    long maxAge = 3L * 24 * 60 * 60 * 1000; // 3 days
+                    File[] files = cacheDir.listFiles();
+                    if (files != null) {
+                        for (File f : files) {
+                            if (f.isFile() && (now - f.lastModified() > maxAge)) {
+                                f.delete();
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }).start();
+    }
+
     private void calculateSizes() {
         new Thread(() -> {
-            long cacheSize = getFolderSize(com.bumptech.glide.Glide.getPhotoCacheDir(this));
+            long cacheSize = getFolderSize(com.bumptech.glide.Glide.getPhotoCacheDir(this)) + getFolderSize(getCacheDir());
             
             long downloadsSize = 0;
             List<DownloadedChapter> downloads = AppDatabase.getInstance(this).downloadDao().getAllDownloads();

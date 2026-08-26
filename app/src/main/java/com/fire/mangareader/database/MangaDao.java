@@ -24,6 +24,9 @@ public interface MangaDao {
     @Query("SELECT * FROM library WHERE isFavorite = 1 ORDER BY addedTime DESC")
     LiveData<List<LibraryItem>> getFavorites();
 
+    @Query("SELECT * FROM library WHERE isFavorite = 1 OR status IS NOT NULL ORDER BY addedTime DESC")
+    LiveData<List<LibraryItem>> getAllLibraryItems();
+
     @Query("SELECT * FROM library WHERE isRead = 1 ORDER BY lastReadTime DESC")
     LiveData<List<LibraryItem>> getHistory();
 

@@ -156,29 +156,27 @@ public class MangaDownloader {
         });
     }
 
-    // 🚀 دالة التحميل تعتمد على محرك OkHttp القوي المجهز مسبقاً!
+    // 🚀 دالة التحميل تعتمد على محرك OkHttp القوي المجهز مسبقاً مع تطبيق خيارات DownloadQuality
     private static void downloadImageFile(Context context, String fileUrl, String chapterUrl, File outputFile) throws Exception {
         fileUrl = fileUrl.trim().replace(" ", "%20");
         if (fileUrl.startsWith("//")) {
             fileUrl = "https:" + fileUrl;
         }
         
-        android.content.SharedPreferences prefs = context.getSharedPreferences("MangaFirePrefs", Context.MODE_PRIVATE);
-        int quality = prefs.getInt("image_quality_value", 100);
-        
-        String requestUrl = fileUrl;
-        
-        if (quality < 100) {
-            String encodedUrl = java.net.URLEncoder.encode(fileUrl, "UTF-8");
-            requestUrl = "https://wsrv.nl/?url=" + encodedUrl + "&q=" + quality + "&output=webp";
+        android.content.SharedPreferences defaultPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        String qualityKey = defaultPrefs.getString("download_quality", "MEDIUM");
+        com.fire.mangareader.model.DownloadQuality qualityEnum;
+        try {
+            qualityEnum = com.fire.mangareader.model.DownloadQuality.valueOf(qualityKey);
+        } catch (Exception e) {
+            qualityEnum = com.fire.mangareader.model.DownloadQuality.MEDIUM;
         }
 
         Request request = new Request.Builder()
-                .url(requestUrl)
+                .url(fileUrl)
                 .header("Referer", chapterUrl) // مهم جداً لتخطي حظر الصور
                 .build();
 
-        // تمرير الطلب لـ OkHttp الذي يملك كل الكوكيز والحيل
         Response response = MangaOkHttp.getClient().newCall(request).execute();
         if (!response.isSuccessful() || response.body() == null) {
             throw new Exception("HTTP Error: " + response.code());
@@ -186,9 +184,45 @@ public class MangaDownloader {
 
         byte[] imageBytes = response.body().bytes();
         
-        FileOutputStream fos = new FileOutputStream(outputFile);
-        fos.write(imageBytes);
-        fos.flush();
-        fos.close();
+        if (qualityEnum == com.fire.mangareader.model.DownloadQuality.HIGH) {
+            FileOutputStream fos = new FileOutputStream(outputFile);
+            fos.write(imageBytes);
+            fos.flush();
+            fos.close();
+        } else {
+            try {
+                android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                if (bitmap != null) {
+                    int originalWidth = bitmap.getWidth();
+                    int originalHeight = bitmap.getHeight();
+                    int maxW = qualityEnum.getMaxPixelWidth();
+                    
+                    if (originalWidth > maxW) {
+                        int targetHeight = (int) (((float) originalHeight / originalWidth) * maxW);
+                        android.graphics.Bitmap scaled = android.graphics.Bitmap.createScaledBitmap(bitmap, maxW, targetHeight, true);
+                        if (scaled != bitmap) {
+                            bitmap.recycle();
+                            bitmap = scaled;
+                        }
+                    }
+                    
+                    FileOutputStream fos = new FileOutputStream(outputFile);
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, qualityEnum.getCompressionQuality(), fos);
+                    fos.flush();
+                    fos.close();
+                    bitmap.recycle();
+                } else {
+                    FileOutputStream fos = new FileOutputStream(outputFile);
+                    fos.write(imageBytes);
+                    fos.flush();
+                    fos.close();
+                }
+            } catch (Throwable t) {
+                FileOutputStream fos = new FileOutputStream(outputFile);
+                fos.write(imageBytes);
+                fos.flush();
+                fos.close();
+            }
+        }
     }
 }
