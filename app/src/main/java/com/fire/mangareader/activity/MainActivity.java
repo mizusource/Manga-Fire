@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        com.fire.mangareader.utils.DisplayUtils.optimizeRefreshRate(this);
         setContentView(R.layout.activity_main);
         com.fire.mangareader.network.MangaScraper.globalCookies = getSharedPreferences("AppPrefs", MODE_PRIVATE).getString("cloudflare_cookies", "");
         BASE_URL = com.fire.mangareader.network.SourceManager.getActiveSource(this);

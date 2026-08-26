@@ -87,6 +87,19 @@
             app:cornerRadius="30dp"
             app:elevation="8dp" />
 
+        <!-- زر تسجيل الدخول برابط سحري -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMagicLink"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:text="الدخول برابط سحري (Magic Link)"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="30dp"
+            app:strokeColor="?attr/colorPrimary" />
+
         <!-- نص الانتقال لصفحة التسجيل (قابل للضغط مع تأثير مائي) -->
         <TextView
             android:id="@+id/tvRegister"

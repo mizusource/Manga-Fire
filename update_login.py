@@ -1,94 +1,31 @@
-package com.fire.mangareader.activity;
+import re
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
+with open('app/src/main/java/com/fire/mangareader/activity/LoginActivity.java', 'r') as f:
+    content = f.read()
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.fire.mangareader.R;
-import com.fire.mangareader.utils.PreferenceManager;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+imports = """
 import android.net.Uri;
 import com.google.firebase.auth.ActionCodeSettings;
 import android.content.SharedPreferences;
+"""
+content = content.replace('import com.google.firebase.auth.FirebaseUser;', 'import com.google.firebase.auth.FirebaseUser;' + imports)
 
-
-public class LoginActivity extends AppCompatActivity {
-
-    private EditText etEmail, etPassword;
-    
+vars_replacement = """
     private Button btnLogin, btnMagicLink;
+"""
+content = content.replace('private Button btnLogin;', vars_replacement)
 
-    private TextView tvRegister, tvGuest;
-    private ProgressBar progressBar;
-    private FirebaseAuth mAuth;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
-        mAuth = FirebaseAuth.getInstance();
-
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        
+init_replacement = """
         btnLogin = findViewById(R.id.btnLogin);
         btnMagicLink = findViewById(R.id.btnMagicLink);
         
         btnMagicLink.setOnClickListener(v -> sendMagicLink());
         
         checkEmailLink();
+"""
+content = content.replace('btnLogin = findViewById(R.id.btnLogin);', init_replacement)
 
-        tvRegister = findViewById(R.id.tvRegister);
-        tvGuest = findViewById(R.id.tvGuest);
-        progressBar = findViewById(R.id.progressBar);
-
-        btnLogin.setOnClickListener(v -> loginUser());
-        tvRegister.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
-        tvGuest.setOnClickListener(v -> continueAsGuest());
-    }
-
-    private void loginUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        progressBar.setVisibility(View.VISIBLE);
-        btnLogin.setEnabled(false);
-
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    progressBar.setVisibility(View.GONE);
-                    btnLogin.setEnabled(true);
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            PreferenceManager prefs = new PreferenceManager(this);
-                            prefs.saveUser(user.getUid(), user.getEmail(),
-                                    user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(), false);
-                            startActivity(new Intent(this, MainActivity.class));
-                            finish();
-                        }
-                    } else {
-                        Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-    }
-
-    
+methods = """
     private void sendMagicLink() {
         String email = etEmail.getText().toString().trim();
         if (email.isEmpty()) {
@@ -153,11 +90,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
+"""
 
-    private void continueAsGuest() {
-        PreferenceManager prefs = new PreferenceManager(this);
-        prefs.saveUser("guest", "guest@mangafire.com", "Guest", true);
-        startActivity(new Intent(this, MainActivity.class));
-        finish();
-    }
-}
+content = content.replace('private void continueAsGuest() {', methods + '\n    private void continueAsGuest() {')
+
+with open('app/src/main/java/com/fire/mangareader/activity/LoginActivity.java', 'w') as f:
+    f.write(content)
+

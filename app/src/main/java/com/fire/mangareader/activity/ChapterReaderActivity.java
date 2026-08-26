@@ -70,6 +70,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        com.fire.mangareader.utils.DisplayUtils.optimizeRefreshRate(this);
         
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (Build.VERSION.SDK_INT >= 28) {
