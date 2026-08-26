@@ -29,12 +29,20 @@
                 app:collapsedTitleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
                 app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Display1">
                 
-                <View 
+                                <View 
                     android:layout_width="match_parent" 
                     android:layout_height="match_parent" 
                     android:background="@drawable/bg_appbar" 
                     android:alpha="0.3"
                     app:layout_collapseMode="parallax" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/vpHeroBanner"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_marginTop="?attr/actionBarSize"
+                    app:layout_collapseMode="parallax" />
+
 
                 <LinearLayout
                     android:id="@+id/recentReadingContainer"

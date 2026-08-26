@@ -133,11 +133,8 @@ public class MangaDetailActivity extends AppCompatActivity {
             btnMyList.setOnClickListener(v -> showMyListBottomSheet());
         }
         btnComments.setOnClickListener(v -> {
-            Intent intent = new Intent(MangaDetailActivity.this, CommentsActivity.class);
-            intent.putExtra("mangaUrl", mangaUrl);
-                intent.putExtra("mangaTitle", mangaTitle);
-                intent.putExtra("mangaCover", mangaCover);
-            startActivity(intent);
+            CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
+            bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
         });
 
     }

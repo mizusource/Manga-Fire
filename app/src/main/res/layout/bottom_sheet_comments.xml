@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface"
+    android:paddingTop="16dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_comments"
+            app:tint="?attr/colorPrimary" />
+        <TextView
+            android:id="@+id/tvCommentsCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="التعليقات"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutline"
+        android:alpha="0.3" />
+
+    <!-- Comments List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvComments"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="16dp" />
+
+    <TextView
+        android:id="@+id/tvEmptyComments"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="لا توجد تعليقات حتى الآن.\nكن أول من يشارك برأيه في هذا العمل!"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <!-- Input Area -->
+    <LinearLayout
+        android:id="@+id/layoutInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceVariant"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/etCommentInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/colorSurface"
+            android:hint="اكتب تعليقك..."
+            android:padding="12dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/btnSendComment"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_chip_selected"
+            android:padding="10dp"
+            android:src="@android:drawable/ic_menu_send"
+            app:tint="@android:color/white" />
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/layoutLoginPrompt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceVariant"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:gravity="center_vertical">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="سجل دخولك لتتمكن من كتابة تعليق والتفاعل مع القراء"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurfaceVariant"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLoginPrompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="تسجيل الدخول"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -11,6 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.MangaAdapter;
+
+import androidx.viewpager2.widget.ViewPager2;
+import com.fire.mangareader.adapter.HeroBannerAdapter;
+
 import com.fire.mangareader.model.Manga;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,7 +25,10 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    
     private RecyclerView rvLatestUpdates;
+    private ViewPager2 vpHeroBanner;
+
     private SwipeRefreshLayout swipeRefreshMain;
     private ProgressBar mainProgressBar;
     private MangaAdapter adapter;
@@ -42,7 +49,10 @@ public class MainActivity extends AppCompatActivity {
         BASE_URL = com.fire.mangareader.network.SourceManager.getActiveSource(this);
         com.fire.mangareader.network.MangaScraper.BASE_URL = BASE_URL;
 
+        
         rvLatestUpdates = findViewById(R.id.rvLatestUpdates);
+        vpHeroBanner = findViewById(R.id.vpHeroBanner);
+
         swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
         mainProgressBar = findViewById(R.id.mainProgressBar);
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -61,9 +71,18 @@ public class MainActivity extends AppCompatActivity {
             
             if (id == R.id.nav_home) {
                 // نحن في الرئيسية بالفعل
-            } else if (id == R.id.nav_library) {
-                // الانتقال لشاشة المكتبة
-                startActivity(new Intent(MainActivity.this, LibraryActivity.class));
+            } else if (id == R.id.nav_currently_reading) {
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                intent.putExtra("FILTER_STATUS", "اشاهدها حاليا");
+                startActivity(intent);
+            } else if (id == R.id.nav_want_to_read) {
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                intent.putExtra("FILTER_STATUS", "ارغب بمشاهدتها");
+                startActivity(intent);
+            } else if (id == R.id.nav_completed) {
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                intent.putExtra("FILTER_STATUS", "تم مشاهدتها");
+                startActivity(intent);
             } else if (id == R.id.nav_downloads) {
                 // الانتقال لشاشة التنزيلات
                 startActivity(new Intent(MainActivity.this, DownloadsActivity.class));

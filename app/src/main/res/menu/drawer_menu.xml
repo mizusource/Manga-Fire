@@ -6,9 +6,17 @@
             android:icon="@drawable/ic_drawer_home"
             android:title="@string/home" />
         <item
-            android:id="@+id/nav_library"
-            android:icon="@drawable/ic_drawer_library"
-            android:title="@string/library" />
+            android:id="@+id/nav_currently_reading"
+            android:icon="@android:drawable/ic_media_play"
+            android:title="أشاهدها حالياً" />
+        <item
+            android:id="@+id/nav_want_to_read"
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="أرغب بمشاهدتها" />
+        <item
+            android:id="@+id/nav_completed"
+            android:icon="@android:drawable/ic_input_add"
+            android:title="تم مشاهدتها" />
         <item
             android:id="@+id/nav_downloads"
             android:icon="@drawable/ic_drawer_download"

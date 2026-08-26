@@ -33,7 +33,12 @@ public class LibraryActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            String filterStatus = getIntent().getStringExtra("FILTER_STATUS");
+            if (filterStatus != null && !filterStatus.isEmpty()) {
+                getSupportActionBar().setTitle(filterStatus);
+            } else {
+                getSupportActionBar().setTitle("المفضلة");
+            }
         }
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
@@ -63,14 +68,22 @@ public class LibraryActivity extends AppCompatActivity {
                 List<LibraryItem> items = AppDatabase.getInstance(this).mangaDao().getAllFavorites();
                 
                 List<Manga> mappedList = new ArrayList<>();
+                String filterStatus = getIntent().getStringExtra("FILTER_STATUS");
                 for (LibraryItem item : items) {
-                    if (item.isFavorite()) {
+                    boolean matchesFilter = false;
+                    if (filterStatus != null && !filterStatus.isEmpty()) {
+                        matchesFilter = filterStatus.equals(item.getStatus());
+                    } else {
+                        matchesFilter = item.isFavorite();
+                    }
+                    
+                    if (matchesFilter) {
                         Manga manga = new Manga();
                         manga.setTitle(item.getTitle());
                         manga.setUrl(item.getMangaId());
                         manga.setCoverUrl(item.getCoverUrl());
                         manga.setRating("❤️"); // وضع قلب كتقييم لتمييزها
-                        manga.setLatestChapter("مفضلة"); 
+                        manga.setLatestChapter(item.getStatus() != null ? item.getStatus() : "مفضلة"); 
                         mappedList.add(manga);
                     }
                 }
