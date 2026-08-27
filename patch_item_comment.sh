@@ -1,3 +1,5 @@
+#!/bin/bash
+cat << 'INNER_EOF' > app/src/main/res/layout/item_comment.xml
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -150,3 +152,4 @@
         android:background="?attr/colorSurfaceVariant"
         android:alpha="0.2" />
 </LinearLayout>
+INNER_EOF

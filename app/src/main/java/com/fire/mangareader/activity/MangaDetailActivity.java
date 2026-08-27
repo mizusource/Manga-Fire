@@ -34,6 +34,8 @@ public class MangaDetailActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout; 
     private ImageView btnFavorite, btnComments;
+    private android.widget.LinearLayout btnFavoriteContainer, btnCommentsContainer;
+    private TextView tvFavoriteText;
     private Chapter nextChapterToRead = null;
     private String mangaUrl, mangaTitle, mangaCover;
     private ChapterAdapter chapterAdapter;
@@ -62,6 +64,9 @@ public class MangaDetailActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); 
         btnFavorite = findViewById(R.id.btnFavorite);
+        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
+        tvFavoriteText = findViewById(R.id.tvFavoriteText);
         btnComments = findViewById(R.id.btnComments);
 
         titleText.setText(mangaTitle);
@@ -104,6 +109,9 @@ public class MangaDetailActivity extends AppCompatActivity {
                         
 
                         ImageView btnFavorite = findViewById(R.id.btnFavorite);
+        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
+        tvFavoriteText = findViewById(R.id.tvFavoriteText);
                     }
                 });
             }
@@ -126,16 +134,30 @@ public class MangaDetailActivity extends AppCompatActivity {
         loadAniListMetadata();
         setupRatingButtons();
 
-        btnFavorite.setOnClickListener(v -> toggleFavorite());
+        if (btnFavoriteContainer != null) {
+            btnFavoriteContainer.setOnClickListener(v -> toggleFavorite());
+        } else {
+            btnFavorite.setOnClickListener(v -> toggleFavorite());
+        }
 
         View btnMyList = findViewById(R.id.btnMyList);
         if (btnMyList != null) {
             btnMyList.setOnClickListener(v -> showMyListBottomSheet());
         }
-        btnComments.setOnClickListener(v -> {
-            CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
-            bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
-        });
+        if (btnCommentsContainer != null) {
+            btnCommentsContainer.setOnClickListener(v -> {
+                v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                    CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
+                    bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
+                }).start();
+            });
+        } else {
+            btnComments.setOnClickListener(v -> {
+                CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
+                bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
+            });
+        }
 
     }
 
@@ -426,6 +448,9 @@ public class MangaDetailActivity extends AppCompatActivity {
             isFavorite = true;
             runOnUiThread(() -> {
                 ImageView btnFavorite = findViewById(R.id.btnFavorite);
+        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
+        tvFavoriteText = findViewById(R.id.tvFavoriteText);
                 if (btnFavorite != null) btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
                 android.widget.Toast.makeText(MangaDetailActivity.this, "تمت الإضافة إلى: " + status, android.widget.Toast.LENGTH_SHORT).show();
             });
@@ -434,7 +459,14 @@ public class MangaDetailActivity extends AppCompatActivity {
     private void checkFavoriteStatus() {
         new Thread(() -> {
             isFavorite = AppDatabase.getInstance(this).mangaDao().isFavorite(mangaUrl);
-            runOnUiThread(() -> btnFavorite.setImageResource(isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off));
+            runOnUiThread(() -> {
+                btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+                btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+                if (tvFavoriteText != null) {
+                    tvFavoriteText.setText(isFavorite ? "محفوظ" : "حفظ");
+                    tvFavoriteText.setTextColor(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+                }
+            });
         }).start();
     }
 
@@ -595,21 +627,32 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
 
     private void toggleFavorite() {
-        isFavorite = !isFavorite;
-        btnFavorite.setImageResource(isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
-        new Thread(() -> {
-            LibraryItem item = new LibraryItem();
-            item.setMangaId(mangaUrl);
-            item.setTitle(mangaTitle);
-            item.setCoverUrl(mangaCover);
-            item.setFavorite(isFavorite);
-            item.setAddedTime(System.currentTimeMillis());
-            if (isFavorite) AppDatabase.getInstance(this).mangaDao().insert(item);
-            else {
-                AppDatabase.getInstance(this).mangaDao().setFavorite(mangaUrl, false);
-                AppDatabase.getInstance(this).mangaDao().cleanOrphans();
+        android.view.View targetView = btnFavoriteContainer != null ? btnFavoriteContainer : btnFavorite;
+        targetView.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
+            targetView.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+            isFavorite = !isFavorite;
+            
+            btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+            btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+            if (tvFavoriteText != null) {
+                tvFavoriteText.setText(isFavorite ? "محفوظ" : "حفظ");
+                tvFavoriteText.setTextColor(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
             }
+            
+            new Thread(() -> {
+                LibraryItem item = new LibraryItem();
+                item.setMangaId(mangaUrl);
+                item.setTitle(mangaTitle);
+                item.setCoverUrl(mangaCover);
+                item.setFavorite(isFavorite);
+                item.setAddedTime(System.currentTimeMillis());
+                if (isFavorite) AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().insert(item);
+                else {
+                    AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().setFavorite(mangaUrl, false);
+                    AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().cleanOrphans();
+                }
+            }).start();
+            Toast.makeText(MangaDetailActivity.this, isFavorite ? "تمت الإضافة للمفضلة" : "تمت الإزالة من المفضلة", Toast.LENGTH_SHORT).show();
         }).start();
-        Toast.makeText(this, isFavorite ? "تمت الإضافة للمفضلة" : "تمت الإزالة من المفضلة", Toast.LENGTH_SHORT).show();
     }
 }

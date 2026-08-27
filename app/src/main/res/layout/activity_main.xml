@@ -25,6 +25,7 @@
                 app:contentScrim="?attr/colorSurface"
                 app:expandedTitleMarginStart="48dp"
                 app:expandedTitleMarginEnd="64dp"
+                app:expandedTitleMarginBottom="72dp"
                 app:title="آخر التحديثات"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
                 app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Display1">

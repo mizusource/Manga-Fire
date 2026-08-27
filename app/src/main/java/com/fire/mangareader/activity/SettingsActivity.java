@@ -157,7 +157,7 @@ public class SettingsActivity extends AppCompatActivity {
             Preference telegramChannelPref = findPreference("telegram_channel");
             if (telegramChannelPref != null) {
                 telegramChannelPref.setOnPreferenceClickListener(preference -> {
-                    com.fire.mangareader.utils.TelegramManager.openTelegramChannel(requireContext(), "https://t.me/SpeedManga");
+                    com.fire.mangareader.utils.TelegramManager.openTelegramChannel(requireContext(), "wv_sj");
                     return true;
                 });
             }

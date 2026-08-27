@@ -1,3 +1,5 @@
+#!/bin/bash
+cat << 'INNER_EOF' > app/src/main/java/com/fire/mangareader/activity/AdminDashboardActivity.java
 package com.fire.mangareader.activity;
 
 import android.os.Bundle;
@@ -25,12 +27,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_dashboard);
-        com.google.firebase.auth.FirebaseUser currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null || currentUser.getEmail() == null || !currentUser.getEmail().equals("mstfybdwy633@gmail.com")) {
-            Toast.makeText(this, "عذراً، هذه الصفحة للمشرفين فقط", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -95,3 +91,4 @@ public class AdminDashboardActivity extends AppCompatActivity {
         });
     }
 }
+INNER_EOF

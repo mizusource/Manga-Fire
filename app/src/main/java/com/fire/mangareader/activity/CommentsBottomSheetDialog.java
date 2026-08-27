@@ -64,6 +64,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
 
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(getContext(), commentList);
+        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
         rvComments.setLayoutManager(new LinearLayoutManager(getContext()));
         rvComments.setAdapter(adapter);
 

@@ -1,0 +1,2 @@
+#!/bin/bash
+sed -i 's/if (user.getPhotoUrl() != null) {/com.fire.mangareader.utils.PreferenceManager pm = new com.fire.mangareader.utils.PreferenceManager(this);\n                if (pm.getProfilePic() != null \&\& !pm.getProfilePic().isEmpty()) {\n                    com.bumptech.glide.Glide.with(this).load(android.net.Uri.parse(pm.getProfilePic())).circleCrop().into(navHeaderImage);\n                } else if (user.getPhotoUrl() != null) {/g' app/src/main/java/com/fire/mangareader/activity/MainActivity.java

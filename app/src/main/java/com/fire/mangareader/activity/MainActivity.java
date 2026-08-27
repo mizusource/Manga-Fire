@@ -48,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
     private String BASE_URL = "https://mangalik.net/";
 
     
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavHeader();
+    }
     protected void onCreate(Bundle savedInstanceState) {
         com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
@@ -72,7 +78,10 @@ public class MainActivity extends AppCompatActivity {
         btnSearch.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, SearchActivity.class)));
 
         // فتح القائمة عند الضغط على زر الهمبرغر
-        btnMenuToggle.setOnClickListener(v -> drawerLayout.openDrawer(androidx.core.view.GravityCompat.START));
+        btnMenuToggle.setOnClickListener(v -> {
+            updateNavHeader();
+            drawerLayout.openDrawer(androidx.core.view.GravityCompat.START);
+        });
 
         // برمجة الأزرار داخل القائمة الجانبية
         navView.setNavigationItemSelectedListener(item -> {
@@ -103,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 // الانتقال لشاشة الإعدادات
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
             } else if (id == R.id.nav_telegram) {
-                com.fire.mangareader.utils.TelegramManager.openTelegramChannel(MainActivity.this, "speedmanga");
+                com.fire.mangareader.utils.TelegramManager.openTelegramChannel(MainActivity.this, "wv_sj");
             }
 
             // إغلاق القائمة بعد اختيار أي عنصر
@@ -269,5 +278,46 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+
+    private void updateNavHeader() {
+        android.view.View headerView = navView.getHeaderView(0);
+        if (headerView != null) {
+            android.widget.TextView navHeaderName = headerView.findViewById(R.id.navHeaderName);
+            android.widget.TextView navHeaderEmail = headerView.findViewById(R.id.navHeaderEmail);
+            android.widget.ImageView navHeaderImage = headerView.findViewById(R.id.navHeaderImage);
+            com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+                navHeaderName.setText(user.getDisplayName() != null && !user.getDisplayName().isEmpty() ? user.getDisplayName() : "المستخدم");
+                navHeaderEmail.setText(user.getEmail());
+                headerView.setOnClickListener(null);
+                
+                com.fire.mangareader.utils.PreferenceManager pm = new com.fire.mangareader.utils.PreferenceManager(this);
+                if (pm.getProfilePic() != null && !pm.getProfilePic().isEmpty()) {
+                    com.bumptech.glide.Glide.with(this).load(android.net.Uri.parse(pm.getProfilePic())).circleCrop().into(navHeaderImage);
+                } else if (user.getPhotoUrl() != null) {
+                    com.bumptech.glide.Glide.with(this).load(user.getPhotoUrl()).circleCrop().into(navHeaderImage);
+                } else {
+                    navHeaderImage.setImageResource(R.drawable.ic_drawer_profile);
+                }
+                
+                android.view.Menu menu = navView.getMenu();
+                android.view.MenuItem adminItem = menu.findItem(R.id.nav_admin);
+                if (adminItem != null) {
+                    adminItem.setVisible(user.getEmail() != null && user.getEmail().equals("mstfybdwy633@gmail.com"));
+                }
+            } else {
+                navHeaderName.setText("تسجيل الدخول");
+                navHeaderEmail.setText("انقر هنا لتسجيل الدخول");
+                navHeaderImage.setImageResource(R.drawable.ic_drawer_profile);
+                headerView.setOnClickListener(v -> {
+                    startActivity(new android.content.Intent(MainActivity.this, LoginActivity.class));
+                });
+                
+                android.view.Menu menu = navView.getMenu();
+                android.view.MenuItem adminItem = menu.findItem(R.id.nav_admin);
+                if (adminItem != null) adminItem.setVisible(false);
+            }
+        }
     }
 }

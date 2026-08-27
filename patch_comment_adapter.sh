@@ -1,3 +1,5 @@
+#!/bin/bash
+cat << 'INNER_EOF' > app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java
 package com.fire.mangareader.adapter;
 
 import android.content.Context;
@@ -149,3 +151,4 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         }
     }
 }
+INNER_EOF

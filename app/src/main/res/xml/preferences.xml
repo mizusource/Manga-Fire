@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/appearance">
         <ListPreference
-            android:key="app_theme"
+            android:key="theme"
             android:title="@string/theme"
             android:summary="@string/theme_summary"
             android:entries="@array/theme_entries"
             android:entryValues="@array/theme_values"
-            android:defaultValue="dark_neon_blue" />
+            android:defaultValue="system" />
         <ListPreference
             android:key="language"
             android:title="@string/language"
@@ -18,73 +16,54 @@
             android:entryValues="@array/language_values"
             android:defaultValue="ar" />
     </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/reading_settings">
-        <ListPreference
-            android:key="reading_direction"
-            android:title="@string/reading_direction"
-            android:entries="@array/direction_entries"
-            android:entryValues="@array/direction_values"
-            android:defaultValue="rtl" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/download_settings">
+    <PreferenceCategory android:title="التخزين والتحميلات">
+        <Preference
+            android:key="storage_manager"
+            android:title="إدارة التخزين الذكية"
+            android:summary="التحكم في الفصول المحملة والمؤقتة لتوفير المساحة"
+            android:icon="@android:drawable/ic_menu_manage" />
         <ListPreference
             android:key="download_quality"
-            android:title="جودة التنزيل (Download Quality)"
-            android:summary="اختر الدقة ومستوى ضغط الصور لتوفير المساحة والإنترنت"
+            android:title="جودة التنزيل الافتراضية"
+            android:summary="اختر جودة الصور عند تحميل الفصول"
             android:entries="@array/download_quality_entries"
             android:entryValues="@array/download_quality_values"
-            android:defaultValue="MEDIUM" />
+            android:defaultValue="HIGH" />
         <SwitchPreferenceCompat
             android:key="wifi_only"
             android:title="@string/wifi_only"
             android:defaultValue="true" />
     </PreferenceCategory>
-
-    <PreferenceCategory android:title="التخزين والذاكرة المؤقتة (Storage &amp; Cache)">
-        <Preference
-            android:key="clear_cache"
-            android:title="تنظيف الذاكرة المؤقتة (Clear Cache)"
-            android:summary="جاري حساب الحجم..." />
-        <Preference
-            android:key="storage_manager"
-            android:title="مدير التخزين والتنزيلات (Storage Manager)"
-            android:summary="إدارة الفصول المحملة والمساحة المستهلكة" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="مجتمع وتليجرام (Telegram Community)">
-        <Preference
-            android:key="telegram_channel"
-            android:title="قناة تليجرام الرسمية (Telegram Channel)"
-            android:summary="انضم لمتابعة آخر التحديثات والفصول الجديدة" />
-        <Preference
-            android:key="telegram_test"
-            android:title="اختبار اتصال بوت تليجرام (Test Bot)"
-            android:summary="التحقق من إعدادات وتوكن البوت" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="النسخ الاحتياطي والاستعادة (Backup &amp; Restore)">
+    <PreferenceCategory android:title="النسخ الاحتياطي والمزامنة">
         <Preference
             android:key="backup_export"
-            android:title="تصدير نسخة احتياطية (Export Backup)"
-            android:summary="حفظ المفضلة وسجل القراءة كملف JSON" />
+            android:title="تصدير نسخة احتياطية"
+            android:summary="حفظ المفضلة وسجل القراءة لملف محلي" />
         <Preference
             android:key="backup_import"
-            android:title="استعادة نسخة احتياطية (Restore Backup)"
-            android:summary="استيراد المفضلة وسجل القراءة من ملف JSON" />
+            android:title="استيراد نسخة احتياطية"
+            android:summary="استرجاع البيانات من ملف سابق" />
     </PreferenceCategory>
-
+    <PreferenceCategory android:title="تواصل معنا">
+        <Preference
+            android:key="telegram_channel"
+            android:title="قناتنا على تليجرام"
+            android:summary="انضم ليصلك كل جديد" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/maintenance">
+        <Preference
+            android:key="clear_cache"
+            android:title="@string/clear_cache"
+            android:summary="@string/clear_cache_summary" />
+        <Preference
+            android:key="clear_downloads"
+            android:title="@string/clear_downloads"
+            android:summary="@string/clear_downloads_summary" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/account">
         <Preference
             android:key="logout"
             android:title="@string/logout"
             android:summary="@string/logout_summary" />
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/about">
-        <Preference
-            android:title="@string/version"
-            android:summary="@string/app_version_summary" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -50,6 +50,7 @@ public class CommentsActivity extends AppCompatActivity {
 
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(this, commentList);
+        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
         
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
