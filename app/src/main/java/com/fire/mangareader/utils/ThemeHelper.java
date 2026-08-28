@@ -9,6 +9,13 @@ public class ThemeHelper {
     public static void applyTheme(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String theme = prefs.getString("app_theme", "dark_neon_blue");
+
+        if (theme.startsWith("classic_") && !theme.equals("classic_navy")) {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+        } else {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+        }
+
         switch (theme) {
             case "dark_neon_red":
                 context.setTheme(R.style.Theme_Animeista_DarkNeonRed);

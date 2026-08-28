@@ -65,7 +65,7 @@ public class LibraryActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 // سحب البيانات من Room Database
-                List<LibraryItem> items = AppDatabase.getInstance(this).mangaDao().getAllFavorites();
+                List<LibraryItem> items = AppDatabase.getInstance(this).mangaDao().getAllItems();
                 
                 List<Manga> mappedList = new ArrayList<>();
                 String filterStatus = getIntent().getStringExtra("FILTER_STATUS");

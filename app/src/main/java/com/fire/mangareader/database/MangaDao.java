@@ -45,6 +45,9 @@ public interface MangaDao {
     @Query("SELECT * FROM library WHERE isFavorite = 1")
     java.util.List<com.fire.mangareader.database.LibraryItem> getAllFavorites();
 
+    @Query("SELECT * FROM library")
+    java.util.List<com.fire.mangareader.database.LibraryItem> getAllItems();
+
     @Query("DELETE FROM library WHERE isFavorite = 0 AND isRead = 0")
     void cleanOrphans();
 }

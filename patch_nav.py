@@ -1,4 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+import re
+
+# 1. Remove HorizontalScrollView from activity_main.xml
+with open('app/src/main/res/layout/activity_main.xml', 'r') as f:
+    main_content = f.read()
+
+main_content = re.sub(r'<HorizontalScrollView.*?</HorizontalScrollView>', '', main_content, flags=re.DOTALL)
+
+with open('app/src/main/res/layout/activity_main.xml', 'w') as f:
+    f.write(main_content)
+
+# 2. Modify nav_header.xml
+nav_header = '''<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -49,4 +61,8 @@
         android:padding="12dp"
         android:src="@drawable/ic_drawer_profile"
         app:tint="?attr/colorPrimary" />
-</LinearLayout>
+</LinearLayout>'''
+
+with open('app/src/main/res/layout/nav_header.xml', 'w') as f:
+    f.write(nav_header)
+

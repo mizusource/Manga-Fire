@@ -43,6 +43,7 @@ public class ProfileActivity extends AppCompatActivity {
                         if (imageUri != null) {
                             getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                             prefs.setProfilePic(imageUri.toString());
+                            profileImage.setColorFilter(null);
                             Glide.with(this).load(imageUri).circleCrop().into(profileImage);
                             Toast.makeText(this, "تم تحديث الصورة الشخصية", Toast.LENGTH_SHORT).show();
                         }
@@ -125,6 +126,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         String savedPic = prefs.getProfilePic();
         if (savedPic != null && !savedPic.isEmpty()) {
+            profileImage.setColorFilter(null);
             Glide.with(this).load(Uri.parse(savedPic)).circleCrop().into(profileImage);
         }
 

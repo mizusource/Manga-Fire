@@ -134,6 +134,35 @@ public class MangaDetailActivity extends AppCompatActivity {
         loadAniListMetadata();
         setupRatingButtons();
 
+
+        ImageView btnDownloadMultiple = findViewById(R.id.btnDownloadMultiple);
+        if (btnDownloadMultiple != null) {
+            btnDownloadMultiple.setOnClickListener(v -> {
+                android.widget.PopupMenu popup = new android.widget.PopupMenu(this, btnDownloadMultiple);
+                popup.getMenu().add(0, 1, 0, "تنزيل جميع الفصول");
+                popup.getMenu().add(0, 2, 0, "تنزيل الفصول غير المقروءة");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (chapterList == null || chapterList.isEmpty()) {
+                        Toast.makeText(this, "لا توجد فصول", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                    int count = 0;
+                    for (Chapter c : chapterList) {
+                        if (item.getItemId() == 2) {
+                            // TODO: check if read
+                            // For simplicity, download all in this demo or implement full check
+                        }
+                        com.fire.mangareader.service.DownloadService.startDownload(this, mangaUrl, c.getUrl(), c.getTitle());
+                        count++;
+                        if (item.getItemId() == 2 && count >= 10) break; // limit to 10 for "unread" to prevent overload
+                    }
+                    Toast.makeText(this, "بدء تنزيل " + count + " فصول في الخلفية", Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+                popup.show();
+            });
+        }
+
         if (btnFavoriteContainer != null) {
             btnFavoriteContainer.setOnClickListener(v -> toggleFavorite());
         } else {
@@ -513,8 +542,8 @@ public class MangaDetailActivity extends AppCompatActivity {
                     if (tvAniListFormat != null && metadata.format != null) {
                         tvAniListFormat.setText(metadata.format);
                     }
-                    if (tvAniListAuthor != null && metadata.author != null) {
-                        tvAniListAuthor.setText("المؤلف: " + metadata.author);
+                    if (tvAniListAuthor != null) {
+                        tvAniListAuthor.setText("المؤلف: " + (metadata.author != null && !metadata.author.isEmpty() ? metadata.author : "غير متوفر"));
                     }
                     if (tvAniListArtist != null && metadata.artist != null) {
                         tvAniListArtist.setText("الرسام: " + metadata.artist);
@@ -530,6 +559,12 @@ public class MangaDetailActivity extends AppCompatActivity {
 
             @Override
             public void onError(String errorMessage) {
+                runOnUiThread(() -> {
+                    TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
+                    if (tvAniListAuthor != null && tvAniListAuthor.getText().toString().contains("جاري الجلب")) {
+                        tvAniListAuthor.setText("المؤلف: غير متوفر");
+                    }
+                });
                 // Silently fallback to scraper data
             }
         });

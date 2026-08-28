@@ -69,6 +69,17 @@
                     android:layout_marginStart="6dp"/>
             </LinearLayout>
 
+
+            <ImageView
+                android:id="@+id/btnDownloadMultiple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_drawer_download"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="?attr/colorPrimary" />
+
             <LinearLayout
                 android:id="@+id/btnFavoriteContainer"
                 android:layout_width="wrap_content"
