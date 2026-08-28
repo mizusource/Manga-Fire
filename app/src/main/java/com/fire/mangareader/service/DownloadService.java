@@ -10,16 +10,27 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.Handler;
 import android.os.Looper;
-
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-
 import com.fire.mangareader.utils.MangaDownloader;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class DownloadService extends Service {
     private static final String CHANNEL_ID = "DownloadChannel";
     private NotificationManager notificationManager;
     private int notificationId = 1001;
+
+    private static class DownloadTask {
+        String mangaUrl;
+        String chapterUrl;
+        String chapterTitle;
+        int startId;
+        int notifId;
+    }
+
+    private Queue<DownloadTask> downloadQueue = new LinkedList<>();
+    private boolean isDownloading = false;
 
     public static void startDownload(Context context, String mangaUrl, String chapterUrl, String chapterTitle) {
         Intent intent = new Intent(context, DownloadService.class);
@@ -58,56 +69,92 @@ public class DownloadService extends Service {
         String chapterUrl = intent.getStringExtra("chapterUrl");
         String chapterTitle = intent.getStringExtra("chapterTitle");
         
-        int currentId = notificationId++;
+        if (chapterUrl == null) return START_NOT_STICKY;
 
+        DownloadTask task = new DownloadTask();
+        task.mangaUrl = mangaUrl;
+        task.chapterUrl = chapterUrl;
+        task.chapterTitle = chapterTitle;
+        task.startId = startId;
+        task.notifId = notificationId++;
+        
+        downloadQueue.offer(task);
+        
+        // Show pending notification
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("جاري تحميل: " + chapterTitle)
+                .setContentTitle("في الانتظار: " + chapterTitle)
+                .setContentText("جاري الاستعداد...")
+                .setSmallIcon(android.R.drawable.stat_sys_download)
+                .build();
+        startForeground(task.notifId, notification);
+        
+        processNextTask();
+        
+        return START_NOT_STICKY;
+    }
+
+    private void processNextTask() {
+        if (isDownloading) return;
+        if (downloadQueue.isEmpty()) return;
+        
+        isDownloading = true;
+        DownloadTask task = downloadQueue.poll();
+        
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("جاري تحميل: " + task.chapterTitle)
                 .setContentText("بدء التحميل...")
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setProgress(100, 0, true)
                 .build();
+        startForeground(task.notifId, notification);
 
-        startForeground(currentId, notification);
-
-        // Run download on main thread so WebView can be used inside MangaDownloader
-        new Handler(Looper.getMainLooper()).post(() -> {
-            MangaDownloader.downloadChapter(this, mangaUrl, chapterUrl, chapterTitle, new MangaDownloader.DownloadListener() {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            MangaDownloader.downloadChapter(this, task.mangaUrl, task.chapterUrl, task.chapterTitle, new MangaDownloader.DownloadListener() {
                 @Override
                 public void onProgressUpdate(int current, int total) {
                     Notification updated = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
-                            .setContentTitle("جاري تحميل: " + chapterTitle)
+                            .setContentTitle("جاري تحميل: " + task.chapterTitle)
                             .setContentText("صفحة " + current + " من " + total)
                             .setSmallIcon(android.R.drawable.stat_sys_download)
                             .setProgress(total, current, false)
                             .build();
-                    notificationManager.notify(currentId, updated);
+                    notificationManager.notify(task.notifId, updated);
                 }
 
                 @Override
                 public void onSuccess() {
                     Notification success = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("اكتمل التحميل")
-                            .setContentText(chapterTitle + " تم تحميله بنجاح")
+                            .setContentText(task.chapterTitle + " تم تحميله بنجاح")
                             .setSmallIcon(android.R.drawable.stat_sys_download_done)
                             .build();
-                    notificationManager.notify(currentId, success);
-                    stopSelfResult(startId);
+                    notificationManager.notify(task.notifId, success);
+                    
+                    finishTaskAndProceed(task.startId);
                 }
 
                 @Override
                 public void onError(String errorMessage) {
                     Notification error = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("فشل التحميل")
-                            .setContentText(chapterTitle + " - " + errorMessage)
+                            .setContentText(task.chapterTitle + " - " + errorMessage)
                             .setSmallIcon(android.R.drawable.stat_notify_error)
                             .build();
-                    notificationManager.notify(currentId, error);
-                    stopSelfResult(startId);
+                    notificationManager.notify(task.notifId, error);
+                    
+                    finishTaskAndProceed(task.startId);
                 }
             });
-        });
-
-        return START_NOT_STICKY;
+        }, 3000); // Wait 3 seconds between downloads to avoid server block
+    }
+    
+    private void finishTaskAndProceed(int startId) {
+        isDownloading = false;
+        if (downloadQueue.isEmpty()) {
+            stopSelfResult(startId);
+        } else {
+            processNextTask();
+        }
     }
 
     @Nullable

@@ -52,6 +52,15 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         holder.tvLikeCount.setText(String.valueOf(comment.likes));
         holder.tvReplyCount.setText("رد");
 
+        // Load avatar if available
+        if (comment.user_avatar != null && !comment.user_avatar.isEmpty()) {
+            holder.ivAvatar.setColorFilter(null);
+            com.bumptech.glide.Glide.with(context).load(comment.user_avatar).circleCrop().into(holder.ivAvatar);
+        } else {
+            holder.ivAvatar.setImageResource(com.fire.mangareader.R.drawable.ic_person);
+            holder.ivAvatar.setColorFilter(android.graphics.Color.GRAY);
+        }
+
         if (comment.isSpoiler || comment.is_spoiler) {
             holder.spoilerOverlay.setVisibility(View.VISIBLE);
             holder.spoilerOverlay.setOnClickListener(v -> {
@@ -132,10 +141,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         TextView username, date, commentText, tvLikeCount, tvReplyCount;
         View spoilerOverlay;
         LinearLayout btnLike, btnReply;
-        ImageView ivLike, btnMore;
+        ImageView ivAvatar, ivLike, btnMore;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivAvatar = itemView.findViewById(com.fire.mangareader.R.id.ivAvatar);
             username = itemView.findViewById(R.id.tvUsername);
             date = itemView.findViewById(R.id.tvDate);
             commentText = itemView.findViewById(R.id.tvCommentText);

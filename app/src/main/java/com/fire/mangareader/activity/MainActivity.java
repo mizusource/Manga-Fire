@@ -306,18 +306,12 @@ public class MainActivity extends AppCompatActivity {
                     navHeaderImage.setColorFilter(android.graphics.Color.GRAY);
                 }
                 
-
-                
                 if (btnEditProfile != null) {
-                    btnEditProfile.setVisibility(View.VISIBLE);
+                    btnEditProfile.setVisibility(android.view.View.VISIBLE);
                     btnEditProfile.setOnClickListener(v -> {
                         startActivity(new android.content.Intent(MainActivity.this, ProfileActivity.class));
                     });
                 }
-                
-
-                btnEditProfile = headerView.findViewById(R.id.btnEditProfile);
-                if (btnEditProfile != null) btnEditProfile.setVisibility(View.GONE);
                 
                 android.view.Menu menu = navView.getMenu();
                 android.view.MenuItem adminItem = menu.findItem(R.id.nav_admin);
@@ -328,10 +322,14 @@ public class MainActivity extends AppCompatActivity {
                 navHeaderName.setText("تسجيل الدخول");
                 navHeaderEmail.setText("انقر هنا لتسجيل الدخول");
                 navHeaderImage.setImageResource(R.drawable.ic_drawer_profile);
-                    navHeaderImage.setColorFilter(android.graphics.Color.GRAY);
+                navHeaderImage.setColorFilter(android.graphics.Color.GRAY);
                 headerView.setOnClickListener(v -> {
                     startActivity(new android.content.Intent(MainActivity.this, LoginActivity.class));
                 });
+                
+                if (btnEditProfile != null) {
+                    btnEditProfile.setVisibility(android.view.View.GONE);
+                }
                 
                 android.view.Menu menu = navView.getMenu();
                 android.view.MenuItem adminItem = menu.findItem(R.id.nav_admin);

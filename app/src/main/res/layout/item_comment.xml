@@ -88,8 +88,7 @@
                         android:id="@+id/ivLike"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@android:drawable/ic_menu_upload"
-                        android:rotation="90"
+                        android:src="@drawable/ic_favorite_border"
                         app:tint="?attr/colorOnSurfaceVariant" />
                     <TextView
                         android:id="@+id/tvLikeCount"
