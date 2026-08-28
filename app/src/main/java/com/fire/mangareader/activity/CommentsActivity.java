@@ -122,6 +122,13 @@ public class CommentsActivity extends AppCompatActivity {
         long timestamp = System.currentTimeMillis();
 
         Comment newComment = new Comment(mangaUrl, username, text, timestamp, isSpoiler);
+        com.fire.mangareader.utils.PreferenceManager prefs = new com.fire.mangareader.utils.PreferenceManager(this);
+        String savedPic = prefs.getProfilePic();
+        if (savedPic != null && !savedPic.isEmpty()) {
+            newComment.user_avatar = savedPic;
+        } else if (currentUser.getPhotoUrl() != null) {
+            newComment.user_avatar = currentUser.getPhotoUrl().toString();
+        }
 
         db.collection("comments").add(newComment)
                 .addOnSuccessListener(documentReference -> {

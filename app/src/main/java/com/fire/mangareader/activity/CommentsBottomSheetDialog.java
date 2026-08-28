@@ -143,6 +143,13 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         newComment.username = userName;
         newComment.text = text;
         newComment.timestamp = System.currentTimeMillis();
+        
+        String savedPic = prefs.getProfilePic();
+        if (savedPic != null && !savedPic.isEmpty()) {
+            newComment.user_avatar = savedPic;
+        } else if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getPhotoUrl() != null) {
+            newComment.user_avatar = mAuth.getCurrentUser().getPhotoUrl().toString();
+        }
 
         db.collection("mangas").document(docId).collection("comments")
                 .add(newComment)

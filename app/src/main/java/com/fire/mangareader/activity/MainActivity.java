@@ -104,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_downloads) {
                 // الانتقال لشاشة التنزيلات
                 startActivity(new Intent(MainActivity.this, DownloadsActivity.class));
+            } else if (id == R.id.nav_favorites) {
+                // الانتقال للمفضلة
+                startActivity(new Intent(MainActivity.this, LibraryActivity.class));
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(MainActivity.this, ProfileActivity.class));
             } else if (id == R.id.nav_admin) {
