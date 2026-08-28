@@ -1,6 +1,9 @@
-package com.fire.mangareader.activity;
+with open('app/src/main/java/com/fire/mangareader/activity/ProfileActivity.java', 'r') as f:
+    content = f.read()
 
-import android.content.Intent;
+import re
+
+new_imports = '''import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -18,10 +21,11 @@ import com.fire.mangareader.database.AppDatabase;
 import com.fire.mangareader.utils.PreferenceManager;
 import com.fire.mangareader.utils.DonutChartView;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;'''
 
-public class ProfileActivity extends AppCompatActivity {
+content = re.sub(r'import android.content.Intent;.*?import com.google.firebase.auth.FirebaseAuth;', new_imports, content, flags=re.DOTALL)
+
+new_activity = '''public class ProfileActivity extends AppCompatActivity {
     private TextView tvUserName, tvFullName;
     private ImageView profileImage;
     private PreferenceManager prefs;
@@ -175,4 +179,9 @@ public class ProfileActivity extends AppCompatActivity {
                 .setNegativeButton("إلغاء", null)
                 .show();
     }
-}
+}'''
+
+content = re.sub(r'public class ProfileActivity extends AppCompatActivity \{.*$', new_activity, content, flags=re.DOTALL)
+
+with open('app/src/main/java/com/fire/mangareader/activity/ProfileActivity.java', 'w') as f:
+    f.write(content)

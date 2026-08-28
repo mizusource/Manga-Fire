@@ -169,6 +169,29 @@ public class MangaDetailActivity extends AppCompatActivity {
             btnFavorite.setOnClickListener(v -> toggleFavorite());
         }
 
+                View btnUserRating = findViewById(R.id.btnUserRating);
+        if (btnUserRating != null) {
+            btnUserRating.setOnClickListener(v -> {
+                String[] ratings = {"10/10 - أسطورية", "9/10 - ممتازة", "8/10 - جيدة جداً", "7/10 - جيدة", "6/10 - مقبولة", "5/10 - متوسطة", "إزالة التقييم"};
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("تقييمك للمانجا")
+                        .setItems(ratings, (dialog, which) -> {
+                            TextView tvUserRating = findViewById(R.id.tvUserRating);
+                            ImageView ivUserRatingStar = findViewById(R.id.ivUserRatingStar);
+                            if (which == 6) {
+                                tvUserRating.setText("-/10");
+                                ivUserRatingStar.setImageResource(R.drawable.ic_star_outline);
+                                ivUserRatingStar.setColorFilter(null); // Clear filter
+                            } else {
+                                tvUserRating.setText(ratings[which].split(" ")[0]);
+                                ivUserRatingStar.setImageResource(R.drawable.ic_star);
+                                ivUserRatingStar.setColorFilter(android.graphics.Color.parseColor("#FF9800"));
+                            }
+                            android.widget.Toast.makeText(this, "تم حفظ تقييمك", android.widget.Toast.LENGTH_SHORT).show();
+                        })
+                        .show();
+            });
+        }
         View btnMyList = findViewById(R.id.btnMyList);
         if (btnMyList != null) {
             btnMyList.setOnClickListener(v -> showMyListBottomSheet());
@@ -487,13 +510,24 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
     private void checkFavoriteStatus() {
         new Thread(() -> {
-            isFavorite = AppDatabase.getInstance(this).mangaDao().isFavorite(mangaUrl);
+            LibraryItem item = AppDatabase.getInstance(this).mangaDao().getItemById(mangaUrl);
+            isFavorite = (item != null && item.isFavorite());
+            String status = (item != null && item.getStatus() != null) ? item.getStatus() : "غير مضاف";
             runOnUiThread(() -> {
-                btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-                btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+                if (btnFavorite != null) {
+                    btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+                    btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+                }
                 if (tvFavoriteText != null) {
                     tvFavoriteText.setText(isFavorite ? "محفوظ" : "حفظ");
                     tvFavoriteText.setTextColor(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+                }
+                android.widget.TextView tvMyListStatus = findViewById(R.id.tvMyListStatus);
+                if (tvMyListStatus != null) {
+                    tvMyListStatus.setText(status);
+                    if (!status.equals("غير مضاف")) {
+                        tvMyListStatus.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+                    }
                 }
             });
         }).start();
@@ -524,20 +558,23 @@ public class MangaDetailActivity extends AppCompatActivity {
             @Override
             public void onSuccess(com.fire.mangareader.model.AniListMetadata metadata) {
                 runOnUiThread(() -> {
-                    TextView tvRatingScore = findViewById(R.id.tvRatingScore);
-                    TextView tvRatingCount = findViewById(R.id.tvRatingCount);
+                    TextView tvGlobalRating = findViewById(R.id.tvGlobalRating);
+                    TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
+                    TextView tvALRating = findViewById(R.id.tvALRating);
+                    TextView tvALRatingCount = findViewById(R.id.tvALRatingCount);
                     TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);
                     TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
                     TextView tvAniListArtist = findViewById(R.id.tvAniListArtist);
                     TextView tvAniListCountry = findViewById(R.id.tvAniListCountry);
                     TextView tvAniListDates = findViewById(R.id.tvAniListDates);
 
-                    if (tvRatingScore != null && metadata.averageScore > 0) {
+                    if (tvALRating != null && metadata.averageScore > 0) {
                         double scoreOutOf10 = metadata.averageScore / 10.0;
-                        tvRatingScore.setText(String.format(java.util.Locale.US, "%.1f/10", scoreOutOf10));
+                        tvALRating.setText(String.format(java.util.Locale.US, "%.1f/10", scoreOutOf10));
                     }
-                    if (tvRatingCount != null && metadata.popularity > 0) {
-                        tvRatingCount.setText(metadata.popularity + " متابع 🌟");
+                    if (tvALRatingCount != null && metadata.popularity > 0) {
+                        int pop = metadata.popularity;
+                        tvALRatingCount.setText(pop >= 1000 ? (pop / 1000) + "K" : String.valueOf(pop));
                     }
                     if (tvAniListFormat != null && metadata.format != null) {
                         tvAniListFormat.setText(metadata.format);
@@ -571,15 +608,6 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
 
     private void setupRatingButtons() {
-        View btnAddRating = findViewById(R.id.btnAddRating);
-        if (btnAddRating != null) {
-            btnAddRating.setOnClickListener(v -> showMultiCriteriaRatingDialog());
-        }
-
-        View btnViewStats = findViewById(R.id.btnViewStats);
-        if (btnViewStats != null) {
-            btnViewStats.setOnClickListener(v -> showRatingStatsDialog());
-        }
     }
 
     private void showMultiCriteriaRatingDialog() {
@@ -619,10 +647,10 @@ public class MangaDetailActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(double newAverage, int totalVotes) {
                     runOnUiThread(() -> {
-                        TextView tvRatingScore = findViewById(R.id.tvRatingScore);
-                        TextView tvRatingCount = findViewById(R.id.tvRatingCount);
-                        if (tvRatingScore != null) tvRatingScore.setText(String.format(java.util.Locale.US, "%.1f/10", newAverage));
-                        if (tvRatingCount != null) tvRatingCount.setText(totalVotes + " صوت");
+                        TextView tvGlobalRating = findViewById(R.id.tvGlobalRating);
+                        TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
+                        if (tvGlobalRating != null) tvGlobalRating.setText(String.format(java.util.Locale.US, "%.1f/10", newAverage));
+                        if (tvGlobalRatingCount != null) tvGlobalRatingCount.setText(String.valueOf(totalVotes));
                         Toast.makeText(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐", Toast.LENGTH_SHORT).show();
                     });
                 }

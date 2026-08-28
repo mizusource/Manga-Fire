@@ -284,10 +284,17 @@ public class MainActivity extends AppCompatActivity {
         android.view.View headerView = navView.getHeaderView(0);
         if (headerView != null) {
             android.widget.ImageView btnEditProfile = headerView.findViewById(R.id.btnEditProfile);
+            android.widget.ImageView btnNotifications = headerView.findViewById(R.id.btnNotifications);
             android.widget.TextView navHeaderName = headerView.findViewById(R.id.navHeaderName);
             android.widget.TextView navHeaderEmail = headerView.findViewById(R.id.navHeaderEmail);
             android.widget.ImageView navHeaderImage = headerView.findViewById(R.id.navHeaderImage);
             
+            if (btnNotifications != null) {
+                btnNotifications.setOnClickListener(v -> {
+                    android.widget.Toast.makeText(MainActivity.this, "لا توجد إشعارات حالياً", android.widget.Toast.LENGTH_SHORT).show();
+                });
+            }
+
             com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
             if (user != null) {
                 navHeaderName.setText(user.getDisplayName() != null && !user.getDisplayName().isEmpty() ? user.getDisplayName() : "المستخدم");

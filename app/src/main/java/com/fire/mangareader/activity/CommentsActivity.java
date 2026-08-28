@@ -51,6 +51,16 @@ public class CommentsActivity extends AppCompatActivity {
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(this, commentList);
         adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
+        adapter.setOnReplyClickListener(comment -> {
+            String username = comment.username != null ? comment.username : comment.user_name;
+            etComment.setText("@" + username + " ");
+            etComment.setSelection(etComment.getText().length());
+            etComment.requestFocus();
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(etComment, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
         
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);

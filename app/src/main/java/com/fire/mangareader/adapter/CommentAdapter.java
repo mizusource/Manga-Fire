@@ -21,6 +21,13 @@ import java.util.List;
 import java.util.HashMap;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
+    public interface OnReplyClickListener {
+        void onReplyClick(Comment comment);
+    }
+    private OnReplyClickListener replyListener;
+    public void setOnReplyClickListener(OnReplyClickListener listener) {
+        this.replyListener = listener;
+    }
     private Context context;
     private List<Comment> commentList;
     private String currentMangaDocId;
@@ -107,7 +114,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         });
 
         holder.btnReply.setOnClickListener(v -> {
-            Toast.makeText(context, "ميزة الردود قادمة قريباً", Toast.LENGTH_SHORT).show();
+            if (replyListener != null) {
+                replyListener.onReplyClick(comment);
+            } else {
+                Toast.makeText(context, "الرد: @" + (comment.username != null ? comment.username : comment.user_name), Toast.LENGTH_SHORT).show();
+            }
         });
 
         holder.btnMore.setOnClickListener(v -> {
@@ -118,7 +129,14 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             }
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getTitle().equals("إبلاغ عن التعليق")) {
-                    Toast.makeText(context, "تم الإبلاغ بنجاح", Toast.LENGTH_SHORT).show();
+                    if (comment.id != null) {
+                        java.util.Map<String, Object> report = new java.util.HashMap<>();
+                        report.put("commentId", comment.id);
+                        report.put("commentText", comment.text);
+                        report.put("reportedBy", user != null ? user.getUid() : "anonymous");
+                        FirebaseFirestore.getInstance().collection("reports").add(report);
+                    }
+                    Toast.makeText(context, "تم رفع البلاغ للإدارة لمراجعته، شكراً لك.", Toast.LENGTH_LONG).show();
                 } else if (item.getTitle().equals("حذف التعليق")) {
                     if (comment.id != null && currentMangaDocId != null) {
                         FirebaseFirestore.getInstance()

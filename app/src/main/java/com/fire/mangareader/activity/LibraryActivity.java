@@ -65,21 +65,26 @@ public class LibraryActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 // سحب البيانات من Room Database
-                List<LibraryItem> items = AppDatabase.getInstance(this).mangaDao().getAllItems();
+                String filterStatus = getIntent().getStringExtra("FILTER_STATUS");
+                List<LibraryItem> items;
+                if (filterStatus != null && !filterStatus.isEmpty()) {
+                    items = AppDatabase.getInstance(this).mangaDao().getAllItems();
+                } else {
+                    items = AppDatabase.getInstance(this).mangaDao().getAllFavorites();
+                }
                 
                 List<Manga> mappedList = new ArrayList<>();
-                String filterStatus = getIntent().getStringExtra("FILTER_STATUS");
                 for (LibraryItem item : items) {
                     boolean matchesFilter = false;
                     if (filterStatus != null && !filterStatus.isEmpty()) {
                         matchesFilter = filterStatus.equals(item.getStatus());
                     } else {
-                        matchesFilter = item.isFavorite();
+                        matchesFilter = true; // since we already fetched only favorites
                     }
                     
                     if (matchesFilter) {
                         Manga manga = new Manga();
-                        manga.setTitle(item.getTitle());
+                        manga.setTitle(item.getTitle() != null ? item.getTitle() : "مجهول");
                         manga.setUrl(item.getMangaId());
                         manga.setCoverUrl(item.getCoverUrl());
                         manga.setRating("❤️"); // وضع قلب كتقييم لتمييزها

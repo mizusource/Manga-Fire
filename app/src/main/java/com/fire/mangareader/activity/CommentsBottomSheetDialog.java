@@ -65,6 +65,16 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(getContext(), commentList);
         adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
+        adapter.setOnReplyClickListener(comment -> {
+            String username = comment.username != null ? comment.username : comment.user_name;
+            etCommentInput.setText("@" + username + " ");
+            etCommentInput.setSelection(etCommentInput.getText().length());
+            etCommentInput.requestFocus();
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(etCommentInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
         rvComments.setLayoutManager(new LinearLayoutManager(getContext()));
         rvComments.setAdapter(adapter);
 
