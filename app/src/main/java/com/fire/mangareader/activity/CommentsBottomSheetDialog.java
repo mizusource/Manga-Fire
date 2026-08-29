@@ -30,7 +30,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     private CommentAdapter adapter;
     private List<Comment> commentsList;
     private EditText etCommentInput;
-    private ImageButton btnSendComment;
+    private android.widget.ImageView btnSendComment;
     private ProgressBar progressBar;
     private TextView tvEmptyComments;
     private SupabaseManager supabaseManager;

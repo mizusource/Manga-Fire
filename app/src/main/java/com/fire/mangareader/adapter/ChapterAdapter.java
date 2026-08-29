@@ -34,6 +34,12 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
     private String mangaUrl;
     private List<String> readChapters = new ArrayList<>();
     private List<String> downloadedChapters = new ArrayList<>();
+    private int displayLimit = 50;
+
+    public void setDisplayLimit(int limit) {
+        this.displayLimit = limit;
+        notifyDataSetChanged();
+    }
 
     private String mangaTitle, mangaCover;
 
@@ -294,9 +300,9 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         }
     }
 
-    @Override
+@Override
     public int getItemCount() {
-        return chapters != null ? chapters.size() : 0;
+        return chapters != null ? Math.min(chapters.size(), displayLimit) : 0;
     }
 
     static class ChapterViewHolder extends RecyclerView.ViewHolder {

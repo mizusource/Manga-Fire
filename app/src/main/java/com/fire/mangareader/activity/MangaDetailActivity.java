@@ -66,6 +66,23 @@ public class MangaDetailActivity extends AppCompatActivity {
         statusText = findViewById(R.id.mangaStatus);
         descriptionText = findViewById(R.id.mangaDescription);
         chaptersRecycler = findViewById(R.id.chaptersRecyclerView);
+        
+        // Fix ANR by lazy loading chapters inside NestedScrollView
+        androidx.core.widget.NestedScrollView nestedScrollView = findViewById(R.id.nestedScrollView);
+        if (nestedScrollView != null) {
+            nestedScrollView.setOnScrollChangeListener(new androidx.core.widget.NestedScrollView.OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(androidx.core.widget.NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                    if (v.getChildAt(0) != null && scrollY >= (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight() - 200)) {
+                        if (chapterAdapter != null && chapterList != null && chapterAdapter.getItemCount() < chapterList.size()) {
+                            int currentSize = chapterAdapter.getItemCount();
+                            int nextLimit = Math.min(currentSize + 50, chapterList.size());
+                            chapterAdapter.setDisplayLimit(nextLimit);
+                        }
+                    }
+                }
+            });
+        }
         progressBar = findViewById(R.id.progressBar);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); 
         btnFavorite = findViewById(R.id.btnFavorite);
@@ -330,7 +347,7 @@ public class MangaDetailActivity extends AppCompatActivity {
         webView.setWebViewClient(new android.webkit.WebViewClient() {
             
             
-            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; runOnUiThread(() -> { progressBar.setVisibility(View.GONE); swipeRefreshLayout.setRefreshing(false); Toast.makeText(MangaDetailActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
+            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; isProcessed[0] = true; runOnUiThread(() -> { progressBar.setVisibility(View.GONE); swipeRefreshLayout.setRefreshing(false); Toast.makeText(MangaDetailActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
                 rootView.removeView(webView);
                 try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
             }
@@ -357,9 +374,11 @@ public class MangaDetailActivity extends AppCompatActivity {
                             if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { 
                                 runOnUiThread(() -> { 
                                     progressBar.setVisibility(View.GONE); 
-                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); 
-                                    webView.setAlpha(0.01f); 
-                                    Toast.makeText(MangaDetailActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); 
+                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT, 
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT)); 
+                                    webView.setAlpha(1.0f); 
+                                    Toast.makeText(MangaDetailActivity.this, "يرجى حل اختبار التحقق (Cloudflare) للمتابعة", Toast.LENGTH_LONG).show(); 
                                 });
                                 return; 
                             }

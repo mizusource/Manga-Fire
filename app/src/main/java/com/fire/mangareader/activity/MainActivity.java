@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(new android.webkit.WebViewClient() {
             
             
-            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; runOnUiThread(() -> { if(mainShimmerView != null) {
+            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; isProcessed[0] = true; runOnUiThread(() -> { if(mainShimmerView != null) {
                             mainShimmerView.stopShimmer();
                             mainShimmerView.setVisibility(View.GONE);
                         } swipeRefreshMain.setRefreshing(false); Toast.makeText(MainActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
@@ -244,9 +244,11 @@ public class MainActivity extends AppCompatActivity {
                                         mainShimmerView.stopShimmer();
                                         mainShimmerView.setVisibility(View.GONE);
                                     } 
-                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); 
-                                    webView.setAlpha(0.01f); 
-                                    Toast.makeText(MainActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); 
+                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT, 
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT)); 
+                                    webView.setAlpha(1.0f); 
+                                    Toast.makeText(MainActivity.this, "يرجى حل اختبار التحقق (Cloudflare) للمتابعة", Toast.LENGTH_LONG).show(); 
                                 });
                                 return; 
                             }
