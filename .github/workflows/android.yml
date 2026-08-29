@@ -28,10 +28,12 @@ jobs:
 
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon
-
-      # 1. استخراج المفتاح السري من جيثب وتحويله لملف
+      # 1. استخراج المفتاح السري بطريقة آمنة تدعم الأسطر المتعددة
       - name: Decode Keystore
-        run: echo "${{ secrets.SIGNING_KEY }}" | base64 --decode > keystore.jks
+        run: |
+          cat <<EOF | base64 --decode > keystore.jks
+          ${{ secrets.SIGNING_KEY }}
+          EOF
 
       # 2. توقيع التطبيق باستخدام أدوات أندرويد الرسمية المدمجة في السيرفر
       - name: Sign APK Native
