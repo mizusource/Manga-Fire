@@ -2,6 +2,9 @@ package com.fire.mangareader.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import com.fire.mangareader.utils.AppAdminSettings;
+import androidx.cardview.widget.CardView;
+import android.widget.TextView;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -65,6 +68,26 @@ public class MainActivity extends AppCompatActivity {
 
         
         rvLatestUpdates = findViewById(R.id.rvLatestUpdates);
+        CardView announcementBanner = findViewById(R.id.announcementBanner);
+        TextView tvAnnouncementText = findViewById(R.id.tvAnnouncementText);
+        
+        AppAdminSettings.addListener(() -> {
+            if (AppAdminSettings.announcementEnabled && !AppAdminSettings.announcementText.isEmpty()) {
+                if (announcementBanner != null) announcementBanner.setVisibility(View.VISIBLE);
+                if (tvAnnouncementText != null) tvAnnouncementText.setText(AppAdminSettings.announcementText);
+            } else {
+                if (announcementBanner != null) announcementBanner.setVisibility(View.GONE);
+            }
+        });
+        
+        // Initial check
+        if (AppAdminSettings.announcementEnabled && !AppAdminSettings.announcementText.isEmpty()) {
+            if (announcementBanner != null) announcementBanner.setVisibility(View.VISIBLE);
+            if (tvAnnouncementText != null) tvAnnouncementText.setText(AppAdminSettings.announcementText);
+        } else {
+            if (announcementBanner != null) announcementBanner.setVisibility(View.GONE);
+        }
+
         vpHeroBanner = findViewById(R.id.vpHeroBanner);
 
         swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
@@ -257,6 +280,17 @@ public class MainActivity extends AppCompatActivity {
                     if (!fetchedList.isEmpty()) {
                         mangaList.clear();
                         mangaList.addAll(fetchedList);
+                        
+                        // Setup Hero Banner with top 3-5 mangas
+                        if (mangaList.size() > 3) {
+                            java.util.List<Manga> bannerList = new java.util.ArrayList<>(mangaList.subList(0, Math.min(5, mangaList.size())));
+                            HeroBannerAdapter bannerAdapter = new HeroBannerAdapter(MainActivity.this, bannerList);
+                            vpHeroBanner.setAdapter(bannerAdapter);
+                            
+                            // Remove them from main list to avoid duplication if preferred, or keep them.
+                            // Let's keep them so the list is full.
+                        }
+
                         adapter.notifyDataSetChanged();
                     } else {
                         if (!isSilentRefresh) Toast.makeText(MainActivity.this, "لم نتمكن من جلب الفصول الرئيسية.", Toast.LENGTH_SHORT).show();
