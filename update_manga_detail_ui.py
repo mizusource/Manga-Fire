@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+import re
+
+new_xml = """<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -114,8 +116,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="32dp"
                         android:background="#00000000"
-                        app:tabIndicatorColor="#39FF14"
-                        app:tabSelectedTextColor="#39FF14"
+                        app:tabIndicatorColor="#00E5FF"
+                        app:tabSelectedTextColor="#00E5FF"
                         app:tabTextColor="#B3FFFFFF"
                         app:tabIndicatorHeight="3dp">
                         <com.google.android.material.tabs.TabItem android:text="التفاصيل" />
@@ -349,7 +351,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_marginTop="50dp"
-                            android:indeterminateTint="#39FF14"
+                            android:indeterminateTint="#00E5FF"
                             android:visibility="gone" />
                             
                     </FrameLayout>
@@ -416,3 +418,7 @@
         </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>
+"""
+
+with open("app/src/main/res/layout/activity_manga_detail.xml", "w") as f:
+    f.write(new_xml)

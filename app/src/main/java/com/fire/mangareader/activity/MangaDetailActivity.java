@@ -58,7 +58,7 @@ public class MangaDetailActivity extends AppCompatActivity {
             supportPostponeEnterTransition();
         }
         coverImageBlur = findViewById(R.id.mangaCoverBlur);
-        titleText = findViewById(R.id.toolbarTitle);
+        // titleText = findViewById(R.id.toolbarTitle);
         TextView mangaTitleDetail = findViewById(R.id.mangaTitleDetail);
         TextView authorText = findViewById(R.id.mangaAuthor);
         if (mangaTitleDetail != null) mangaTitleDetail.setText(mangaTitle);
@@ -68,12 +68,32 @@ public class MangaDetailActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); 
         btnFavorite = findViewById(R.id.btnFavorite);
-        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
-        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
-        tvFavoriteText = findViewById(R.id.tvFavoriteText);
+        // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        // btnCommentsContainer
+        // tvFavoriteText
         btnComments = findViewById(R.id.btnComments);
 
-        titleText.setText(mangaTitle);
+        // titleText.setText(mangaTitle);
+        
+        android.widget.Button btnStartReading = findViewById(R.id.btnStartReading);
+        if (btnStartReading != null) {
+            btnStartReading.setOnClickListener(v -> {
+                if (chapterList != null && !chapterList.isEmpty()) {
+                    // Try to find the first unread chapter (or just start from chapter 1)
+                    com.fire.mangareader.model.Chapter firstChapter = chapterList.get(chapterList.size() - 1);
+                    android.content.Intent intent = new android.content.Intent(MangaDetailActivity.this, ChapterReaderActivity.class);
+                    intent.putExtra("chapterUrl", firstChapter.getUrl());
+                    intent.putExtra("mangaUrl", mangaUrl);
+                    intent.putExtra("mangaTitle", mangaTitle);
+                    intent.putExtra("mangaCover", mangaCover);
+                    intent.putExtra("chapterTitle", firstChapter.getTitle());
+                    startActivity(intent);
+                } else {
+                    android.widget.Toast.makeText(this, "لا توجد فصول متاحة بعد", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         ImageView btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
@@ -114,9 +134,9 @@ public class MangaDetailActivity extends AppCompatActivity {
                         
 
                         ImageView btnFavorite = findViewById(R.id.btnFavorite);
-        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
-        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
-        tvFavoriteText = findViewById(R.id.tvFavoriteText);
+        // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        // btnCommentsContainer
+        // tvFavoriteText
                     }
                 });
             }
@@ -186,14 +206,14 @@ public class MangaDetailActivity extends AppCompatActivity {
                 new androidx.appcompat.app.AlertDialog.Builder(this)
                         .setTitle("تقييمك للمانجا")
                         .setItems(ratings, (dialog, which) -> {
-                            TextView tvUserRating = findViewById(R.id.tvUserRating);
+                            // TextView tvUserRating = findViewById(R.id.tvUserRating);
                             ImageView ivUserRatingStar = findViewById(R.id.ivUserRatingStar);
                             if (which == 6) {
-                                tvUserRating.setText("-/10");
+                                // tvUserRating
                                 ivUserRatingStar.setImageResource(R.drawable.ic_star_outline);
                                 ivUserRatingStar.setColorFilter(null); // Clear filter
                             } else {
-                                tvUserRating.setText(ratings[which].split(" ")[0]);
+                                // tvUserRating
                                 ivUserRatingStar.setImageResource(R.drawable.ic_star);
                                 ivUserRatingStar.setColorFilter(android.graphics.Color.parseColor("#FF9800"));
                             }
@@ -202,12 +222,11 @@ public class MangaDetailActivity extends AppCompatActivity {
                         .show();
             });
         }
-        View btnMyList = findViewById(R.id.btnMyList);
-        if (btnMyList != null) {
-            btnMyList.setOnClickListener(v -> showMyListBottomSheet());
+        // View btnMyList
+        if (false) {
+            // btnMyList
         }
-        if (btnCommentsContainer != null) {
-            btnCommentsContainer.setOnClickListener(v -> {
+        if (btnComments != null) { btnComments.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
                     CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
@@ -510,9 +529,9 @@ public class MangaDetailActivity extends AppCompatActivity {
             isFavorite = true;
             runOnUiThread(() -> {
                 ImageView btnFavorite = findViewById(R.id.btnFavorite);
-        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
-        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
-        tvFavoriteText = findViewById(R.id.tvFavoriteText);
+        // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        // btnCommentsContainer
+        // tvFavoriteText
                 if (btnFavorite != null) btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
                 android.widget.Toast.makeText(MangaDetailActivity.this, "تمت الإضافة إلى: " + status, android.widget.Toast.LENGTH_SHORT).show();
             });
@@ -528,15 +547,12 @@ public class MangaDetailActivity extends AppCompatActivity {
                     btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
                     btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
                 }
-                if (tvFavoriteText != null) {
-                    tvFavoriteText.setText(isFavorite ? "محفوظ" : "حفظ");
-                    tvFavoriteText.setTextColor(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
-                }
-                android.widget.TextView tvMyListStatus = findViewById(R.id.tvMyListStatus);
-                if (tvMyListStatus != null) {
-                    tvMyListStatus.setText(status);
+                
+                // android.widget.TextView tvMyListStatus
+                if (false) {
+                    // tvMyListStatus
                     if (!status.equals("غير مضاف")) {
-                        tvMyListStatus.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+                        // tvMyListStatus(android.graphics.Color.parseColor("#FF9800"));
                     }
                 }
             });
@@ -572,11 +588,11 @@ public class MangaDetailActivity extends AppCompatActivity {
                     TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
                     TextView tvALRating = findViewById(R.id.tvALRating);
                     TextView tvALRatingCount = findViewById(R.id.tvALRatingCount);
-                    TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);
-                    TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
-                    TextView tvAniListArtist = findViewById(R.id.tvAniListArtist);
+                    // TextView tvAniListFormat
+                    // TextView tvAniListAuthor
+                    // TextView tvAniListArtist
                     TextView tvAniListCountry = findViewById(R.id.tvAniListCountry);
-                    TextView tvAniListDates = findViewById(R.id.tvAniListDates);
+                    // TextView tvAniListDates
 
                     if (tvALRating != null && metadata.averageScore > 0) {
                         double scoreOutOf10 = metadata.averageScore / 10.0;
@@ -586,20 +602,20 @@ public class MangaDetailActivity extends AppCompatActivity {
                         int pop = metadata.popularity;
                         tvALRatingCount.setText(pop >= 1000 ? (pop / 1000) + "K" : String.valueOf(pop));
                     }
-                    if (tvAniListFormat != null && metadata.format != null) {
-                        tvAniListFormat.setText(metadata.format);
+                    if (false && metadata.format != null) {
+                        // tvAniListFormat(metadata.format);
                     }
-                    if (tvAniListAuthor != null) {
-                        tvAniListAuthor.setText("المؤلف: " + (metadata.author != null && !metadata.author.isEmpty() ? metadata.author : "غير متوفر"));
+                    if (false) {
+                        // tvAniListAuthor("المؤلف: " + (metadata.author != null && !metadata.author.isEmpty() ? metadata.author : "غير متوفر"));
                     }
-                    if (tvAniListArtist != null && metadata.artist != null) {
-                        tvAniListArtist.setText("الرسام: " + metadata.artist);
+                    if (false && metadata.artist != null) {
+                        // tvAniListArtist("الرسام: " + metadata.artist);
                     }
                     if (tvAniListCountry != null && metadata.countryOfOrigin != null) {
                         tvAniListCountry.setText("دولة المنشأ: " + metadata.countryOfOrigin);
                     }
-                    if (tvAniListDates != null) {
-                        tvAniListDates.setText("الإصدار: " + metadata.getFormattedDates());
+                    if (false) {
+                        // tvAniListDates("الإصدار: " + metadata.getFormattedDates());
                     }
                 });
             }
@@ -607,10 +623,7 @@ public class MangaDetailActivity extends AppCompatActivity {
             @Override
             public void onError(String errorMessage) {
                 runOnUiThread(() -> {
-                    TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
-                    if (tvAniListAuthor != null && tvAniListAuthor.getText().toString().contains("جاري الجلب")) {
-                        tvAniListAuthor.setText("المؤلف: غير متوفر");
-                    }
+                    // Ignored
                 });
                 // Silently fallback to scraper data
             }
@@ -707,10 +720,7 @@ public class MangaDetailActivity extends AppCompatActivity {
             
             btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
             btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
-            if (tvFavoriteText != null) {
-                tvFavoriteText.setText(isFavorite ? "محفوظ" : "حفظ");
-                tvFavoriteText.setTextColor(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
-            }
+            
             
             new Thread(() -> {
                 LibraryItem item = new LibraryItem();
