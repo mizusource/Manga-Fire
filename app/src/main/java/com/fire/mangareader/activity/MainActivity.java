@@ -227,24 +227,45 @@ public class MainActivity extends AppCompatActivity {
                 rootView.removeView(webView);
                 try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
             }
+            boolean[] isProcessed = {false};
             public void onPageFinished(android.webkit.WebView view, String url) {
+                if (isProcessed[0]) return;
                 String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
                 if (cookies != null) { com.fire.mangareader.network.MangaScraper.globalCookies = cookies; getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().putString("cloudflare_cookies", cookies).apply(); }
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
-                    if (html == null || html.equals("null")) return;
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { 
+                    try {
+                        view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
+                            if (isProcessed[0]) return;
+                            if (html == null || html.equals("null")) return;
 
-                    if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { runOnUiThread(() -> { if(mainShimmerView != null) {
-                            mainShimmerView.stopShimmer();
-                            mainShimmerView.setVisibility(View.GONE);
-                        } webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); webView.setAlpha(0.01f); Toast.makeText(MainActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); });
-                        return; 
-                    }
-
-                    rootView.removeView(webView); try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {} 
-                    String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\u003E", ">").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\\\", "");
-                    
-                    parseHtmlLocally(cleanHtml, isSilentRefresh);
-                }); }, 2500);
+                            if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { 
+                                runOnUiThread(() -> { 
+                                    if(mainShimmerView != null) {
+                                        mainShimmerView.stopShimmer();
+                                        mainShimmerView.setVisibility(View.GONE);
+                                    } 
+                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1)); 
+                                    webView.setAlpha(0.01f); 
+                                    Toast.makeText(MainActivity.this, "يرجى الانتظار لتخطي حماية Cloudflare...", Toast.LENGTH_LONG).show(); 
+                                });
+                                return; 
+                            }
+                            
+                            isProcessed[0] = true;
+                            rootView.removeView(webView); 
+                            try { 
+                                webView.stopLoading(); 
+                                webView.loadUrl("about:blank"); 
+                                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { 
+                                    try { webView.destroy(); } catch (Exception ignored2) {} 
+                                }, 1500); 
+                            } catch (Exception ignored) {} 
+                            
+                            String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\u003E", ">").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\\\", "");
+                            parseHtmlLocally(cleanHtml, isSilentRefresh);
+                        }); 
+                    } catch (Exception ignored) {}
+                }, 2500);
             }
         });
         
@@ -330,5 +351,35 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void updateNavHeader() {}
+    private void updateNavHeader() {
+        com.fire.mangareader.network.SupabaseManager supabase = com.fire.mangareader.network.SupabaseManager.getInstance(this);
+        com.fire.mangareader.utils.PreferenceManager prefs = new com.fire.mangareader.utils.PreferenceManager(this);
+        
+        com.google.android.material.navigation.NavigationView navView = findViewById(R.id.nav_view);
+        android.view.View headerView = navView.getHeaderView(0);
+        android.widget.TextView navHeaderName = headerView.findViewById(R.id.navHeaderName);
+        android.widget.TextView navHeaderEmail = headerView.findViewById(R.id.navHeaderEmail);
+        android.widget.ImageView navHeaderImage = headerView.findViewById(R.id.navHeaderImage);
+        
+        if (supabase.isLoggedIn()) {
+            String name = prefs.getUserName();
+            navHeaderName.setText(name != null && !name.isEmpty() ? name : "مستخدم");
+            String email = prefs.getUserEmail();
+            navHeaderEmail.setText(email != null ? email : "");
+            headerView.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.activity.ProfileActivity.class)));
+            
+            // Check admin
+            if ("mstfybdwy633@gmail.com".equals(email)) {
+                navView.getMenu().findItem(R.id.nav_admin).setVisible(true);
+            } else {
+                navView.getMenu().findItem(R.id.nav_admin).setVisible(false);
+            }
+        } else {
+            navHeaderName.setText("تسجيل الدخول");
+            navHeaderEmail.setText("انقر هنا لتسجيل الدخول");
+            navHeaderImage.setImageResource(R.drawable.ic_drawer_profile);
+            headerView.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.activity.LoginActivity.class)));
+            navView.getMenu().findItem(R.id.nav_admin).setVisible(false);
+        }
+    }
 }
