@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_profile) {
                 startActivity(new Intent(MainActivity.this, ProfileActivity.class));
             } else if (id == R.id.nav_admin) {
-                startActivity(new Intent(MainActivity.this, AdminDashboardActivity.class));
+                startActivity(new Intent(MainActivity.this, AdminLoginActivity.class));
             } else if (id == R.id.nav_settings) {
                 // الانتقال لشاشة الإعدادات
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));

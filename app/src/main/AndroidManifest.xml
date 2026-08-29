@@ -59,6 +59,7 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
             <activity android:name=".activity.AdminDashboardActivity"  />
+        <activity android:name=".activity.AdminLoginActivity" />
             <activity android:name=".activity.NotificationsActivity" />
     </application>
 </manifest>
