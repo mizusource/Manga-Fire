@@ -125,7 +125,37 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         loadStats();
+        setupBottomNavigation();
     }
+
+    private void setupBottomNavigation() {
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        if (bottomNav == null) return;
+        bottomNav.setSelectedItemId(R.id.nav_profile);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_profile) {
+                return true;
+            } else if (id == R.id.nav_home) {
+                startActivity(new android.content.Intent(this, MainActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return false;
+            } else if (id == R.id.nav_library) {
+                startActivity(new android.content.Intent(this, LibraryActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return false;
+            } else if (id == R.id.nav_downloads) {
+                startActivity(new android.content.Intent(this, DownloadsActivity.class));
+                overridePendingTransition(0, 0);
+                finish();
+                return false;
+            }
+            return false;
+        });
+    }
+
 
     private void loadStats() {
         new Thread(() -> {

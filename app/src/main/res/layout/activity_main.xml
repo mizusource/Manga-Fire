@@ -114,27 +114,6 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Floating Bottom Navigation -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="24dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="8dp"
-        app:cardBackgroundColor="?attr/colorSurfaceVariant">
-        
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:background="@android:color/transparent"
-            app:menu="@menu/bottom_nav_menu"
-            app:itemIconTint="@color/nav_item_color"
-            app:itemTextColor="@color/nav_item_color"
-            app:labelVisibilityMode="selected"
-            app:elevation="0dp" />
-            
-    </com.google.android.material.card.MaterialCardView>
+    <include layout="@layout/layout_bottom_nav" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
