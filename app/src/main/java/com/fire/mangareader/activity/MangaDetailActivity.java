@@ -230,13 +230,13 @@ public class MangaDetailActivity extends AppCompatActivity {
         if (btnComments != null) { btnComments.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-                    CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
+                    CommentsBottomSheetDialog bottomSheet = CommentsBottomSheetDialog.newInstance(mangaUrl);
                     bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
                 }).start();
             });
         } else {
             btnComments.setOnClickListener(v -> {
-                CommentsBottomSheetDialog bottomSheet = new CommentsBottomSheetDialog(mangaUrl);
+                CommentsBottomSheetDialog bottomSheet = CommentsBottomSheetDialog.newInstance(mangaUrl);
                 bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
             });
         }

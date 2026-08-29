@@ -14,9 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.CommentAdapter;
 import com.fire.mangareader.model.Comment;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +26,7 @@ public class CommentsActivity extends AppCompatActivity {
     private CommentAdapter adapter;
     private List<Comment> commentList;
     
-    private FirebaseFirestore db;
+    private Object db;
     private String mangaUrl;
 
     @Override
@@ -41,7 +38,7 @@ public class CommentsActivity extends AppCompatActivity {
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         mangaUrl = getIntent().getStringExtra("mangaUrl");
-        db = FirebaseFirestore.getInstance();
+        db = null;
 
         recyclerView = findViewById(R.id.commentsRecyclerView);
         etComment = findViewById(R.id.etComment);
@@ -49,17 +46,8 @@ public class CommentsActivity extends AppCompatActivity {
 
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(this, commentList);
-        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
-        adapter.setOnReplyClickListener(comment -> {
-            String username = comment.username != null ? comment.username : comment.user_name;
-            etComment.setText("@" + username + " ");
-            etComment.setSelection(etComment.getText().length());
-            etComment.requestFocus();
-            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.showSoftInput(etComment, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
-            }
-        });
+        
+        
         
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
@@ -72,27 +60,7 @@ public class CommentsActivity extends AppCompatActivity {
 
     private void loadComments() {
         // جلب التعليقات الخاصة بهذه المانهوا تحديداً وترتيبها من الأقدم للأحدث
-        db.collection("comments")
-                .whereEqualTo("mangaUrl", mangaUrl)
-                .orderBy("timestamp", Query.Direction.ASCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "فشل تحميل التعليقات", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (value != null) {
-                        commentList.clear();
-                        for (QueryDocumentSnapshot doc : value) {
-                            Comment comment = doc.toObject(Comment.class);
-                            commentList.add(comment);
-                        }
-                        adapter.notifyDataSetChanged();
-                        // التمرير التلقائي لآخر تعليق في الأسفل
-                        if (!commentList.isEmpty()) {
-                            recyclerView.scrollToPosition(commentList.size() - 1);
-                        }
-                    }
-                });
+        
     }
 
     private void postComment() {
@@ -129,11 +97,9 @@ public class CommentsActivity extends AppCompatActivity {
             
         }
 
-        db.collection("comments").add(newComment)
-                .addOnSuccessListener(documentReference -> {
-                    etComment.setText("");
+        
                      
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to send comment", Toast.LENGTH_SHORT).show());
+                
+                
     }
 }

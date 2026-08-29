@@ -1,4 +1,25 @@
-package com.fire.mangareader.adapter;
+import re
+import os
+
+# CommentsActivity.java
+with open('app/src/main/java/com/fire/mangareader/activity/CommentsActivity.java', 'r') as f:
+    content = f.read()
+content = re.sub(r'db\.collection.*?;', '', content, flags=re.DOTALL)
+content = re.sub(r'db\.collection.*?\}\);', '', content, flags=re.DOTALL)
+with open('app/src/main/java/com/fire/mangareader/activity/CommentsActivity.java', 'w') as f:
+    f.write(content)
+
+# CommentsBottomSheetDialog.java
+with open('app/src/main/java/com/fire/mangareader/activity/CommentsBottomSheetDialog.java', 'r') as f:
+    content = f.read()
+content = re.sub(r'db\.collection.*?;', '', content, flags=re.DOTALL)
+content = re.sub(r'db\.collection.*?\}\);', '', content, flags=re.DOTALL)
+with open('app/src/main/java/com/fire/mangareader/activity/CommentsBottomSheetDialog.java', 'w') as f:
+    f.write(content)
+
+# CommentAdapter.java
+with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'w') as f:
+    f.write("""package com.fire.mangareader.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.model.Comment;
 import java.util.List;
+import android.widget.ImageButton;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
     private final Context context;
@@ -30,9 +52,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Comment comment = comments.get(position);
-        holder.tvUsername.setText(comment.username != null ? comment.username : "User");
+        holder.tvCommenterName.setText(comment.userName != null ? comment.userName : "User");
         holder.tvCommentText.setText(comment.text != null ? comment.text : "");
-        holder.tvLikeCount.setText(String.valueOf(comment.likes));
+        holder.tvLikesCount.setText(String.valueOf(comment.likes));
     }
 
     @Override
@@ -41,16 +63,17 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvUsername, tvCommentText, tvLikeCount;
-        public View btnLike, btnMore;
+        public TextView tvCommenterName, tvCommentText, tvLikesCount;
+        public ImageButton btnLike, btnMore;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvUsername = itemView.findViewById(R.id.tvUsername);
+            tvCommenterName = itemView.findViewById(R.id.tvCommenterName);
             tvCommentText = itemView.findViewById(R.id.tvCommentText);
-            tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
+            tvLikesCount = itemView.findViewById(R.id.tvLikesCount);
             btnLike = itemView.findViewById(R.id.btnLike);
             btnMore = itemView.findViewById(R.id.btnMore);
         }
     }
 }
+""")

@@ -9,8 +9,6 @@ import com.fire.mangareader.utils.AppAdminSettings;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,12 +23,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_dashboard);
-        com.google.firebase.auth.FirebaseUser currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null || currentUser.getEmail() == null || !currentUser.getEmail().equals("mstfybdwy633@gmail.com")) {
-            Toast.makeText(this, "عذراً، هذه الصفحة للمشرفين فقط", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        Object currentUser = null;
+        if (true) { finish(); return; }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -83,15 +77,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         updates.put("maintenance_mode", switchMaintenance.isChecked());
         updates.put("maintenance_message", etMaintenanceMessage.getText() != null ? etMaintenanceMessage.getText().toString() : "");
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("settings");
-        ref.updateChildren(updates).addOnCompleteListener(task -> {
-            btnSave.setEnabled(true);
-            btnSave.setText("حفظ الإعدادات والتطبيق");
-            if (task.isSuccessful()) {
-                Toast.makeText(this, "✅ تم تطبيق الإعدادات وحفظها في السيرفر", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "❌ فشل حفظ الإعدادات", Toast.LENGTH_SHORT).show();
-            }
-        });
+        Object ref = null;
     }
 }
