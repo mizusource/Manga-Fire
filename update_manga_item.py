@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+with open('app/src/main/res/layout/item_manga.xml', 'w') as f:
+    f.write('''<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -106,3 +107,4 @@
         
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
+''')

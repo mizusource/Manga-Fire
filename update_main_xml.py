@@ -1,4 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+with open('app/src/main/res/layout/activity_main.xml', 'r') as f:
+    content = f.read()
+
+new_content = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -138,3 +141,7 @@
     </com.google.android.material.card.MaterialCardView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+"""
+
+with open('app/src/main/res/layout/activity_main.xml', 'w') as f:
+    f.write(new_content)
