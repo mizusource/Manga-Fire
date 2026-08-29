@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/bg_bottom_sheet"
     android:paddingTop="16dp">
 
     <!-- Header -->
@@ -73,7 +73,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="?attr/colorSurface"
+            android:background="@drawable/bg_bottom_sheet"
             android:hint="اكتب تعليقك..."
             android:padding="12dp"
             android:textColor="?attr/colorOnSurface"

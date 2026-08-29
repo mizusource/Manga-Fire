@@ -48,7 +48,7 @@ public class StorageManagerActivity extends AppCompatActivity {
                 com.bumptech.glide.Glide.get(this).clearDiskCache();
                 deleteFolder(getCacheDir());
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Cache Cleared", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "تم مسح الذاكرة المؤقتة", Toast.LENGTH_SHORT).show();
                     calculateSizes();
                 });
             }).start();
@@ -63,7 +63,7 @@ public class StorageManagerActivity extends AppCompatActivity {
                 }
                 db.downloadDao().deleteAll();
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "All Downloads Cleared", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "تم مسح جميع التنزيلات", Toast.LENGTH_SHORT).show();
                     calculateSizes();
                 });
             }).start();
@@ -92,7 +92,7 @@ public class StorageManagerActivity extends AppCompatActivity {
                 }
                 int finalCount = count;
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "Deleted " + finalCount + " read chapters", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "تم حذف " + finalCount + " فصول مقروءة", Toast.LENGTH_SHORT).show();
                     calculateSizes();
                 });
             }).start();
@@ -146,8 +146,8 @@ public class StorageManagerActivity extends AppCompatActivity {
             long total = cacheMb + downMb;
 
             runOnUiThread(() -> {
-                tvCacheSize.setText("Cache: " + cacheMb + " MB");
-                tvDownloadsSize.setText("Downloads: " + downMb + " MB");
+                tvCacheSize.setText("المؤقتة: " + cacheMb + " م.ب");
+                tvDownloadsSize.setText("التنزيلات: " + downMb + " م.ب");
                 
                 if (total > 0) {
                     storageProgress.setProgress((int) ((cacheMb * 100) / total));
