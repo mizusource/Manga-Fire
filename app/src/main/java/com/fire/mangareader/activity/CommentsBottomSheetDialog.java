@@ -1,4 +1,6 @@
 package com.fire.mangareader.activity;
+import com.fire.mangareader.network.SupabaseManager;
+import com.fire.mangareader.network.SupabaseManager;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,8 +21,6 @@ import com.fire.mangareader.adapter.CommentAdapter;
 import com.fire.mangareader.model.Comment;
 import com.fire.mangareader.utils.PreferenceManager;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -39,8 +39,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     private CommentAdapter adapter;
     private List<Comment> commentList;
     private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
-
+    
     public CommentsBottomSheetDialog(String mangaUrl) {
         this.mangaUrl = mangaUrl;
     }
@@ -60,8 +59,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         btnLoginPrompt = view.findViewById(R.id.btnLoginPrompt);
 
         db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
-
+        
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(getContext(), commentList);
         adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
@@ -91,9 +89,8 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     }
 
     private void checkAuthStatus() {
-        FirebaseUser user = mAuth.getCurrentUser();
         PreferenceManager prefs = new PreferenceManager(requireContext());
-        if (user == null || prefs.isGuest()) {
+        if (!SupabaseManager.getInstance(requireContext()).isLoggedIn() || prefs.isGuest()) {
             layoutInput.setVisibility(View.GONE);
             layoutLoginPrompt.setVisibility(View.VISIBLE);
         } else {
@@ -147,8 +144,8 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         String savedPic = prefs.getProfilePic();
         if (savedPic != null && !savedPic.isEmpty()) {
             newComment.user_avatar = savedPic;
-        } else if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getPhotoUrl() != null) {
-            newComment.user_avatar = mAuth.getCurrentUser().getPhotoUrl().toString();
+        } else if (false) { // Using Supabase, picture would come from prefs or Supabase profile.
+            
         }
 
         db.collection("mangas").document(docId).collection("comments")

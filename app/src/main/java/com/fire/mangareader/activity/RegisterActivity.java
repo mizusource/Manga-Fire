@@ -10,14 +10,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fire.mangareader.R;
 import com.fire.mangareader.utils.PreferenceManager;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
+import com.fire.mangareader.network.SupabaseManager;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText etName, etEmail, etPassword;
     private Button btnRegister, btnGoToLogin;
-    private FirebaseAuth mAuth;
+    private SupabaseManager supabaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +23,7 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        mAuth = FirebaseAuth.getInstance();
+        supabaseManager = SupabaseManager.getInstance(this);
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -51,26 +49,22 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnRegister.setEnabled(false);
 
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    btnRegister.setEnabled(true);
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                    .setDisplayName(name)
-                                    .build();
-                            user.updateProfile(profileUpdates);
+        btnRegister.setEnabled(false);
+        supabaseManager.signUp(email, password, new SupabaseManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                btnRegister.setEnabled(true);
+                Toast.makeText(RegisterActivity.this, "تم التسجيل بنجاح، يرجى تسجيل الدخول", Toast.LENGTH_SHORT).show();
+                // Normally supabase might require email verification, but assuming it works directly or redirects to login
+                startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                finishAffinity();
+            }
 
-                            PreferenceManager prefs = new PreferenceManager(this);
-                            prefs.saveUser(user.getUid(), user.getEmail(), name, false);
-                            
-                            startActivity(new Intent(this, MainActivity.class));
-                            finishAffinity();
-                        }
-                    } else {
-                        Toast.makeText(this, "فشل إنشاء الحساب: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+            @Override
+            public void onError(String error) {
+                btnRegister.setEnabled(true);
+                Toast.makeText(RegisterActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

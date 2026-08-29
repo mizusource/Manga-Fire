@@ -1,4 +1,5 @@
 package com.fire.mangareader.adapter;
+import com.fire.mangareader.network.SupabaseManager;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -13,8 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.model.Comment;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentReference;
 import java.util.List;
@@ -77,10 +76,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             holder.spoilerOverlay.setVisibility(View.GONE);
         }
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        boolean isLoggedIn = com.fire.mangareader.network.SupabaseManager.getInstance(context).isLoggedIn();
         boolean isLiked = false;
-        if (user != null && comment.liked_by != null && comment.liked_by.containsKey(user.getUid())) {
-            isLiked = comment.liked_by.get(user.getUid());
+        if (isLoggedIn && comment.liked_by != null && comment.liked_by.containsKey(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId())) {
+            isLiked = comment.liked_by.get(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId());
         }
 
         if (isLiked) {
@@ -90,7 +89,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         }
 
         holder.btnLike.setOnClickListener(v -> {
-            if (user == null) {
+            if (!isLoggedIn) {
                 Toast.makeText(context, "يجب تسجيل الدخول للإعجاب", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -100,15 +99,15 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                 .collection("mangas").document(currentMangaDocId)
                 .collection("comments").document(comment.id);
                 
-            if (comment.liked_by != null && comment.liked_by.containsKey(user.getUid()) && comment.liked_by.get(user.getUid())) {
+            if (comment.liked_by != null && comment.liked_by.containsKey(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId()) && comment.liked_by.get(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId())) {
                 comment.likes--;
-                comment.liked_by.remove(user.getUid());
-                ref.update("likes", comment.likes, "liked_by." + user.getUid(), com.google.firebase.firestore.FieldValue.delete());
+                comment.liked_by.remove(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId());
+                ref.update("likes", comment.likes, "liked_by." + com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId(), com.google.firebase.firestore.FieldValue.delete());
             } else {
                 comment.likes++;
                 if (comment.liked_by == null) comment.liked_by = new HashMap<>();
-                comment.liked_by.put(user.getUid(), true);
-                ref.update("likes", comment.likes, "liked_by." + user.getUid(), true);
+                comment.liked_by.put(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId(), true);
+                ref.update("likes", comment.likes, "liked_by." + com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId(), true);
             }
             notifyItemChanged(position);
         });
@@ -124,7 +123,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         holder.btnMore.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(context, holder.btnMore);
             popup.getMenu().add("إبلاغ عن التعليق");
-            if (user != null && user.getEmail() != null && user.getEmail().equals("mstfybdwy633@gmail.com")) {
+            if (isLoggedIn && new com.fire.mangareader.utils.PreferenceManager(context).getUserEmail() != null && new com.fire.mangareader.utils.PreferenceManager(context).getUserEmail().equals("mstfybdwy633@gmail.com")) {
                 popup.getMenu().add("حذف التعليق");
             }
             popup.setOnMenuItemClickListener(item -> {
@@ -133,7 +132,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                         java.util.Map<String, Object> report = new java.util.HashMap<>();
                         report.put("commentId", comment.id);
                         report.put("commentText", comment.text);
-                        report.put("reportedBy", user != null ? user.getUid() : "anonymous");
+                        report.put("reportedBy", isLoggedIn ? com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId() : "anonymous");
                         FirebaseFirestore.getInstance().collection("reports").add(report);
                     }
                     Toast.makeText(context, "تم رفع البلاغ للإدارة لمراجعته، شكراً لك.", Toast.LENGTH_LONG).show();

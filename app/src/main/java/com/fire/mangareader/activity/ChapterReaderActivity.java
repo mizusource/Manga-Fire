@@ -79,6 +79,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
     
     private String chapterUrl;
     private String mangaUrl;
+    private String chapterTitle;
     
     private String nextChapterUrl = null, nextChapterTitle = null;
     private String prevChapterUrl = null, prevChapterTitle = null;
@@ -103,7 +104,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
 
         chapterUrl = getIntent().getStringExtra("chapterUrl");
         mangaUrl = getIntent().getStringExtra("mangaUrl");
-        String chapterTitle = getIntent().getStringExtra("chapterTitle");
+        chapterTitle = getIntent().getStringExtra("chapterTitle");
         String mangaTitle = getIntent().getStringExtra("mangaTitle");
         String mangaCover = getIntent().getStringExtra("mangaCover");
 
@@ -607,6 +608,10 @@ public class ChapterReaderActivity extends AppCompatActivity {
                     state.isCompleted = true;
                 }
                 AppDatabase.getInstance(this).chapterStateDao().insert(state);
+                
+                // Add to Supabase Read History
+                com.fire.mangareader.network.SupabaseManager.getInstance(this).markChapterRead(mangaUrl, chapterUrl, chapterTitle, null);
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }

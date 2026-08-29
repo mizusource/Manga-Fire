@@ -41,6 +41,7 @@ public class MangaDetailActivity extends AppCompatActivity {
     private ChapterAdapter chapterAdapter;
     private List<Chapter> chapterList;
     private boolean isFavorite = false;
+    private String currentLibraryStatus = "";
 
     
     protected void onCreate(Bundle savedInstanceState) {
@@ -538,25 +539,54 @@ public class MangaDetailActivity extends AppCompatActivity {
         }).start();
     }
     private void checkFavoriteStatus() {
-        new Thread(() -> {
-            LibraryItem item = AppDatabase.getInstance(this).mangaDao().getItemById(mangaUrl);
-            isFavorite = (item != null && item.isFavorite());
-            String status = (item != null && item.getStatus() != null) ? item.getStatus() : "غير مضاف";
+        if (!com.fire.mangareader.network.SupabaseManager.getInstance(this).isLoggedIn()) {
             runOnUiThread(() -> {
                 if (btnFavorite != null) {
-                    btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-                    btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+                    btnFavorite.setImageResource(R.drawable.ic_favorite_border);
+                    btnFavorite.setColorFilter(android.graphics.Color.GRAY);
+                }
+                isFavorite = false;
+                currentLibraryStatus = "";
+            });
+            return;
+        }
+
+        com.fire.mangareader.network.SupabaseManager.getInstance(this).checkLibraryStatus(mangaUrl, new com.fire.mangareader.network.SupabaseManager.DataCallback() {
+            @Override
+            public void onSuccess(org.json.JSONArray data) {
+                boolean inLibrary = data != null && data.length() > 0;
+                String status = "";
+                if (inLibrary) {
+                    try {
+                        status = data.getJSONObject(0).getString("status");
+                    } catch (Exception e) {}
                 }
                 
-                // android.widget.TextView tvMyListStatus
-                if (false) {
-                    // tvMyListStatus
-                    if (!status.equals("غير مضاف")) {
-                        // tvMyListStatus(android.graphics.Color.parseColor("#FF9800"));
+                final boolean isFav = inLibrary;
+                final String finalStatus = status;
+                
+                runOnUiThread(() -> {
+                    if (btnFavorite != null) {
+                        btnFavorite.setImageResource(isFav ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+                        btnFavorite.setColorFilter(isFav ? android.graphics.Color.RED : android.graphics.Color.GRAY);
                     }
-                }
-            });
-        }).start();
+                    isFavorite = isFav;
+                    currentLibraryStatus = finalStatus;
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    if (btnFavorite != null) {
+                        btnFavorite.setImageResource(R.drawable.ic_favorite_border);
+                        btnFavorite.setColorFilter(android.graphics.Color.GRAY);
+                    }
+                    isFavorite = false;
+                    currentLibraryStatus = "";
+                });
+            }
+        });
     }
 
     private void loadReadChapters() {
@@ -713,29 +743,63 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
 
     private void toggleFavorite() {
+        if (!com.fire.mangareader.network.SupabaseManager.getInstance(this).isLoggedIn()) {
+            Toast.makeText(this, "يجب تسجيل الدخول لإضافة المانجا للمكتبة", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         android.view.View targetView = btnFavoriteContainer != null ? btnFavoriteContainer : btnFavorite;
         targetView.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
             targetView.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-            isFavorite = !isFavorite;
             
-            btnFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-            btnFavorite.setColorFilter(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
+            String[] options = {"أقرأها حالياً", "أرغب بمشاهدتها", "مكتملة", "مفضلة", "إزالة من القائمة"};
+            String[] statusValues = {"reading", "plan_to_read", "completed", "favorite", "remove"};
             
+            int checkedItem = -1;
+            if (currentLibraryStatus.equals("reading")) checkedItem = 0;
+            else if (currentLibraryStatus.equals("plan_to_read")) checkedItem = 1;
+            else if (currentLibraryStatus.equals("completed")) checkedItem = 2;
+            else if (currentLibraryStatus.equals("favorite")) checkedItem = 3;
             
-            new Thread(() -> {
-                LibraryItem item = new LibraryItem();
-                item.setMangaId(mangaUrl);
-                item.setTitle(mangaTitle);
-                item.setCoverUrl(mangaCover);
-                item.setFavorite(isFavorite);
-                item.setAddedTime(System.currentTimeMillis());
-                if (isFavorite) AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().insert(item);
-                else {
-                    AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().setFavorite(mangaUrl, false);
-                    AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().cleanOrphans();
-                }
-            }).start();
-            Toast.makeText(MangaDetailActivity.this, isFavorite ? "تمت الإضافة للمفضلة" : "تمت الإزالة من المفضلة", Toast.LENGTH_SHORT).show();
+            new androidx.appcompat.app.AlertDialog.Builder(MangaDetailActivity.this)
+                    .setTitle("إضافة إلى المكتبة")
+                    .setSingleChoiceItems(options, checkedItem, (dialog, which) -> {
+                        dialog.dismiss();
+                        if (which == 4) {
+                            // Remove
+                            com.fire.mangareader.network.SupabaseManager.getInstance(MangaDetailActivity.this).removeFromLibrary(mangaUrl, new com.fire.mangareader.network.SupabaseManager.AuthCallback() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    isFavorite = false;
+                                    currentLibraryStatus = "";
+                                    btnFavorite.setImageResource(R.drawable.ic_favorite_border);
+                                    btnFavorite.setColorFilter(android.graphics.Color.GRAY);
+                                    Toast.makeText(MangaDetailActivity.this, "تمت الإزالة من المكتبة", Toast.LENGTH_SHORT).show();
+                                }
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(MangaDetailActivity.this, error, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
+                            String selectedStatus = statusValues[which];
+                            com.fire.mangareader.network.SupabaseManager.getInstance(MangaDetailActivity.this).addToLibrary(mangaUrl, mangaTitle, mangaCover, selectedStatus, new com.fire.mangareader.network.SupabaseManager.AuthCallback() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    isFavorite = true;
+                                    currentLibraryStatus = selectedStatus;
+                                    btnFavorite.setImageResource(R.drawable.ic_favorite);
+                                    btnFavorite.setColorFilter(android.graphics.Color.RED);
+                                    Toast.makeText(MangaDetailActivity.this, options[which], Toast.LENGTH_SHORT).show();
+                                }
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(MangaDetailActivity.this, error, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    })
+                    .show();
         }).start();
     }
 }

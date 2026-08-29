@@ -11,13 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fire.mangareader.R;
 import com.fire.mangareader.utils.PreferenceManager;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.fire.mangareader.network.SupabaseManager;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
     private Button btnLogin, btnGoToRegister;
-    private FirebaseAuth mAuth;
+    private SupabaseManager supabaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +24,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mAuth = FirebaseAuth.getInstance();
+        supabaseManager = SupabaseManager.getInstance(this);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
@@ -46,21 +45,23 @@ public class LoginActivity extends AppCompatActivity {
 
         btnLogin.setEnabled(false);
 
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    btnLogin.setEnabled(true);
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            PreferenceManager prefs = new PreferenceManager(this);
-                            prefs.saveUser(user.getUid(), user.getEmail(),
-                                    user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(), false);
-                            startActivity(new Intent(this, MainActivity.class));
-                            finish();
-                        }
-                    } else {
-                        Toast.makeText(this, "فشل تسجيل الدخول: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+        btnLogin.setEnabled(false);
+        supabaseManager.signIn(email, password, new SupabaseManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                btnLogin.setEnabled(true);
+                PreferenceManager prefs = new PreferenceManager(LoginActivity.this);
+                // Save user info, name defaults to email initially, we can fetch profile later if needed
+                prefs.saveUser(supabaseManager.getCurrentUserId(), email, email, false);
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }
+
+            @Override
+            public void onError(String error) {
+                btnLogin.setEnabled(true);
+                Toast.makeText(LoginActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

@@ -1,4 +1,5 @@
 package com.fire.mangareader.activity;
+import com.fire.mangareader.network.SupabaseManager;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +14,6 @@ import androidx.preference.SwitchPreferenceCompat;
 import com.fire.mangareader.R;
 import com.fire.mangareader.utils.LocaleHelper;
 import com.fire.mangareader.utils.PreferenceManager;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
 
@@ -213,7 +213,7 @@ public class SettingsActivity extends AppCompatActivity {
             Preference logout = findPreference("logout");
             if (logout != null) {
                 logout.setOnPreferenceClickListener(preference -> {
-                    FirebaseAuth.getInstance().signOut();
+                    SupabaseManager.getInstance(requireContext()).signOut();
                     prefs.clearUser();
                     Intent intent = new Intent(requireContext(), LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

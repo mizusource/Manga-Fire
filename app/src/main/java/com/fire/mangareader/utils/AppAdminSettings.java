@@ -56,74 +56,7 @@ public class AppAdminSettings {
         isInitialized = true;
         prefs = context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         loadFromLocal();
-
-        try {
-            if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() == null) {
-                // User is not logged in, skip fetching remote settings to avoid Permission Denied logs.
-                return;
-            }
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FIREBASE_PATH);
-            ref.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    if (!snapshot.exists()) return;
-                    try {
-                        Boolean cEn = snapshot.child("comments_enabled").getValue(Boolean.class);
-                        if (cEn != null) commentsEnabled = cEn;
-
-                        Boolean rEn = snapshot.child("replies_enabled").getValue(Boolean.class);
-                        if (rEn != null) repliesEnabled = rEn;
-
-                        Boolean sEn = snapshot.child("spoilers_enabled").getValue(Boolean.class);
-                        if (sEn != null) spoilersEnabled = sEn;
-
-                        Boolean pEn = snapshot.child("profanity_filter_enabled").getValue(Boolean.class);
-                        if (pEn != null) profanityFilterEnabled = pEn;
-
-                        Boolean annEn = snapshot.child("announcement_enabled").getValue(Boolean.class);
-                        if (annEn != null) announcementEnabled = annEn;
-
-                        String annText = snapshot.child("announcement_text").getValue(String.class);
-                        if (annText != null) announcementText = annText;
-
-                        String annType = snapshot.child("announcement_type").getValue(String.class);
-                        if (annType != null) announcementType = annType;
-
-                        String annLink = snapshot.child("announcement_link").getValue(String.class);
-                        if (annLink != null) announcementLink = annLink;
-
-                        Boolean mMode = snapshot.child("maintenance_mode").getValue(Boolean.class);
-                        if (mMode != null) maintenanceMode = mMode;
-
-                        String mMsg = snapshot.child("maintenance_message").getValue(String.class);
-                        if (mMsg != null) maintenanceMessage = mMsg;
-
-                        Boolean updAvail = snapshot.child("app_update_available").getValue(Boolean.class);
-                        if (updAvail != null) appUpdateAvailable = updAvail;
-
-                        String verName = snapshot.child("latest_version_name").getValue(String.class);
-                        if (verName != null) latestVersionName = verName;
-
-                        String updUrl = snapshot.child("app_update_url").getValue(String.class);
-                        if (updUrl != null) appUpdateUrl = updUrl;
-
-                        saveToLocal();
-                        notifyListeners();
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error parsing admin settings", e);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError error) {
-                    Log.e(TAG, "Firebase settings listener cancelled: " + error.getMessage());
-                }
-            });
-        } catch (Exception e) {
-            Log.e(TAG, "Error attaching Firebase listener", e);
-        }
     }
-
     public static String filterProfanity(String text) {
         if (text == null) return "";
         if (!profanityFilterEnabled) return text;

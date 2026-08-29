@@ -1,4 +1,5 @@
 package com.fire.mangareader.activity;
+import com.fire.mangareader.network.SupabaseManager;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -18,7 +19,6 @@ import com.fire.mangareader.database.AppDatabase;
 import com.fire.mangareader.utils.PreferenceManager;
 import com.fire.mangareader.utils.DonutChartView;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -78,7 +78,7 @@ public class ProfileActivity extends AppCompatActivity {
         ImageView btnLogout = findViewById(R.id.btnLogout);
         ImageView btnChangeBanner = findViewById(R.id.btnChangeBanner);
 
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+        if (!SupabaseManager.getInstance(this).isLoggedIn()) {
             tvUserName.setText("تسجيل الدخول");
             tvFullName.setText("زائر");
             btnSettings.setOnClickListener(v -> {
@@ -97,7 +97,7 @@ public class ProfileActivity extends AppCompatActivity {
                         .setTitle("تسجيل الخروج")
                         .setMessage("هل أنت متأكد من تسجيل الخروج؟")
                         .setPositiveButton("نعم", (d, w) -> {
-                            FirebaseAuth.getInstance().signOut();
+                            SupabaseManager.getInstance(this).signOut();
                             prefs.clearUser();
                             startActivity(new Intent(this, MainActivity.class));
                             finishAffinity();
@@ -119,9 +119,9 @@ public class ProfileActivity extends AppCompatActivity {
         if (savedPic != null && !savedPic.isEmpty()) {
             profileImage.setColorFilter(null);
             Glide.with(this).load(Uri.parse(savedPic)).circleCrop().into(profileImage);
-        } else if (FirebaseAuth.getInstance().getCurrentUser() != null && FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl() != null) {
+        } else if (false) {
             profileImage.setColorFilter(null);
-            Glide.with(this).load(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()).circleCrop().into(profileImage);
+            
         }
 
         loadStats();

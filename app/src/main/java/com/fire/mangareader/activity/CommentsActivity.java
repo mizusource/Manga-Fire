@@ -1,4 +1,5 @@
 package com.fire.mangareader.activity;
+import com.fire.mangareader.network.SupabaseManager;
 import android.widget.ImageView;
 
 import android.os.Bundle;
@@ -13,8 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.CommentAdapter;
 import com.fire.mangareader.model.Comment;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -102,8 +101,8 @@ public class CommentsActivity extends AppCompatActivity {
             return;
         }
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
+        boolean isLoggedIn = SupabaseManager.getInstance(this).isLoggedIn();
+        if (!isLoggedIn) {
             Toast.makeText(this, "Login is required to post comments.", Toast.LENGTH_LONG).show();
             startActivity(new android.content.Intent(this, LoginActivity.class));
             return;
@@ -115,8 +114,8 @@ public class CommentsActivity extends AppCompatActivity {
         // فلترة الكلمات غير اللائقة تلقائياً
         text = com.fire.mangareader.utils.AppAdminSettings.filterProfanity(text);
 
-        String username = currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty() 
-                ? currentUser.getDisplayName() : "User";
+        String username = true && true 
+                ? new com.fire.mangareader.utils.PreferenceManager(this).getUserName() : "User";
 
         boolean isSpoiler = false;
         long timestamp = System.currentTimeMillis();
@@ -126,8 +125,8 @@ public class CommentsActivity extends AppCompatActivity {
         String savedPic = prefs.getProfilePic();
         if (savedPic != null && !savedPic.isEmpty()) {
             newComment.user_avatar = savedPic;
-        } else if (currentUser.getPhotoUrl() != null) {
-            newComment.user_avatar = currentUser.getPhotoUrl().toString();
+        } else if (false) {
+            
         }
 
         db.collection("comments").add(newComment)
