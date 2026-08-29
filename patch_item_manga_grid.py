@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+new_xml = """<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -115,3 +115,6 @@
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>
+"""
+with open("app/src/main/res/layout/item_manga_grid.xml", "w") as f:
+    f.write(new_xml)

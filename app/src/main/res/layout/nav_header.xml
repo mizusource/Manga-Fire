@@ -2,27 +2,59 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="180dp"
-    android:background="?attr/colorSurface"
-    android:padding="20dp">
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:padding="24dp">
 
     <ImageView
-        android:id="@+id/navHeaderImage"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:id="@+id/btnNotifications"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
         android:layout_alignParentStart="true"
+        android:layout_alignTop="@id/navHeaderImage"
+        android:layout_marginTop="10dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_notifications"
+        app:tint="#FFFFFF" />
+
+    <ImageView
+        android:id="@+id/btnEditProfile"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_toEndOf="@id/btnNotifications"
+        android:layout_alignTop="@id/btnNotifications"
+        android:layout_marginStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_edit"
+        android:visibility="gone"
+        app:tint="#FFFFFF" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/navHeaderImageCard"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/ic_drawer_profile" />
+        app:cardCornerRadius="40dp"
+        app:cardBackgroundColor="#33000000"
+        app:cardElevation="0dp">
+        <ImageView
+            android:id="@+id/navHeaderImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_drawer_profile" />
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/navHeaderName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/navHeaderImage"
-        android:layout_alignParentStart="true"
+        android:layout_below="@id/navHeaderImageCard"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="12dp"
         android:text="تسجيل الدخول"
-        android:textColor="?attr/colorOnSurface"
+        android:textColor="#00E5FF"
         android:textSize="20sp"
         android:textStyle="bold" />
 
@@ -31,33 +63,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/navHeaderName"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="4dp"
         android:text="انقر هنا لتسجيل الدخول"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="#B3FFFFFF"
         android:textSize="12sp" />
-
-    <ImageView
-        android:id="@+id/btnNotifications"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@id/navHeaderImage"
-        android:layout_marginTop="10dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_notifications"
-        app:tint="?attr/colorOnSurfaceVariant" />
-
-    <ImageView
-        android:id="@+id/btnEditProfile"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_toStartOf="@id/btnNotifications"
-        android:layout_alignTop="@id/btnNotifications"
-        android:layout_marginEnd="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_edit"
-        android:visibility="gone"
-        app:tint="?attr/colorOnSurfaceVariant" />
 
 </RelativeLayout>

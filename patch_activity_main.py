@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+import re
+
+new_xml = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -79,85 +81,71 @@
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-            
             <!-- Search and Tabs Bar -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="8dp"
-                android:background="@drawable/bg_glassmorphism_card"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
                 android:gravity="center_vertical">
 
                 <ImageView
                     android:id="@+id/btnSearch"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_glass_icon"
+                    android:padding="8dp"
                     android:src="@drawable/ic_search"
-                    app:tint="#B3FFFFFF"
-                    android:background="?attr/selectableItemBackgroundBorderless" />
+                    app:tint="#FFFFFF" />
 
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
 
-                <TextView
-                    android:id="@+id/tabPopular"
+                <!-- Simple Tabs equivalent -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"
-                    android:text="الأكثر شعبية"
-                    android:textColor="#B3FFFFFF"
-                    android:textSize="14sp" />
+                    android:background="@drawable/bg_glassmorphism"
+                    android:padding="4dp">
 
-                <TextView
-                    android:id="@+id/tabLatest"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="8dp"
-                    android:text="آخر التحديثات"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/bg_tab_active" />
+                    <TextView
+                        android:id="@+id/tabLatest"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        android:text="آخر التحديثات"
+                        android:textColor="#00E5FF"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_glassmorphism_active" />
+
+                    <TextView
+                        android:id="@+id/tabPopular"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        android:text="الأكثر شعبية"
+                        android:textColor="#B3FFFFFF"
+                        android:background="@android:color/transparent" />
+
+                </LinearLayout>
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="12dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_glass_icon"
+                    android:padding="8dp"
                     android:src="@drawable/ic_filter"
-                    app:tint="#B3FFFFFF"
-                    android:background="?attr/selectableItemBackgroundBorderless" />
+                    app:tint="#FFFFFF" />
 
             </LinearLayout>
 
         </com.google.android.material.appbar.AppBarLayout>
-
-        
-        <androidx.cardview.widget.CardView
-            android:id="@+id/announcementBanner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:visibility="gone"
-            app:cardBackgroundColor="#FFC107"
-            app:cardCornerRadius="8dp"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
-            <TextView
-                android:id="@+id/tvAnnouncementText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:textColor="#000000"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textAlignment="center"/>
-        </androidx.cardview.widget.CardView>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefreshMain"
@@ -201,3 +189,7 @@
         app:itemShapeFillColor="#1A00E5FF" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
+"""
+
+with open("app/src/main/res/layout/activity_main.xml", "w") as f:
+    f.write(new_xml)
