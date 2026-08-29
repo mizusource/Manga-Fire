@@ -3,6 +3,7 @@
 
     <!-- الثيم الأساسي الفاخر للتطبيق (الوضع الليلي) -->
     <style name="Theme.Animeista.Dark" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/ios_arabic</item>
         
         <item name="colorPrimary">@color/deep_sky_blue_500</item>
         <item name="colorPrimaryVariant">@color/deep_sky_blue_700</item>
@@ -43,12 +44,14 @@
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
     </style>
 
+    
     <style name="WindowAnimationTransition">
-        <item name="android:activityOpenEnterAnimation">@anim/fade_in</item>
-        <item name="android:activityOpenExitAnimation">@anim/fade_out</item>
-        <item name="android:activityCloseEnterAnimation">@anim/fade_in</item>
-        <item name="android:activityCloseExitAnimation">@anim/fade_out</item>
+        <item name="android:activityOpenEnterAnimation">@anim/ios_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/ios_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/ios_pop_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/ios_pop_exit</item>
     </style>
+
     <!-- Dark Neon Themes -->
     <style name="Theme.Animeista.DarkNeonRed" parent="Theme.Animeista.Dark">
         <item name="colorPrimary">@color/dn_red_primary</item>
@@ -77,6 +80,7 @@
 
     <!-- Classic Light Themes -->
     <style name="Theme.Animeista.ClassicWhite" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/ios_arabic</item>
         <item name="colorPrimary">@color/cl_white_primary</item>
         <item name="colorSecondary">@color/cl_white_primary</item>
         <item name="android:colorBackground">@color/cl_white_background</item>

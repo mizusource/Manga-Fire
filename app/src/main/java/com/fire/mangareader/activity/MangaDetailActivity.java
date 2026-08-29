@@ -107,10 +107,10 @@ public class MangaDetailActivity extends AppCompatActivity {
                 public void onTabSelected(TabLayout.Tab tab) {
                     if (tab.getPosition() == 0) {
                         detailsContainer.setVisibility(View.VISIBLE);
-                        swipeRefreshLayout.setVisibility(View.GONE);
+                        chaptersRecycler.setVisibility(View.GONE);
                     } else {
                         detailsContainer.setVisibility(View.GONE);
-                        swipeRefreshLayout.setVisibility(View.VISIBLE);
+                        chaptersRecycler.setVisibility(View.VISIBLE);
                     }
                 }
                 @Override public void onTabUnselected(TabLayout.Tab tab) {}
