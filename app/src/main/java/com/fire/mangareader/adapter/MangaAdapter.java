@@ -54,13 +54,24 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaAdapter.MangaViewHol
              .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565) // تقليل الدقة قليلاً لتسريع التحميل وتوفير الرام
              .into(holder.mangaCover);
 
+        // Set transition name for the shared element
+        androidx.core.view.ViewCompat.setTransitionName(holder.mangaCover, "cover_transition_" + manga.getUrl());
+
         // عند النقر على المانجا، افتح شاشة التفاصيل
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MangaDetailActivity.class);
             intent.putExtra("mangaUrl", manga.getUrl());
             intent.putExtra("mangaTitle", manga.getTitle());
             intent.putExtra("mangaCover", manga.getCoverUrl());
-            context.startActivity(intent);
+            
+            if (context instanceof android.app.Activity) {
+                androidx.core.app.ActivityOptionsCompat options = androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    (android.app.Activity) context, holder.mangaCover, "cover_transition_" + manga.getUrl()
+                );
+                context.startActivity(intent, options.toBundle());
+            } else {
+                context.startActivity(intent);
+            }
         });
     }
 

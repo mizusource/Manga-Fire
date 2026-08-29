@@ -53,20 +53,24 @@ public class MangaDetailActivity extends AppCompatActivity {
         mangaCover = getIntent().getStringExtra("mangaCover");
 
         coverImage = findViewById(R.id.mangaCover);
+        if (mangaUrl != null && coverImage != null) {
+            androidx.core.view.ViewCompat.setTransitionName(coverImage, "cover_transition_" + mangaUrl);
+            supportPostponeEnterTransition();
+        }
         coverImageBlur = findViewById(R.id.mangaCoverBlur);
         titleText = findViewById(R.id.toolbarTitle);
-        
+        TextView mangaTitleDetail = findViewById(R.id.mangaTitleDetail);
         TextView authorText = findViewById(R.id.mangaAuthor);
-        
+        if (mangaTitleDetail != null) mangaTitleDetail.setText(mangaTitle);
         statusText = findViewById(R.id.mangaStatus);
         descriptionText = findViewById(R.id.mangaDescription);
         chaptersRecycler = findViewById(R.id.chaptersRecyclerView);
         progressBar = findViewById(R.id.progressBar);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); 
-        
-        
-        
-        
+        btnFavorite = findViewById(R.id.btnFavorite);
+        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
+        tvFavoriteText = findViewById(R.id.tvFavoriteText);
         btnComments = findViewById(R.id.btnComments);
 
         titleText.setText(mangaTitle);
@@ -100,6 +104,7 @@ public class MangaDetailActivity extends AppCompatActivity {
             @Override
             public void onResourceReady(android.graphics.Bitmap resource, com.bumptech.glide.request.transition.Transition<? super android.graphics.Bitmap> transition) {
                 coverImage.setImageBitmap(resource);
+                supportStartPostponedEnterTransition();
                 androidx.palette.graphics.Palette.from(resource).generate(palette -> {
                     if (palette != null) {
                         int defaultColor = android.graphics.Color.parseColor("#121212");
@@ -108,11 +113,17 @@ public class MangaDetailActivity extends AppCompatActivity {
                         
                         
 
-        
-        
-        
+                        ImageView btnFavorite = findViewById(R.id.btnFavorite);
+        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
+        tvFavoriteText = findViewById(R.id.tvFavoriteText);
                     }
                 });
+            }
+            @Override
+            public void onLoadFailed(@androidx.annotation.Nullable android.graphics.drawable.Drawable errorDrawable) {
+                super.onLoadFailed(errorDrawable);
+                supportStartPostponedEnterTransition();
             }
             @Override
             public void onLoadCleared(android.graphics.drawable.Drawable placeholder) {}
@@ -168,7 +179,7 @@ public class MangaDetailActivity extends AppCompatActivity {
             btnFavorite.setOnClickListener(v -> toggleFavorite());
         }
 
-                View btnUserRating = findViewById(R.id.btnRate);
+                View btnUserRating = findViewById(R.id.btnUserRating);
         if (btnUserRating != null) {
             btnUserRating.setOnClickListener(v -> {
                 String[] ratings = {"10/10 - أسطورية", "9/10 - ممتازة", "8/10 - جيدة جداً", "7/10 - جيدة", "6/10 - مقبولة", "5/10 - متوسطة", "إزالة التقييم"};
@@ -176,7 +187,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                         .setTitle("تقييمك للمانجا")
                         .setItems(ratings, (dialog, which) -> {
                             TextView tvUserRating = findViewById(R.id.tvUserRating);
-                            ImageView ivUserRatingStar = null;
+                            ImageView ivUserRatingStar = findViewById(R.id.ivUserRatingStar);
                             if (which == 6) {
                                 tvUserRating.setText("-/10");
                                 ivUserRatingStar.setImageResource(R.drawable.ic_star_outline);
@@ -191,7 +202,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                         .show();
             });
         }
-        View btnMyList = findViewById(R.id.btnChangeStatus);
+        View btnMyList = findViewById(R.id.btnMyList);
         if (btnMyList != null) {
             btnMyList.setOnClickListener(v -> showMyListBottomSheet());
         }
@@ -498,9 +509,10 @@ public class MangaDetailActivity extends AppCompatActivity {
             
             isFavorite = true;
             runOnUiThread(() -> {
-        
-        
-        
+                ImageView btnFavorite = findViewById(R.id.btnFavorite);
+        btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
+        btnCommentsContainer = findViewById(R.id.btnCommentsContainer);
+        tvFavoriteText = findViewById(R.id.tvFavoriteText);
                 if (btnFavorite != null) btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
                 android.widget.Toast.makeText(MangaDetailActivity.this, "تمت الإضافة إلى: " + status, android.widget.Toast.LENGTH_SHORT).show();
             });
@@ -520,7 +532,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                     tvFavoriteText.setText(isFavorite ? "محفوظ" : "حفظ");
                     tvFavoriteText.setTextColor(isFavorite ? android.graphics.Color.RED : android.graphics.Color.GRAY);
                 }
-android.widget.TextView tvMyListStatus = null;
+                android.widget.TextView tvMyListStatus = findViewById(R.id.tvMyListStatus);
                 if (tvMyListStatus != null) {
                     tvMyListStatus.setText(status);
                     if (!status.equals("غير مضاف")) {
@@ -557,9 +569,9 @@ android.widget.TextView tvMyListStatus = null;
             public void onSuccess(com.fire.mangareader.model.AniListMetadata metadata) {
                 runOnUiThread(() -> {
                     TextView tvGlobalRating = findViewById(R.id.tvGlobalRating);
-                    TextView tvGlobalRatingCount = null;
-                    TextView tvALRating = findViewById(R.id.tvAniListScore);
-                    TextView tvALRatingCount = null;
+                    TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
+                    TextView tvALRating = findViewById(R.id.tvALRating);
+                    TextView tvALRatingCount = findViewById(R.id.tvALRatingCount);
                     TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);
                     TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
                     TextView tvAniListArtist = findViewById(R.id.tvAniListArtist);
@@ -646,7 +658,7 @@ android.widget.TextView tvMyListStatus = null;
                 public void onSuccess(double newAverage, int totalVotes) {
                     runOnUiThread(() -> {
                         TextView tvGlobalRating = findViewById(R.id.tvGlobalRating);
-                        TextView tvGlobalRatingCount = null;
+                        TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
                         if (tvGlobalRating != null) tvGlobalRating.setText(String.format(java.util.Locale.US, "%.1f/10", newAverage));
                         if (tvGlobalRatingCount != null) tvGlobalRatingCount.setText(String.valueOf(totalVotes));
                         Toast.makeText(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐", Toast.LENGTH_SHORT).show();

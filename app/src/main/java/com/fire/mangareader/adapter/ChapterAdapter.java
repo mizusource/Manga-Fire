@@ -98,7 +98,14 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
             intent.putExtra("mangaTitle", mangaTitle);
             intent.putExtra("mangaCover", mangaCover);
             intent.putExtra("chapterTitle", chapter.getTitle());
-            context.startActivity(intent);
+            
+            if (context instanceof android.app.Activity) {
+                androidx.core.app.ActivityOptionsCompat options = androidx.core.app.ActivityOptionsCompat.makeCustomAnimation(
+                        context, android.R.anim.fade_in, android.R.anim.fade_out);
+                context.startActivity(intent, options.toBundle());
+            } else {
+                context.startActivity(intent);
+            }
         });
 
         // زر الخيارات (النقاط الثلاث)

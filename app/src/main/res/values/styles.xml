@@ -32,8 +32,6 @@
         
         <item name="colorControlHighlight">@color/black_pearl_300</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
-        <item name="android:fontFamily">@font/ios_font</item>
-        <item name="fontFamily">@font/ios_font</item>
     </style>
 
     <!-- ثيم شاشة البداية (Splash Screen) -->
@@ -43,8 +41,6 @@
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
-        <item name="android:fontFamily">@font/ios_font</item>
-        <item name="fontFamily">@font/ios_font</item>
     </style>
 
     <style name="WindowAnimationTransition">
@@ -61,8 +57,6 @@
         <item name="colorSurface">@color/dn_red_surface</item>
         <item name="android:statusBarColor">@color/dn_red_background</item>
         <item name="android:navigationBarColor">@color/dn_red_background</item>
-        <item name="colorSurfaceVariant">#1A1A1A</item>
-        <item name="colorOutline">#333333</item>
     </style>
     <style name="Theme.Animeista.DarkNeonPurple" parent="Theme.Animeista.Dark">
         <item name="colorPrimary">@color/dn_purple_primary</item>
@@ -71,8 +65,6 @@
         <item name="colorSurface">@color/dn_purple_surface</item>
         <item name="android:statusBarColor">@color/dn_purple_background</item>
         <item name="android:navigationBarColor">@color/dn_purple_background</item>
-        <item name="colorSurfaceVariant">#1A1A1A</item>
-        <item name="colorOutline">#333333</item>
     </style>
     <style name="Theme.Animeista.DarkNeonYellow" parent="Theme.Animeista.Dark">
         <item name="colorPrimary">@color/dn_yellow_primary</item>
@@ -81,8 +73,6 @@
         <item name="colorSurface">@color/dn_yellow_surface</item>
         <item name="android:statusBarColor">@color/dn_yellow_background</item>
         <item name="android:navigationBarColor">@color/dn_yellow_background</item>
-        <item name="colorSurfaceVariant">#1A1A1A</item>
-        <item name="colorOutline">#333333</item>
     </style>
 
     <!-- Classic Light Themes -->
@@ -98,10 +88,6 @@
         <item name="android:statusBarColor">@color/cl_white_background</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@color/cl_white_background</item>
-        <item name="android:fontFamily">@font/ios_font</item>
-        <item name="fontFamily">@font/ios_font</item>
-        <item name="colorSurfaceVariant">#F5F5F5</item>
-        <item name="colorOutline">#E0E0E0</item>
     </style>
     <style name="Theme.Animeista.ClassicRed" parent="Theme.Animeista.ClassicWhite">
         <item name="colorPrimary">@color/cl_red_primary</item>
@@ -126,10 +112,5 @@
         <item name="colorOnSurface">@color/cl_navy_text</item>
         <item name="android:statusBarColor">@color/cl_navy_background</item>
         <item name="android:navigationBarColor">@color/cl_navy_background</item>
-        <item name="colorSurfaceVariant">#1C2331</item>
-        <item name="colorOutline">#2B3548</item>
-    </style>
-    <style name="CircleImage" parent="">
-        <item name="cornerSize">50%</item>
     </style>
 </resources>

@@ -53,12 +53,23 @@ public class HeroBannerAdapter extends RecyclerView.Adapter<HeroBannerAdapter.Vi
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.ivHeroCover);
 
+        // Set transition name
+        androidx.core.view.ViewCompat.setTransitionName(holder.ivHeroCover, "cover_transition_" + manga.getUrl());
+
         View.OnClickListener clickListener = v -> {
             Intent intent = new Intent(context, MangaDetailActivity.class);
-            intent.putExtra("manga_url", manga.getUrl());
-            intent.putExtra("manga_title", manga.getTitle());
-            intent.putExtra("manga_cover", manga.getCoverUrl());
-            context.startActivity(intent);
+            intent.putExtra("mangaUrl", manga.getUrl());
+            intent.putExtra("mangaTitle", manga.getTitle());
+            intent.putExtra("mangaCover", manga.getCoverUrl());
+            
+            if (context instanceof android.app.Activity) {
+                androidx.core.app.ActivityOptionsCompat options = androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    (android.app.Activity) context, holder.ivHeroCover, "cover_transition_" + manga.getUrl()
+                );
+                context.startActivity(intent, options.toBundle());
+            } else {
+                context.startActivity(intent);
+            }
         };
 
         holder.itemView.setOnClickListener(clickListener);

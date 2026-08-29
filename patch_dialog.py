@@ -1,7 +1,24 @@
-with open('app/src/main/res/layout/dialog_edit_profile.xml', 'r') as f:
+with open('app/src/main/java/com/fire/mangareader/activity/CommentsBottomSheetDialog.java', 'r') as f:
     content = f.read()
 
-content = content.replace('<com.google.android.material.textfield.TextInputLayout', '<com.google.android.material.textfield.TextInputLayout\n        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"\n        app:boxCornerRadiusTopStart="16dp"\n        app:boxCornerRadiusTopEnd="16dp"\n        app:boxCornerRadiusBottomStart="16dp"\n        app:boxCornerRadiusBottomEnd="16dp"\n        xmlns:app="http://schemas.android.com/apk/res-auto"')
+import re
 
-with open('app/src/main/res/layout/dialog_edit_profile.xml', 'w') as f:
+old = '''        adapter = new CommentAdapter(getContext(), commentList);
+        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));'''
+
+new = '''        adapter = new CommentAdapter(getContext(), commentList);
+        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
+        adapter.setOnReplyClickListener(comment -> {
+            String username = comment.username != null ? comment.username : comment.user_name;
+            etComment.setText("@" + username + " ");
+            etComment.setSelection(etComment.getText().length());
+            etComment.requestFocus();
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(etComment, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            }
+        });'''
+content = content.replace(old, new)
+
+with open('app/src/main/java/com/fire/mangareader/activity/CommentsBottomSheetDialog.java', 'w') as f:
     f.write(content)

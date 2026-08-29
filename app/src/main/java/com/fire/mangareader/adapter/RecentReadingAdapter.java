@@ -48,7 +48,14 @@ public class RecentReadingAdapter extends RecyclerView.Adapter<RecentReadingAdap
             intent.putExtra("mangaCover", item.mangaCover);
             intent.putExtra("chapterUrl", item.chapterUrl);
             intent.putExtra("chapterTitle", item.chapterTitle);
-            context.startActivity(intent);
+            
+            if (context instanceof android.app.Activity) {
+                androidx.core.app.ActivityOptionsCompat options = androidx.core.app.ActivityOptionsCompat.makeCustomAnimation(
+                        context, android.R.anim.fade_in, android.R.anim.fade_out);
+                context.startActivity(intent, options.toBundle());
+            } else {
+                context.startActivity(intent);
+            }
         });
     }
 
