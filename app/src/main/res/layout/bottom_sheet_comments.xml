@@ -37,25 +37,37 @@
         android:background="?attr/colorOutline"
         android:alpha="0.3" />
 
-    <!-- Comments List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvComments"
+    <!-- Comments List Container -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:padding="16dp" />
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/tvEmptyComments"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="لا توجد تعليقات حتى الآن.\nكن أول من يشارك برأيه في هذا العمل!"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="14sp"
-        android:visibility="gone" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvComments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="16dp" />
+
+        <TextView
+            android:id="@+id/tvEmptyComments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="لا توجد تعليقات حتى الآن.\nكن أول من يشارك برأيه في هذا العمل!"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp"
+            android:visibility="gone" />
+            
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone" />
+            
+    </RelativeLayout>
 
     <!-- Input Area -->
     <LinearLayout

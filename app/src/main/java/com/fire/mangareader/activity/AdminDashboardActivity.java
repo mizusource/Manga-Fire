@@ -23,8 +23,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_dashboard);
-        Object currentUser = null;
-        if (true) { finish(); return; }
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -64,19 +63,33 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private void saveSettings() {
         btnSave.setEnabled(false);
         btnSave.setText("جاري الحفظ...");
-
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("comments_enabled", switchComments.isChecked());
-        updates.put("replies_enabled", switchReplies.isChecked());
-        updates.put("spoilers_enabled", switchSpoilers.isChecked());
-        updates.put("profanity_filter_enabled", switchProfanity.isChecked());
         
-        updates.put("announcement_enabled", switchBanner.isChecked());
-        updates.put("announcement_text", etBannerText.getText() != null ? etBannerText.getText().toString() : "");
+        AppAdminSettings.commentsEnabled = switchComments.isChecked();
+        AppAdminSettings.repliesEnabled = switchReplies.isChecked();
+        AppAdminSettings.spoilersEnabled = switchSpoilers.isChecked();
+        AppAdminSettings.profanityFilterEnabled = switchProfanity.isChecked();
         
-        updates.put("maintenance_mode", switchMaintenance.isChecked());
-        updates.put("maintenance_message", etMaintenanceMessage.getText() != null ? etMaintenanceMessage.getText().toString() : "");
-
-        Object ref = null;
+        AppAdminSettings.announcementEnabled = switchBanner.isChecked();
+        AppAdminSettings.announcementText = etBannerText.getText() != null ? etBannerText.getText().toString() : "";
+        
+        AppAdminSettings.maintenanceMode = switchMaintenance.isChecked();
+        AppAdminSettings.maintenanceMessage = etMaintenanceMessage.getText() != null ? etMaintenanceMessage.getText().toString() : "";
+        
+        android.content.SharedPreferences prefs = getApplicationContext().getSharedPreferences("speed_manga_admin_settings", android.content.Context.MODE_PRIVATE);
+        prefs.edit()
+            .putBoolean("comments_enabled", AppAdminSettings.commentsEnabled)
+            .putBoolean("replies_enabled", AppAdminSettings.repliesEnabled)
+            .putBoolean("spoilers_enabled", AppAdminSettings.spoilersEnabled)
+            .putBoolean("profanity_filter_enabled", AppAdminSettings.profanityFilterEnabled)
+            .putBoolean("announcement_enabled", AppAdminSettings.announcementEnabled)
+            .putString("announcement_text", AppAdminSettings.announcementText)
+            .putBoolean("maintenance_mode", AppAdminSettings.maintenanceMode)
+            .putString("maintenance_message", AppAdminSettings.maintenanceMessage)
+            .apply();
+            
+        Toast.makeText(this, "تم حفظ الإعدادات بنجاح!", Toast.LENGTH_SHORT).show();
+        btnSave.setEnabled(true);
+        btnSave.setText("حفظ الإعدادات");
+        finish();
     }
 }

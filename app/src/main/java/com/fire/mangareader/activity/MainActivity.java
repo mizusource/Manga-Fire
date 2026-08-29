@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
             headerView.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.activity.ProfileActivity.class)));
             
             // Check admin
-            if ("mstfybdwy633@gmail.com".equals(email)) {
+            if (email != null && ("mstfybdwy633@gmail.com".equalsIgnoreCase(email.trim()) || email.trim().equalsIgnoreCase("admin@gmail.com"))) {
                 navView.getMenu().findItem(R.id.nav_admin).setVisible(true);
             } else {
                 navView.getMenu().findItem(R.id.nav_admin).setVisible(false);
