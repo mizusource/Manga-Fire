@@ -27,7 +27,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private RecyclerView rvLatestUpdates;
-    private ViewPager2 vpHeroBanner;
     private SwipeRefreshLayout swipeRefreshMain;
     private ShimmerFrameLayout mainShimmerView;
     private ImageView btnToggleView;
@@ -55,8 +54,7 @@ public class MainActivity extends AppCompatActivity {
         com.fire.mangareader.network.MangaScraper.BASE_URL = BASE_URL;
 
         rvLatestUpdates = findViewById(R.id.rvLatestUpdates);
-        vpHeroBanner = findViewById(R.id.vpHeroBanner);
-        swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
+                swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
         mainShimmerView = findViewById(R.id.mainShimmerView);
         btnToggleView = findViewById(R.id.btnToggleView);
 

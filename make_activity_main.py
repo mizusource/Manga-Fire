@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+xml_content = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -122,3 +122,7 @@
 
     <include layout="@layout/layout_bottom_nav" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+"""
+
+with open('app/src/main/res/layout/activity_main.xml', 'w') as f:
+    f.write(xml_content)

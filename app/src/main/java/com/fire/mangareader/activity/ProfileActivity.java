@@ -75,6 +75,8 @@ public class ProfileActivity extends AppCompatActivity {
         tvTotalChapters = findViewById(R.id.tvTotalChapters);
 
         ImageView btnSettings = findViewById(R.id.btnSettings);
+        ImageView btnAdmin = findViewById(R.id.btnAdmin);
+        com.google.android.material.button.MaterialButton btnEditProfile = findViewById(R.id.btnEditProfile);
         ImageView btnLogout = findViewById(R.id.btnLogout);
         ImageView btnChangeBanner = findViewById(R.id.btnChangeBanner);
 
@@ -85,13 +87,18 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(this, LoginActivity.class));
                 finish();
             });
+            btnAdmin.setVisibility(View.GONE);
+            btnEditProfile.setVisibility(View.GONE);
             btnLogout.setVisibility(View.GONE);
             btnChangeBanner.setVisibility(View.GONE);
             profileImage.setOnClickListener(v -> Toast.makeText(this, "سجل الدخول لتعديل الصورة", Toast.LENGTH_SHORT).show());
         } else {
             tvUserName.setText(prefs.getUserName());
             tvFullName.setText(prefs.getUserName());
-            btnSettings.setOnClickListener(v -> showEditProfileDialog());
+            btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+            btnAdmin.setVisibility(View.VISIBLE);
+            btnAdmin.setOnClickListener(v -> startActivity(new Intent(this, AdminDashboardActivity.class)));
+            btnEditProfile.setOnClickListener(v -> showEditProfileDialog());
             btnLogout.setOnClickListener(v -> {
                 new AlertDialog.Builder(this)
                         .setTitle("تسجيل الخروج")

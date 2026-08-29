@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+xml_content = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -112,7 +112,7 @@
                         android:layout_centerVertical="true"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:padding="12dp"
-                        android:src="@android:drawable/ic_menu_manage"
+                        android:src="@drawable/ic_settings"
                         app:tint="#FFFFFF" />
                         
                     <!-- Hidden by default, shown if Admin -->
@@ -250,3 +250,7 @@
     <include layout="@layout/layout_bottom_nav" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+"""
+
+with open('app/src/main/res/layout/fragment_profile.xml', 'w') as f:
+    f.write(xml_content)

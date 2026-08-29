@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+xml_content = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -553,3 +553,7 @@
     <TextView android:id="@+id/tvAniListFormat" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+"""
+
+with open('app/src/main/res/layout/activity_manga_detail.xml', 'w') as f:
+    f.write(xml_content)
