@@ -16,13 +16,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.CommentAdapter;
 import com.fire.mangareader.model.Comment;
+import com.fire.mangareader.network.SupabaseManager;
+import com.fire.mangareader.utils.PreferenceManager;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     private String mangaUrl;
-    private String docId;
     private RecyclerView rvComments;
     private CommentAdapter adapter;
     private List<Comment> commentsList;
@@ -30,6 +33,8 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     private ImageButton btnSendComment;
     private ProgressBar progressBar;
     private TextView tvEmptyComments;
+    private SupabaseManager supabaseManager;
+    private PreferenceManager prefManager;
     
     public CommentsBottomSheetDialog() {}
     
@@ -46,8 +51,9 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mangaUrl = getArguments().getString("mangaUrl");
-            docId = mangaUrl.replaceAll("[^a-zA-Z0-9]", "_");
         }
+        supabaseManager = SupabaseManager.getInstance(getContext());
+        prefManager = new PreferenceManager(getContext());
     }
 
     @Nullable
@@ -71,11 +77,68 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         rvComments.setAdapter(adapter);
         
         btnSendComment.setOnClickListener(v -> sendComment());
+        
+        loadComments();
+    }
+    
+    private void loadComments() {
+        progressBar.setVisibility(View.VISIBLE);
+        tvEmptyComments.setVisibility(View.GONE);
+        supabaseManager.getComments(mangaUrl, new SupabaseManager.DataCallback() {
+            @Override
+            public void onSuccess(JSONArray data) {
+                progressBar.setVisibility(View.GONE);
+                commentsList.clear();
+                if (data == null || data.length() == 0) {
+                    tvEmptyComments.setVisibility(View.VISIBLE);
+                } else {
+                    tvEmptyComments.setVisibility(View.GONE);
+                    try {
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject obj = data.getJSONObject(i);
+                            Comment comment = new Comment();
+                            comment.mangaUrl = obj.optString("manga_url");
+                            comment.username = obj.optString("username");
+                            comment.text = obj.optString("text");
+                            comment.isSpoiler = obj.optBoolean("is_spoiler");
+                            comment.likes = obj.optInt("likes");
+                            commentsList.add(comment);
+                        }
+                    } catch (Exception e) {}
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(String error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void sendComment() {
         String text = etCommentInput.getText().toString().trim();
         if (text.isEmpty()) return;
-        etCommentInput.setText("");
+        
+        btnSendComment.setEnabled(false);
+        String userName = prefManager.getUserName();
+        if (userName == null || userName.isEmpty()) {
+            userName = "مستخدم";
+        }
+        
+        supabaseManager.addComment(mangaUrl, text, false, userName, new SupabaseManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                btnSendComment.setEnabled(true);
+                etCommentInput.setText("");
+                loadComments();
+            }
+            @Override
+            public void onError(String error) {
+                btnSendComment.setEnabled(true);
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

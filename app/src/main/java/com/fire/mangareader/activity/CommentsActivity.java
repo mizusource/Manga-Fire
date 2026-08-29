@@ -1,12 +1,11 @@
 package com.fire.mangareader.activity;
-import com.fire.mangareader.network.SupabaseManager;
-import android.widget.ImageView;
 
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.widget.CheckBox;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,92 +13,115 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.adapter.CommentAdapter;
 import com.fire.mangareader.model.Comment;
+import com.fire.mangareader.network.SupabaseManager;
+import com.fire.mangareader.utils.PreferenceManager;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommentsActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private EditText etComment;
-    
-    private ImageView btnSend;
-    
-    private CommentAdapter adapter;
-    private List<Comment> commentList;
-    
-    private Object db;
     private String mangaUrl;
+    private RecyclerView rvComments;
+    private CommentAdapter adapter;
+    private List<Comment> commentsList;
+    private EditText etComment;
+    private ImageButton btnSend;
+    private ProgressBar progressBar;
+    private TextView tvEmpty;
+    private SupabaseManager supabaseManager;
+    private PreferenceManager prefManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         com.fire.mangareader.utils.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comments);
-        ImageView btnBack = findViewById(R.id.btnBack);
-        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         mangaUrl = getIntent().getStringExtra("mangaUrl");
-        db = null;
+        if (mangaUrl == null) {
+            finish();
+            return;
+        }
 
-        recyclerView = findViewById(R.id.commentsRecyclerView);
+        supabaseManager = SupabaseManager.getInstance(this);
+        prefManager = new PreferenceManager(this);
+
+        rvComments = findViewById(R.id.rvComments);
         etComment = findViewById(R.id.etComment);
         btnSend = findViewById(R.id.btnSendComment);
+        progressBar = findViewById(R.id.progressBar);
+        tvEmpty = findViewById(R.id.tvEmptyComments);
 
-        commentList = new ArrayList<>();
-        adapter = new CommentAdapter(this, commentList);
-        
-        
-        
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
+        commentsList = new ArrayList<>();
+        adapter = new CommentAdapter(this, commentsList);
+        rvComments.setLayoutManager(new LinearLayoutManager(this));
+        rvComments.setAdapter(adapter);
+
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        btnSend.setOnClickListener(v -> sendComment());
 
         loadComments();
-
-        btnSend.setOnClickListener(v -> postComment());
     }
 
     private void loadComments() {
-        // جلب التعليقات الخاصة بهذه المانهوا تحديداً وترتيبها من الأقدم للأحدث
-        
+        progressBar.setVisibility(View.VISIBLE);
+        tvEmpty.setVisibility(View.GONE);
+        supabaseManager.getComments(mangaUrl, new SupabaseManager.DataCallback() {
+            @Override
+            public void onSuccess(JSONArray data) {
+                progressBar.setVisibility(View.GONE);
+                commentsList.clear();
+                if (data == null || data.length() == 0) {
+                    tvEmpty.setVisibility(View.VISIBLE);
+                } else {
+                    tvEmpty.setVisibility(View.GONE);
+                    try {
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject obj = data.getJSONObject(i);
+                            Comment comment = new Comment();
+                            comment.mangaUrl = obj.optString("manga_url");
+                            comment.username = obj.optString("username");
+                            comment.text = obj.optString("text");
+                            comment.isSpoiler = obj.optBoolean("is_spoiler");
+                            comment.likes = obj.optInt("likes");
+                            commentsList.add(comment);
+                        }
+                    } catch (Exception e) {}
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(String error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(CommentsActivity.this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void postComment() {
-        if (!com.fire.mangareader.utils.AppAdminSettings.commentsEnabled) {
-            Toast.makeText(this, "قسم التعليقات معطل مؤقتًا للصيانة: " + com.fire.mangareader.utils.AppAdminSettings.maintenanceMessage, Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        boolean isLoggedIn = SupabaseManager.getInstance(this).isLoggedIn();
-        if (!isLoggedIn) {
-            Toast.makeText(this, "Login is required to post comments.", Toast.LENGTH_LONG).show();
-            startActivity(new android.content.Intent(this, LoginActivity.class));
-            return;
-        }
-
+    private void sendComment() {
         String text = etComment.getText().toString().trim();
-        if (TextUtils.isEmpty(text)) return;
+        if (text.isEmpty()) return;
 
-        // فلترة الكلمات غير اللائقة تلقائياً
-        text = com.fire.mangareader.utils.AppAdminSettings.filterProfanity(text);
-
-        String username = true && true 
-                ? new com.fire.mangareader.utils.PreferenceManager(this).getUserName() : "User";
-
-        boolean isSpoiler = false;
-        long timestamp = System.currentTimeMillis();
-
-        Comment newComment = new Comment(mangaUrl, username, text, timestamp, isSpoiler);
-        com.fire.mangareader.utils.PreferenceManager prefs = new com.fire.mangareader.utils.PreferenceManager(this);
-        String savedPic = prefs.getProfilePic();
-        if (savedPic != null && !savedPic.isEmpty()) {
-            newComment.user_avatar = savedPic;
-        } else if (false) {
-            
+        btnSend.setEnabled(false);
+        String userName = prefManager.getUserName();
+        if (userName == null || userName.isEmpty()) {
+            userName = "مستخدم";
         }
 
-        
-                     
-                
-                
+        supabaseManager.addComment(mangaUrl, text, false, userName, new SupabaseManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                btnSend.setEnabled(true);
+                etComment.setText("");
+                loadComments();
+            }
+            @Override
+            public void onError(String error) {
+                btnSend.setEnabled(true);
+                Toast.makeText(CommentsActivity.this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

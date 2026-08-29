@@ -696,7 +696,7 @@ public class MangaDetailActivity extends AppCompatActivity {
             float characters = ratingBars[2].getRating() * 2.0f;
             float art = ratingBars[3].getRating() * 2.0f;
 
-            com.fire.mangareader.utils.GlobalMangaStatsManager.submitRating(mangaUrl, mangaTitle, overall, story, characters, art, new com.fire.mangareader.utils.GlobalMangaStatsManager.RatingCallback() {
+            com.fire.mangareader.utils.GlobalMangaStatsManager.submitRating(MangaDetailActivity.this, mangaUrl, mangaTitle, overall, story, characters, art, new com.fire.mangareader.utils.GlobalMangaStatsManager.RatingCallback() {
                 @Override
                 public void onSuccess(double newAverage, int totalVotes) {
                     runOnUiThread(() -> {
@@ -719,7 +719,7 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
 
     private void showRatingStatsDialog() {
-        com.fire.mangareader.utils.GlobalMangaStatsManager.fetchStats(mangaUrl, new com.fire.mangareader.utils.GlobalMangaStatsManager.StatsCallback() {
+        com.fire.mangareader.utils.GlobalMangaStatsManager.fetchStats(MangaDetailActivity.this, mangaUrl, new com.fire.mangareader.utils.GlobalMangaStatsManager.StatsCallback() {
             @Override
             public void onSuccess(com.fire.mangareader.utils.GlobalMangaStats stats) {
                 runOnUiThread(() -> {

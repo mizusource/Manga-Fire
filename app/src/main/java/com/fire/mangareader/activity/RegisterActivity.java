@@ -54,7 +54,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onSuccess(String message) {
                 btnRegister.setEnabled(true);
-                Toast.makeText(RegisterActivity.this, "تم التسجيل بنجاح، يرجى تسجيل الدخول", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RegisterActivity.this, "لتفعيل حسابك قم بالدخول الى بريدك الالكتروني واضغط تأكيد", Toast.LENGTH_LONG).show();
                 // Normally supabase might require email verification, but assuming it works directly or redirects to login
                 startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                 finishAffinity();
