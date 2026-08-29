@@ -126,7 +126,21 @@ public class SupabaseManager {
                         postAuthCallback(callback, false, "خطأ في معالجة البيانات");
                     }
                 } else {
-                    postAuthCallback(callback, false, "البريد أو كلمة المرور غير صحيحة");
+                    try {
+                        String errorBody = response.body().string();
+                        org.json.JSONObject errorObj = new org.json.JSONObject(errorBody);
+                        String msg = errorObj.optString("error_description", errorObj.optString("msg", "البريد أو كلمة المرور غير صحيحة"));
+                        
+                        if (msg.contains("Email not confirmed") || msg.contains("verify")) {
+                            msg = "يرجى تأكيد بريدك الإلكتروني (تأكد من صندوق الوارد أو البريد المزعج)، أو قم بتعطيل 'Confirm email' من إعدادات Supabase.";
+                        } else if (msg.contains("Invalid login credentials")) {
+                            msg = "البريد أو كلمة المرور غير صحيحة.";
+                        }
+                        
+                        postAuthCallback(callback, false, msg);
+                    } catch (Exception ex) {
+                        postAuthCallback(callback, false, "البريد أو كلمة المرور غير صحيحة");
+                    }
                 }
             }
         });
