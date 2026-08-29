@@ -15,7 +15,7 @@ import com.fire.mangareader.network.SupabaseManager;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
-    private Button btnLogin, btnGoToRegister;
+    private Button btnLogin, btnGoToRegister, btnForgotPassword;
     private SupabaseManager supabaseManager;
 
     @Override
@@ -29,9 +29,40 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnGoToRegister = findViewById(R.id.btnGoToRegister);
+        btnForgotPassword = findViewById(R.id.btnForgotPassword);
+        
+        btnForgotPassword.setOnClickListener(v -> handleForgotPassword());
 
         btnLogin.setOnClickListener(v -> loginUser());
         btnGoToRegister.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
+    }
+
+    
+    private void handleForgotPassword() {
+        String email = etEmail.getText().toString().trim();
+        if (email.isEmpty()) {
+            Toast.makeText(this, "يرجى كتابة بريدك الإلكتروني في الحقل المخصص أولاً", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        btnForgotPassword.setEnabled(false);
+        supabaseManager.resetPassword(email, new SupabaseManager.AuthCallback() {
+            @Override
+            public void onSuccess(String message) {
+                runOnUiThread(() -> {
+                    btnForgotPassword.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    btnForgotPassword.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     private void loginUser() {
