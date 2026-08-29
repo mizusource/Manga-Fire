@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+import os
+
+login_xml = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -51,32 +53,12 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="إنشاء حساب"
+                        android:text="تسجيل الدخول"
                         android:textSize="24sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="32dp"/>
                         
-                    
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="الاسم"
-                        app:startIconDrawable="@android:drawable/ic_menu_edit"
-                        android:layout_marginBottom="16dp"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:boxStrokeColor="?attr/colorPrimary">
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textPersonName" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -117,10 +99,10 @@
                     </com.google.android.material.textfield.TextInputLayout>
                     
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnRegister"
+                        android:id="@+id/btnLogin"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="إنشاء حساب"
+                        android:text="تسجيل الدخول"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         app:cornerRadius="16dp"
@@ -128,13 +110,23 @@
                         android:layout_marginBottom="16dp"/>
                         
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnGoToLogin"
+                        android:id="@+id/btnGoToRegister"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="لدي حساب بالفعل"
+                        android:text="إنشاء حساب جديد"
                         style="@style/Widget.Material3.Button.TextButton" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+"""
+
+with open('app/src/main/res/layout/activity_login.xml', 'w') as f:
+    f.write(login_xml)
+
+register_xml = login_xml.replace("تسجيل الدخول", "إنشاء حساب").replace("btnLogin", "btnRegister").replace("btnGoToRegister", "btnGoToLogin").replace("إنشاء حساب جديد", "لدي حساب بالفعل")
+
+with open('app/src/main/res/layout/activity_register.xml', 'w') as f:
+    f.write(register_xml)
+

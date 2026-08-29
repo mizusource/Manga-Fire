@@ -3,85 +3,103 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     android:layoutDirection="rtl">
 
-    <!-- حاوية القارئ الأساسية -->
-    <FrameLayout
-        android:id="@+id/reader_container"
+    <WebView
+        android:id="@+id/scraperWebView"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPages"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipToPadding="false" />
 
-        <!-- متصفح كلودفلير الخفي (نقطة واحدة لكي يعمل بدون مشاكل) -->
-        <WebView
-            android:id="@+id/scraperWebView"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:alpha="0.0" />
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-        <!-- قائمة الفصول (القارئ) -->
-        <com.fire.mangareader.reader.viewer.WebtoonRecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="none" />
+    <LinearLayout
+        android:id="@+id/errorLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <!-- مؤشر الصفحات العائم بالأسفل -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="حدث خطأ في تحميل الفصل"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btnRetry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="إعادة المحاولة" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/pageIndicatorContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
         <TextView
             android:id="@+id/tvPageIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="24dp"
-            android:background="#88000000"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
+            android:layout_marginBottom="32dp"
+            android:background="@drawable/pill_bg"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
             android:text="1 / 1"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold" />
     </FrameLayout>
 
-    <!-- فلتر حماية العين (الذي برمجناه مسبقاً) -->
     <com.fire.mangareader.reader.viewer.ReaderColorFilterView
         android:id="@+id/colorFilterView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-        <!-- عداد وقت القراءة -->
-        <TextView
-            android:id="@+id/tvReadingTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            android:layout_marginTop="24dp"
-            android:background="#A6000000"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="00:00"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:elevation="4dp"
-            android:visibility="visible" />
- 
+    <TextView
+        android:id="@+id/tvReadingTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/pill_bg"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:text="00:00"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:elevation="4dp"
+        android:visibility="visible" />
 
-    <!-- القائمة العلوية والسفلية (التي تظهر وتختفي عند لمس الشاشة) -->
     <FrameLayout
         android:id="@+id/uiOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone">
 
-        <!-- الشريط العلوي الاحترافي -->
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#E6121212"
+            android:background="#D9000000"
             app:elevation="0dp">
 
             <androidx.appcompat.widget.Toolbar
@@ -89,7 +107,6 @@
                 android:layout_height="?attr/actionBarSize"
                 app:contentInsetStart="0dp"
                 app:contentInsetEnd="0dp">
-
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -106,7 +123,6 @@
                         android:src="@android:drawable/ic_menu_revert"
                         app:tint="#FFFFFF" />
 
-                    <!-- 🚀 تم الإصلاح هنا بإضافة +id لكي لا يحدث خطأ برمجي -->
                     <TextView
                         android:id="@+id/tvChapterTitle"
                         android:layout_width="wrap_content"
@@ -123,16 +139,19 @@
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
-                        <ImageView android:id="@+id/btnToggleDirection" 
-                        android:layout_width="48dp" 
-                        android:layout_height="48dp" 
-                        android:layout_toStartOf="@+id/btnEyeFilter" 
-                        android:layout_centerVertical="true" 
-                        android:background="?attr/selectableItemBackgroundBorderless" 
-                        android:padding="12dp" 
-                        android:src="@android:drawable/ic_menu_sort_by_size" 
+                    <ImageView 
+                        android:id="@+id/btnToggleDirection"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_toStartOf="@+id/btnEyeFilter"
+                        android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="12dp"
+                        android:src="@android:drawable/ic_menu_sort_by_size"
                         app:tint="#FFFFFF" />
-                        <ImageView android:id="@+id/btnEyeFilter"
+
+                    <ImageView 
+                        android:id="@+id/btnEyeFilter"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_alignParentEnd="true"
@@ -141,13 +160,11 @@
                         android:padding="12dp"
                         android:src="@android:drawable/ic_menu_view"
                         app:tint="#FFFFFF" />
-
                 </RelativeLayout>
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- الشريط السفلي (شريط التمرير السريع وأزرار التنقل) -->
-        <!-- Brightness Slider -->
+        <!-- Vertical Seekbar for brightness -->
         <SeekBar
             android:id="@+id/brightnessSeekBar"
             android:layout_width="200dp"
@@ -164,13 +181,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="#E6121212"
+            android:background="#D9000000"
             android:gravity="center"
             android:minHeight="?attr/actionBarSize"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:padding="16dp">
 
-            <!-- زر الفصل السابق (على اليمين في اللغة العربية) -->
             <ImageButton
                 android:id="@+id/btnPreviousChapter"
                 android:layout_width="48dp"
@@ -207,7 +223,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
-            <!-- زر الفصل التالي (على اليسار في اللغة العربية) -->
             <ImageButton
                 android:id="@+id/btnNextChapter"
                 android:layout_width="48dp"
