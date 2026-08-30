@@ -448,7 +448,11 @@ public class SupabaseManager {
                     postAuthCallback(callback, true, "تم إضافة التعليق");
                 } else {
                     String errorBody = response.body() != null ? response.body().string() : "";
-                    postAuthCallback(callback, false, "فشل إضافة التعليق: " + errorBody);
+                    if (errorBody.contains("PGRST303")) {
+                        postAuthCallback(callback, false, "انتهت صلاحية الجلسة، يرجى تسجيل الخروج ثم الدخول مجدداً");
+                    } else {
+                        postAuthCallback(callback, false, "فشل إضافة التعليق: " + errorBody);
+                    }
                 }
             }
         });
