@@ -447,7 +447,8 @@ public class SupabaseManager {
                 if (response.isSuccessful()) {
                     postAuthCallback(callback, true, "تم إضافة التعليق");
                 } else {
-                    postAuthCallback(callback, false, "فشل إضافة التعليق");
+                    String errorBody = response.body() != null ? response.body().string() : "";
+                    postAuthCallback(callback, false, "فشل إضافة التعليق: " + errorBody);
                 }
             }
         });

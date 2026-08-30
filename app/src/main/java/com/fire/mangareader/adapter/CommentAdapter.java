@@ -33,6 +33,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         holder.tvUsername.setText(comment.username != null ? comment.username : "User");
         holder.tvCommentText.setText(comment.text != null ? comment.text : "");
         holder.tvLikeCount.setText(String.valueOf(comment.likes));
+        holder.btnLike.setOnClickListener(v -> android.widget.Toast.makeText(context, "ميزة الإعجاب والردود قيد التطوير وسيتم تفعيلها قريباً", android.widget.Toast.LENGTH_SHORT).show());
     }
 
     @Override

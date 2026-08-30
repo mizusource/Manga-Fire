@@ -362,6 +362,10 @@ public class MainActivity extends AppCompatActivity {
         android.widget.TextView navHeaderName = headerView.findViewById(R.id.navHeaderName);
         android.widget.TextView navHeaderEmail = headerView.findViewById(R.id.navHeaderEmail);
         android.widget.ImageView navHeaderImage = headerView.findViewById(R.id.navHeaderImage);
+        android.view.View btnNotifications = headerView.findViewById(R.id.btnNotifications);
+        if (btnNotifications != null) {
+            btnNotifications.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.activity.NotificationsActivity.class)));
+        }
         
         if (supabase.isLoggedIn()) {
             String name = prefs.getUserName();
