@@ -38,9 +38,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        // Here you would typically send the token to your Supabase backend to store it in the user's profile
-        // so that Supabase Edge Functions can send FCM messages to this specific token.
-        // SupabaseManager.getInstance(this).saveFcmToken(token);
+        SupabaseManager.getInstance(this).updateFcmToken(token);
     }
 
     private void sendNotification(String title, String messageBody) {
@@ -68,6 +66,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             notificationManager.createNotificationChannel(channel);
         }
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify((int) System.currentTimeMillis() /* ID of notification */, notificationBuilder.build());
     }
 }

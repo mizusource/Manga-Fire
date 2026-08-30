@@ -2,6 +2,7 @@ package com.fire.mangareader.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import com.google.firebase.messaging.FirebaseMessaging;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;

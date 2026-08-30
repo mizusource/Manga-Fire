@@ -639,6 +639,33 @@ public class SupabaseManager {
         });
     }
 
+    
+    public void updateFcmToken(String token) {
+        if (!isLoggedIn()) return;
+        JSONObject json = new JSONObject();
+        try {
+            json.put("user_id", currentUserId);
+            json.put("token", token);
+        } catch (Exception e) {}
+        
+        RequestBody body = RequestBody.create(json.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/user_tokens")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Prefer", "resolution=merge-duplicates")
+                .post(body)
+                .build();
+                
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {}
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {}
+        });
+    }
+
     public interface AuthCallback {
         void onSuccess(String message);
         void onError(String error);
