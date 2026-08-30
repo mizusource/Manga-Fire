@@ -1,4 +1,14 @@
-package com.fire.mangareader.activity;
+with open('app/src/main/res/layout/activity_notifications.xml', 'r') as f:
+    xml = f.read()
+
+new_xml = xml.replace(
+    '<TextView\n        android:layout_width="match_parent"',
+    '<androidx.recyclerview.widget.RecyclerView\n        android:id="@+id/rvNotifications"\n        android:layout_width="match_parent"\n        android:layout_height="match_parent" />\n\n    <TextView\n        android:id="@+id/tvEmpty"\n        android:layout_width="match_parent"'
+)
+with open('app/src/main/res/layout/activity_notifications.xml', 'w') as f:
+    f.write(new_xml)
+
+java_code = """package com.fire.mangareader.activity;
 
 import android.os.Bundle;
 import android.view.View;
@@ -80,3 +90,9 @@ public class NotificationsActivity extends AppCompatActivity {
         });
     }
 }
+"""
+
+with open('app/src/main/java/com/fire/mangareader/activity/NotificationsActivity.java', 'w') as f:
+    f.write(java_code)
+
+print("Patched NotificationsActivity")

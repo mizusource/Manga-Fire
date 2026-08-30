@@ -97,8 +97,12 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
                         for (int i = 0; i < data.length(); i++) {
                             JSONObject obj = data.getJSONObject(i);
                             Comment comment = new Comment();
+                            comment.id = obj.optString("id");
+                            comment.id = obj.optString("id");
                             comment.mangaUrl = obj.optString("manga_url");
                             comment.username = obj.optString("username");
+                            comment.user_id = obj.optString("user_id");
+                            comment.user_id = obj.optString("user_id");
                             comment.text = obj.optString("text");
                             comment.isSpoiler = obj.optBoolean("is_spoiler");
                             comment.likes = obj.optInt("likes");

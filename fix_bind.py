@@ -1,36 +1,9 @@
-package com.fire.mangareader.adapter;
+import re
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import com.fire.mangareader.R;
-import com.fire.mangareader.model.Comment;
-import com.fire.mangareader.network.SupabaseManager;
-import android.content.SharedPreferences;
-import android.widget.Toast;
-import java.util.List;
+with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'r') as f:
+    content = f.read()
 
-public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
-    private final Context context;
-    private final List<Comment> comments;
-
-    public CommentAdapter(Context context, List<Comment> comments) {
-        this.context = context;
-        this.comments = comments;
-    }
-
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_comment, parent, false);
-        return new ViewHolder(view);
-    }
-
-    
+clean_bind = """
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Comment comment = comments.get(position);
@@ -66,23 +39,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             }
         });
     }
+"""
 
-    @Override
-    public int getItemCount() {
-        return comments != null ? comments.size() : 0;
-    }
+new_content = re.sub(r'@Override\s*public void onBindViewHolder\(\@NonNull ViewHolder holder, int position\).*?@Override\s*public int getItemCount', clean_bind + '\n    @Override\n    public int getItemCount', content, flags=re.DOTALL)
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvUsername, tvCommentText, tvLikeCount;
-        public View btnLike, btnMore;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvUsername = itemView.findViewById(R.id.tvUsername);
-            tvCommentText = itemView.findViewById(R.id.tvCommentText);
-            tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
-            btnLike = itemView.findViewById(R.id.btnLike);
-            btnMore = itemView.findViewById(R.id.btnMore);
-        }
-    }
-}
+with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'w') as f:
+    f.write(new_content)

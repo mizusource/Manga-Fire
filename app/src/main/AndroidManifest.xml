@@ -61,6 +61,15 @@
             <activity android:name=".activity.AdminDashboardActivity"  />
         <activity android:name=".activity.AdminLoginActivity" />
             <activity android:name=".activity.NotificationsActivity" />
+    
+        <service
+            android:name=".service.MyFirebaseMessagingService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>
 

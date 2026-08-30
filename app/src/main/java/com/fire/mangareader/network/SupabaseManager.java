@@ -458,6 +458,108 @@ public class SupabaseManager {
         });
     }
 
+    
+    public void likeComment(String commentId, int newLikesCount, final AuthCallback callback) {
+        if (!isLoggedIn()) {
+            postAuthCallback(callback, false, "يجب تسجيل الدخول");
+            return;
+        }
+        JSONObject json = new JSONObject();
+        try {
+            json.put("likes", newLikesCount);
+        } catch (Exception e) {}
+        
+        RequestBody body = RequestBody.create(json.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/manga_comments?id=eq." + commentId)
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .addHeader("Content-Type", "application/json")
+                .patch(body)
+                .build();
+                
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                postAuthCallback(callback, false, e.getMessage());
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    postAuthCallback(callback, true, "تم الإعجاب");
+                } else {
+                    postAuthCallback(callback, false, "فشل الإعجاب");
+                }
+            }
+        });
+    }
+
+    
+    public void sendNotification(String targetUserId, String title, String message, String mangaUrl, final AuthCallback callback) {
+        if (!isLoggedIn()) return;
+        JSONObject json = new JSONObject();
+        try {
+            json.put("user_id", targetUserId);
+            json.put("sender_name", title);
+            json.put("message", message);
+            json.put("manga_url", mangaUrl);
+            json.put("type", "notification");
+            json.put("is_read", false);
+        } catch (Exception e) {}
+        
+        RequestBody body = RequestBody.create(json.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/notifications")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .addHeader("Content-Type", "application/json")
+                .post(body)
+                .build();
+                
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if(callback != null) postAuthCallback(callback, false, e.getMessage());
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(callback != null) postAuthCallback(callback, response.isSuccessful(), "");
+            }
+        });
+    }
+    
+    public void getNotifications(final DataCallback callback) {
+        if (!isLoggedIn()) {
+            postDataCallback(callback, null, "يجب تسجيل الدخول");
+            return;
+        }
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/notifications?user_id=eq." + currentUserId + "&order=created_at.desc")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .build();
+                
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                postDataCallback(callback, null, e.getMessage());
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        JSONArray array = new JSONArray(response.body().string());
+                        postDataCallback(callback, array, null);
+                    } catch (Exception e) {
+                        postDataCallback(callback, null, "Error parsing");
+                    }
+                } else {
+                    postDataCallback(callback, null, "Failed");
+                }
+            }
+        });
+    }
+
     // ==== RATINGS ====
     public void submitRating(String mangaUrl, float overall, float story, float characters, float art, final AuthCallback callback) {
         if (!isLoggedIn()) {

@@ -1,29 +1,38 @@
 with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'r') as f:
-    content = f.read()
+    adapter = f.read()
+
+new_like = """holder.btnLike.setOnClickListener(v -> {
+            if (comment.id != null) {
+                com.fire.mangareader.network.SupabaseManager.getInstance(context)
+                    .likeComment(comment.id, comment.likes + 1, new com.fire.mangareader.network.SupabaseManager.AuthCallback() {
+                        @Override
+                        public void onSuccess(String message) {
+                            ((android.app.Activity) context).runOnUiThread(() -> {
+                                comment.likes += 1;
+                                holder.tvLikeCount.setText(String.valueOf(comment.likes));
+                                holder.btnLike.setEnabled(false);
+                            });
+                        }
+                        @Override
+                        public void onError(String error) {
+                            ((android.app.Activity) context).runOnUiThread(() -> {
+                                android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    });
+                
+                // Also send a notification if user_id is available
+                if (comment.user_id != null && !comment.user_id.isEmpty()) {
+                    String senderName = context.getSharedPreferences("supabase_prefs", android.content.Context.MODE_PRIVATE).getString("username", "مستخدم");
+                    com.fire.mangareader.network.SupabaseManager.getInstance(context)
+                        .sendNotification(comment.user_id, senderName, "أعجب بتعليقك", comment.mangaUrl, null);
+                }
+            }
+        });"""
 
 import re
-bind_logic = '''    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Comment comment = commentList.get(position);
-        holder.username.setText(comment.username != null ? comment.username : comment.user_name);
-        holder.commentText.setText(comment.text);
-        
-        holder.date.setText(com.fire.mangareader.utils.CommentUtils.getRelativeTime(comment.timestamp));
-        
-        holder.tvLikeCount.setText(String.valueOf(comment.likes));
-        holder.tvReplyCount.setText("رد");
-
-        // Load avatar if available
-        if (comment.user_avatar != null && !comment.user_avatar.isEmpty()) {
-            holder.avatar.setColorFilter(null);
-            com.bumptech.glide.Glide.with(context).load(comment.user_avatar).circleCrop().into(holder.avatar);
-        } else {
-            holder.avatar.setImageResource(com.fire.mangareader.R.drawable.ic_person);
-            holder.avatar.setColorFilter(android.graphics.Color.GRAY);
-        }
-
-        if (comment.isSpoiler || comment.is_spoiler) {'''
-
-content = re.sub(r'    public void onBindViewHolder\(\@NonNull ViewHolder holder, int position\) \{.*?if \(comment\.isSpoiler \|\| comment\.is_spoiler\) \{', bind_logic, content, flags=re.DOTALL)
+adapter = re.sub(r'holder\.btnLike\.setOnClickListener\(v -> \{.*?\}\);', new_like, adapter, flags=re.DOTALL)
 
 with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'w') as f:
-    f.write(content)
+    f.write(adapter)
+print("Patched CommentAdapter with direct Supabase calls")
