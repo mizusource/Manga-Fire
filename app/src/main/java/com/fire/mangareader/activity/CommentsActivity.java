@@ -83,6 +83,8 @@ public class CommentsActivity extends AppCompatActivity {
                             comment.mangaUrl = obj.optString("manga_url");
                             comment.username = obj.optString("username");
                             comment.text = obj.optString("text");
+                            comment.created_at = obj.optString("created_at");
+                            comment.id = obj.optString("id");
                             comment.isSpoiler = obj.optBoolean("is_spoiler");
                             comment.likes = obj.optInt("likes");
                             commentsList.add(comment);

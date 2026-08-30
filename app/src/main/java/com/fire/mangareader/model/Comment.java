@@ -13,6 +13,7 @@ public class Comment {
     public String user_avatar;
     public String text;
     public long timestamp;
+    public String created_at;
     public boolean isSpoiler;
     public boolean is_spoiler;
     public int likes;

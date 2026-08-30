@@ -104,6 +104,8 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
                             comment.user_id = obj.optString("user_id");
                             comment.user_id = obj.optString("user_id");
                             comment.text = obj.optString("text");
+                            comment.created_at = obj.optString("created_at");
+                            comment.id = obj.optString("id");
                             comment.isSpoiler = obj.optBoolean("is_spoiler");
                             comment.likes = obj.optInt("likes");
                             commentsList.add(comment);

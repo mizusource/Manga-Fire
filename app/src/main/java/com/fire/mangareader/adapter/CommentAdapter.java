@@ -9,9 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.model.Comment;
+import android.content.Intent;
+import com.fire.mangareader.activity.RepliesActivity;
 import com.fire.mangareader.network.SupabaseManager;
 import android.content.SharedPreferences;
 import android.widget.Toast;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.ParseException;
 import java.util.List;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
@@ -36,7 +42,83 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         Comment comment = comments.get(position);
         holder.tvUsername.setText(comment.username != null ? comment.username : "User");
         holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+
+        // Parse time and calculate time ago
+        if (comment.created_at != null && !comment.created_at.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                Date date = sdf.parse(comment.created_at);
+                if (date != null) {
+                    long timeInMillis = date.getTime();
+                    long now = System.currentTimeMillis();
+                    long diff = now - timeInMillis;
+                    
+                    String timeAgo;
+                    if (diff < 60000) {
+                        timeAgo = "الآن";
+                    } else if (diff < 3600000) {
+                        long mins = diff / 60000;
+                        timeAgo = "منذ " + mins + " دقيقة";
+                    } else if (diff < 86400000) {
+                        long hours = diff / 3600000;
+                        timeAgo = "منذ " + hours + " ساعة";
+                    } else {
+                        long days = diff / 86400000;
+                        timeAgo = "منذ " + days + " يوم";
+                    }
+                    holder.tvDate.setText(timeAgo);
+                }
+            } catch (ParseException e) {
+                holder.tvDate.setText("");
+            }
+        } else {
+            holder.tvDate.setText("");
+        }
+
         holder.tvLikeCount.setText(String.valueOf(comment.likes));
+
+        
+        holder.btnReply.setOnClickListener(v -> {
+                        Intent intent = new Intent(context, RepliesActivity.class);
+            intent.putExtra("mangaUrl", comment.mangaUrl);
+            intent.putExtra("parentId", comment.id);
+            intent.putExtra("parentUserId", comment.user_id);
+            context.startActivity(intent);
+        });
+        
+        holder.btnMore.setOnClickListener(v -> {
+            if (comment.user_id != null && comment.user_id.equals(com.fire.mangareader.network.SupabaseManager.getInstance(context).getCurrentUserId())) {
+                // User can delete their own comment
+                new android.app.AlertDialog.Builder(context)
+                    .setTitle("حذف التعليق")
+                    .setMessage("هل أنت متأكد من حذف هذا التعليق؟")
+                    .setPositiveButton("حذف", (dialog, which) -> {
+                        com.fire.mangareader.network.SupabaseManager.getInstance(context).deleteComment(comment.id, new com.fire.mangareader.network.SupabaseManager.AuthCallback() {
+                            @Override
+                            public void onSuccess(String message) {
+                                ((android.app.Activity) context).runOnUiThread(() -> {
+                                    int pos = holder.getAdapterPosition();
+                                    if (pos != RecyclerView.NO_POSITION) {
+                                        comments.remove(pos);
+                                        notifyItemRemoved(pos);
+                                    }
+                                });
+                            }
+                            @Override
+                            public void onError(String error) {
+                                ((android.app.Activity) context).runOnUiThread(() -> {
+                                    android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+                    })
+                    .setNegativeButton("إلغاء", null)
+                    .show();
+            } else {
+                android.widget.Toast.makeText(context, "لا يمكنك التعديل على هذا التعليق", android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
 
         holder.btnLike.setOnClickListener(v -> {
             if (comment.id != null) {
@@ -73,16 +155,18 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvUsername, tvCommentText, tvLikeCount;
-        public View btnLike, btnMore;
+        public TextView tvUsername, tvDate, tvCommentText, tvLikeCount;
+        public View btnLike, btnMore, btnReply;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUsername = itemView.findViewById(R.id.tvUsername);
+            tvDate = itemView.findViewById(R.id.tvDate);
             tvCommentText = itemView.findViewById(R.id.tvCommentText);
             tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
             btnLike = itemView.findViewById(R.id.btnLike);
             btnMore = itemView.findViewById(R.id.btnMore);
+            btnReply = itemView.findViewById(R.id.btnReply);
         }
     }
 }

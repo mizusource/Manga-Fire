@@ -1,21 +1,8 @@
 with open('app/src/main/AndroidManifest.xml', 'r') as f:
     content = f.read()
 
-service_xml = """
-        <service
-            android:name=".service.MyFirebaseMessagingService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-"""
-
-if 'MyFirebaseMessagingService' not in content:
-    content = content.replace(
-        '</application>',
-        service_xml + '\n    </application>'
-    )
+if 'RepliesActivity' not in content:
+    content = content.replace('<activity android:name=".activity.CommentsActivity" />',
+                              '<activity android:name=".activity.CommentsActivity" />\n        <activity android:name=".activity.RepliesActivity" />')
     with open('app/src/main/AndroidManifest.xml', 'w') as f:
         f.write(content)
-    print("Added service to AndroidManifest.xml")

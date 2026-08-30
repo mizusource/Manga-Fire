@@ -388,7 +388,7 @@ public class SupabaseManager {
     public void getComments(String mangaUrl, final DataCallback callback) {
         String encodedUrl = android.net.Uri.encode(mangaUrl);
         Request request = new Request.Builder()
-                .url(SUPABASE_URL + "/rest/v1/manga_comments?manga_url=eq." + encodedUrl + "&order=created_at.desc&select=*")
+                .url(SUPABASE_URL + "/rest/v1/manga_comments?manga_url=eq." + encodedUrl + "&parent_id=is.null&order=created_at.desc&select=*")
                 .addHeader("apikey", SUPABASE_KEY)
                 .build();
                         
@@ -663,6 +663,111 @@ public class SupabaseManager {
             public void onFailure(Call call, IOException e) {}
             @Override
             public void onResponse(Call call, Response response) throws IOException {}
+        });
+    }
+
+    
+    
+    public void getReplies(String parentId, final DataCallback callback) {
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/manga_comments?parent_id=eq." + parentId + "&order=created_at.asc&select=*")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + SUPABASE_KEY)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                postDataCallback(callback, null, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        String responseData = response.body().string();
+                        JSONArray jsonArray = new JSONArray(responseData);
+                        postDataCallback(callback, jsonArray, null);
+                    } catch (Exception e) {
+                        postDataCallback(callback, null, "خطأ في تحليل البيانات");
+                    }
+                } else {
+                    postDataCallback(callback, null, "فشل في تحميل الردود");
+                }
+            }
+        });
+    }
+
+    public void addReply(String mangaUrl, String parentId, String text, boolean isSpoiler, String userName, final AuthCallback callback) {
+        if (!isLoggedIn()) {
+            postAuthCallback(callback, false, "يجب تسجيل الدخول أولاً");
+            return;
+        }
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("user_id", currentUserId);
+            json.put("manga_url", mangaUrl);
+            json.put("username", userName != null ? userName : "User");
+            json.put("text", text);
+            json.put("is_spoiler", isSpoiler);
+            json.put("parent_id", parentId);
+            json.put("likes", 0);
+        } catch (Exception e) {}
+        
+        RequestBody body = RequestBody.create(json.toString(), JSON);
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/manga_comments")
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .addHeader("Content-Type", "application/json")
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                postAuthCallback(callback, false, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    postAuthCallback(callback, true, "تمت إضافة الرد بنجاح");
+                } else {
+                    postAuthCallback(callback, false, "فشل في إضافة الرد");
+                }
+            }
+        });
+    }
+
+    public void deleteComment(String commentId, final AuthCallback callback) {
+        if (!isLoggedIn()) {
+            postAuthCallback(callback, false, "يجب تسجيل الدخول");
+            return;
+        }
+
+        Request request = new Request.Builder()
+                .url(SUPABASE_URL + "/rest/v1/manga_comments?id=eq." + commentId)
+                .addHeader("apikey", SUPABASE_KEY)
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .delete()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                postAuthCallback(callback, false, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    postAuthCallback(callback, true, "تم الحذف بنجاح");
+                } else {
+                    postAuthCallback(callback, false, "فشل الحذف");
+                }
+            }
         });
     }
 
