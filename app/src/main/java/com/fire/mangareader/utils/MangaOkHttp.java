@@ -1,8 +1,7 @@
 package com.fire.mangareader.utils;
 
 import android.webkit.CookieManager;
-import com.fire.mangareader.network.FastDns;
-
+import java.net.InetAddress;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +14,9 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.Dispatcher;
+import okhttp3.dnsoverhttps.DnsOverHttps;
+import okhttp3.brotli.BrotliInterceptor;
 
 public class MangaOkHttp {
 
@@ -22,15 +24,34 @@ public class MangaOkHttp {
 
     public static synchronized OkHttpClient getClient() {
         if (client == null) {
+            // 1. Create a bootstrap client for DoH
+            OkHttpClient bootstrapClient = new OkHttpClient.Builder()
+                    .connectTimeout(15, TimeUnit.SECONDS)
+                    .build();
+
+            // 2. Configure Cloudflare DNS over HTTPS (DoH) to bypass blocks
+            DnsOverHttps dns = new DnsOverHttps.Builder()
+                    .client(bootstrapClient)
+                    .url(HttpUrl.get("https://cloudflare-dns.com/dns-query"))
+                    .bootstrapDnsHosts(InetAddress.getLoopbackAddress())
+                    .build();
+
+            // 3. Configure Dispatcher for high concurrency
+            Dispatcher dispatcher = new Dispatcher();
+            dispatcher.setMaxRequests(64);
+            dispatcher.setMaxRequestsPerHost(16);
+
             OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                    .dns(FastDns.INSTANCE)
+                    .dns(dns)
+                    .dispatcher(dispatcher)
                     .connectTimeout(45, TimeUnit.SECONDS)
                     .readTimeout(45, TimeUnit.SECONDS)
                     .writeTimeout(45, TimeUnit.SECONDS)
                     .retryOnConnectionFailure(true)
                     .followRedirects(true)
                     .followSslRedirects(true)
-                    .connectionPool(new ConnectionPool(8, 5L, TimeUnit.MINUTES))
+                    .connectionPool(new ConnectionPool(32, 5L, TimeUnit.MINUTES))
+                    .addInterceptor(BrotliInterceptor.INSTANCE)
                     .cookieJar(new CookieJar() {
                         @Override
                         public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {

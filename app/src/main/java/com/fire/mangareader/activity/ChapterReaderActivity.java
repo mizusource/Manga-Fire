@@ -508,6 +508,9 @@ public class ChapterReaderActivity extends AppCompatActivity {
                         pageSeekBar.setMax(total - 1);
                         tvTotalPagesSeek.setText(String.valueOf(total));
                         
+                        // ⚡ بدء التحميل المسبق الصامت للصور
+                        com.fire.mangareader.utils.ImagePrefetcher.prefetchImages(ChapterReaderActivity.this, pages);
+                        
                         // 🚀 التحميل المسبق لصفحات الفصل التالي في الخلفية
                         prefetchNextChapter(cookies);
                     } else {

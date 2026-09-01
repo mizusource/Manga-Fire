@@ -39,19 +39,8 @@ public class MangaGlideModule extends AppGlideModule {
 
     @Override
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.setMaxRequestsPerHost(12);
-        dispatcher.setMaxRequests(40);
-        
-        OkHttpClient client = new OkHttpClient.Builder()
-                .dns(FastDns.INSTANCE)
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .connectionPool(new ConnectionPool(16, 5, TimeUnit.MINUTES))
-                .dispatcher(dispatcher)
-                .build();
+        // Use the centralized Singleton OkHttpClient (which has DoH, Connection Pooling, and Brotli)
+        OkHttpClient client = com.fire.mangareader.utils.MangaOkHttp.getClient();
 
         registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(client));
     }
