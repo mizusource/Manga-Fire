@@ -86,7 +86,11 @@ public class DownloadService extends Service {
                 .setContentText("جاري الاستعداد...")
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .build();
-        startForeground(task.notifId, notification);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(task.notifId, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+        } else {
+            startForeground(task.notifId, notification);
+        }
         
         processNextTask();
         
@@ -106,7 +110,11 @@ public class DownloadService extends Service {
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setProgress(100, 0, true)
                 .build();
-        startForeground(task.notifId, notification);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(task.notifId, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+        } else {
+            startForeground(task.notifId, notification);
+        }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             MangaDownloader.downloadChapter(this, task.mangaUrl, task.chapterUrl, task.chapterTitle, new MangaDownloader.DownloadListener() {
