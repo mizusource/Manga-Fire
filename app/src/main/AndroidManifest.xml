@@ -32,13 +32,19 @@
         </provider>
 
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".ui.comments.MangaCommentsActivity"
             android:exported="true"
-            android:theme="@style/Theme.MangaFire.Splash">
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.SplashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MangaFire.Splash">
         </activity>
 
         <activity android:name=".activity.LoginActivity" />

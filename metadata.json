@@ -1,0 +1,6 @@
+{
+  "name": "Manga Community",
+  "description": "A modern Jetpack Compose implementation of a Manga comments and discussion system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

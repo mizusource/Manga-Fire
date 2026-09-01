@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "MangaFire"
-include ':app'
+include(":app")
