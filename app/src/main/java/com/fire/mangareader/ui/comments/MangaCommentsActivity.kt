@@ -46,6 +46,10 @@ class MangaCommentsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        val mangaUrl = intent.getStringExtra("mangaUrl") ?: ""
+        viewModel.setMangaUrl(mangaUrl)
+        
         enableEdgeToEdge()
         setContent {
             MaterialTheme(

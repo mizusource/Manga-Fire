@@ -8,14 +8,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CommentDao {
-    @Query("SELECT * FROM comments WHERE type = 'comment' AND mangaId = :mangaId ORDER BY timestamp DESC")
-    fun getCommentsByNewest(mangaId: Int): Flow<List<CommentEntity>>
+    @Query("SELECT * FROM comments WHERE type = 'comment' AND mangaUrl = :mangaUrl ORDER BY timestamp DESC")
+    fun getCommentsByNewest(mangaUrl: String): Flow<List<CommentEntity>>
 
-    @Query("SELECT * FROM comments WHERE type = 'comment' AND mangaId = :mangaId ORDER BY timestamp ASC")
-    fun getCommentsByOldest(mangaId: Int): Flow<List<CommentEntity>>
+    @Query("SELECT * FROM comments WHERE type = 'comment' AND mangaUrl = :mangaUrl ORDER BY timestamp ASC")
+    fun getCommentsByOldest(mangaUrl: String): Flow<List<CommentEntity>>
 
-    @Query("SELECT * FROM comments WHERE type = 'comment' AND mangaId = :mangaId ORDER BY likes DESC, timestamp DESC")
-    fun getCommentsByMostLiked(mangaId: Int): Flow<List<CommentEntity>>
+    @Query("SELECT * FROM comments WHERE type = 'comment' AND mangaUrl = :mangaUrl ORDER BY likes DESC, timestamp DESC")
+    fun getCommentsByMostLiked(mangaUrl: String): Flow<List<CommentEntity>>
 
     @Query("SELECT * FROM comments WHERE type = 'reply' AND replyToId = :commentId ORDER BY timestamp ASC")
     fun getReplies(commentId: String): Flow<List<CommentEntity>>

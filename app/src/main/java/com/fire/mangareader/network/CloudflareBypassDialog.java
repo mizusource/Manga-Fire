@@ -54,7 +54,7 @@ public class CloudflareBypassDialog extends Dialog {
         tvStatus.setTextColor(android.graphics.Color.BLACK);
         layout.addView(tvStatus);
         
-        webView = new WebView(getContext());
+        webView = new WebView(getContext()); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         webView.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT, 800));
         layout.addView(webView);
@@ -77,6 +77,14 @@ public class CloudflareBypassDialog extends Dialog {
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean onRenderProcessGone(android.webkit.WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                if (view != null) {
+                    view.destroy();
+                }
+                return true;
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return false; // let webview handle it

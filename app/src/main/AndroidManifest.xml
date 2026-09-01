@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <application
         android:name=".MangaApp"
@@ -32,9 +33,9 @@
         </provider>
 
         <activity
-            android:name=".ui.comments.MangaCommentsActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:theme="@style/Theme.MangaFire.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -42,9 +43,9 @@
         </activity>
 
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".ui.comments.MangaCommentsActivity"
             android:exported="false"
-            android:theme="@style/Theme.MangaFire.Splash">
+            android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
 
         <activity android:name=".activity.LoginActivity" />

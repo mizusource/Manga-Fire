@@ -5,19 +5,19 @@ import java.util.UUID
 
 class CommentsRepository(private val commentDao: CommentDao) {
 
-    fun getComments(mangaId: Int, sortOption: String): Flow<List<CommentEntity>> {
+    fun getComments(mangaUrl: String, sortOption: String): Flow<List<CommentEntity>> {
         return when (sortOption) {
-            "newest" -> commentDao.getCommentsByNewest(mangaId)
-            "oldest" -> commentDao.getCommentsByOldest(mangaId)
-            "most_liked" -> commentDao.getCommentsByMostLiked(mangaId)
-            else -> commentDao.getCommentsByNewest(mangaId)
+            "newest" -> commentDao.getCommentsByNewest(mangaUrl)
+            "oldest" -> commentDao.getCommentsByOldest(mangaUrl)
+            "most_liked" -> commentDao.getCommentsByMostLiked(mangaUrl)
+            else -> commentDao.getCommentsByNewest(mangaUrl)
         }
     }
 
-    suspend fun addComment(mangaId: Int, content: String, isSpoiler: Boolean, userName: String = "You") {
+    suspend fun addComment(mangaUrl: String, content: String, isSpoiler: Boolean, userName: String = "You") {
         val newComment = CommentEntity(
             id = UUID.randomUUID().toString(),
-            mangaId = mangaId,
+            mangaUrl = mangaUrl,
             userId = "current_user_123",
             userName = userName,
             content = content,

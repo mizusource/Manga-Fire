@@ -247,14 +247,16 @@ public class MangaDetailActivity extends AppCompatActivity {
         if (btnComments != null) { btnComments.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-                    CommentsBottomSheetDialog bottomSheet = CommentsBottomSheetDialog.newInstance(mangaUrl);
-                    bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
+                    Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.ui.comments.MangaCommentsActivity.class);
+                    intent.putExtra("mangaUrl", mangaUrl);
+                    startActivity(intent);
                 }).start();
             });
         } else {
             btnComments.setOnClickListener(v -> {
-                CommentsBottomSheetDialog bottomSheet = CommentsBottomSheetDialog.newInstance(mangaUrl);
-                bottomSheet.show(getSupportFragmentManager(), "CommentsBottomSheet");
+                Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.ui.comments.MangaCommentsActivity.class);
+                intent.putExtra("mangaUrl", mangaUrl);
+                startActivity(intent);
             });
         }
 
@@ -314,7 +316,7 @@ public class MangaDetailActivity extends AppCompatActivity {
         if (!isSilentBackgroundFetch) progressBar.setVisibility(View.VISIBLE);
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
-        android.webkit.WebView webView = new android.webkit.WebView(this);
+        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         
         webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
         webView.setAlpha(0.0f); 
@@ -345,6 +347,14 @@ public class MangaDetailActivity extends AppCompatActivity {
 
         webView.setWebChromeClient(new android.webkit.WebChromeClient());
         webView.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override
+            public boolean onRenderProcessGone(android.webkit.WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                if (view != null) {
+                    view.destroy();
+                }
+                return true;
+            }
+
             
             
             public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; isProcessed[0] = true; runOnUiThread(() -> { progressBar.setVisibility(View.GONE); swipeRefreshLayout.setRefreshing(false); Toast.makeText(MangaDetailActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });

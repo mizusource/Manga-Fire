@@ -17,7 +17,8 @@ import kotlinx.coroutines.launch
 class CommentsViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: CommentsRepository
 
-    val currentMangaId = MutableStateFlow(1) // Default manga ID
+    val currentMangaUrl = MutableStateFlow("")
+
     val sortOption = MutableStateFlow("newest") // newest, oldest, most_liked
 
     init {
@@ -27,9 +28,13 @@ class CommentsViewModel(application: Application) : AndroidViewModel(application
         // Seed some data for demo if needed, but we'll let the user add them
     }
 
+    fun setMangaUrl(url: String) {
+        currentMangaUrl.value = url
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val comments: StateFlow<List<CommentEntity>> = sortOption.flatMapLatest { sort ->
-        repository.getComments(currentMangaId.value, sort)
+        repository.getComments(currentMangaUrl.value, sort)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -38,7 +43,9 @@ class CommentsViewModel(application: Application) : AndroidViewModel(application
 
     fun addComment(content: String, isSpoiler: Boolean) {
         viewModelScope.launch {
-            repository.addComment(currentMangaId.value, content, isSpoiler)
+            if (currentMangaUrl.value.isNotEmpty()) {
+                repository.addComment(currentMangaUrl.value, content, isSpoiler)
+            }
         }
     }
 

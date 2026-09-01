@@ -125,7 +125,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
         tvChapterTitle = findViewById(R.id.tvChapterTitle);
         btnBack = findViewById(R.id.btnBack);
         btnEyeFilter = findViewById(R.id.btnEyeFilter);
-        scraperWebView = findViewById(R.id.scraperWebView);
+        scraperWebView = findViewById(R.id.scraperWebView); if(scraperWebView != null) scraperWebView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
 
         pageSeekBar = findViewById(R.id.pageSeekBar);
         tvCurrentPageSeek = findViewById(R.id.tvCurrentPageSeek);
@@ -400,6 +400,14 @@ public class ChapterReaderActivity extends AppCompatActivity {
 
         scraperWebView.setWebChromeClient(new WebChromeClient());
         scraperWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean onRenderProcessGone(android.webkit.WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                if (view != null) {
+                    view.destroy();
+                }
+                return true;
+            }
+
             @Override
             public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
                 super.onReceivedHttpError(view, request, errorResponse);

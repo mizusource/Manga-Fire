@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         mainShimmerView.startShimmer();
 
         android.view.ViewGroup rootView = findViewById(android.R.id.content);
-        android.webkit.WebView webView = new android.webkit.WebView(this);
+        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         
         // 👻 جعل المتصفح بحجم بكسل واحد وشفاف تماماً لكي لا يلاحظه المستخدم
         webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
@@ -219,6 +219,14 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebChromeClient(new android.webkit.WebChromeClient());
         webView.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override
+            public boolean onRenderProcessGone(android.webkit.WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                if (view != null) {
+                    view.destroy();
+                }
+                return true;
+            }
+
             
             
             public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; isProcessed[0] = true; runOnUiThread(() -> { if(mainShimmerView != null) {

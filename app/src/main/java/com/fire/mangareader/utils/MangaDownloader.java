@@ -37,7 +37,7 @@ public class MangaDownloader {
         Handler mainHandler = new Handler(Looper.getMainLooper());
         
         mainHandler.post(() -> {
-            WebView webView = new WebView(context);
+            WebView webView = new WebView(context); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
             WebSettings settings = webView.getSettings();
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true); settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);
@@ -56,6 +56,14 @@ public class MangaDownloader {
             mainHandler.postDelayed(timeoutTask, 40000);
 
             webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean onRenderProcessGone(android.webkit.WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                if (view != null) {
+                    view.destroy();
+                }
+                return true;
+            }
+
                 boolean isProcessing = false;
 
                 @Override
