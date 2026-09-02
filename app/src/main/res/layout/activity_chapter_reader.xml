@@ -19,7 +19,7 @@
             android:alpha="0.0" />
 
         <!-- قائمة الفصول (القارئ) -->
-        <com.fire.mangareader.reader.viewer.WebtoonRecyclerView
+        <com.fire.mangareader.presentation.reader.viewer.WebtoonRecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -44,7 +44,7 @@
     </FrameLayout>
 
     <!-- فلتر حماية العين (الذي برمجناه مسبقاً) -->
-    <com.fire.mangareader.reader.viewer.ReaderColorFilterView
+    <com.fire.mangareader.presentation.reader.viewer.ReaderColorFilterView
         android:id="@+id/colorFilterView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

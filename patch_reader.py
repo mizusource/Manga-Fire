@@ -1,36 +1,55 @@
 import re
 
-with open('app/src/main/java/com/fire/mangareader/activity/ChapterReaderActivity.java', 'r') as f:
+filepath = 'app/src/main/java/com/fire/mangareader/presentation/activity/ChapterReaderActivity.java'
+with open(filepath, 'r') as f:
     content = f.read()
 
-new_save = """
-    private void saveReadingProgress(int currentPage, int totalPages) {
-        new Thread(() -> {
-            try {
-                com.fire.mangareader.database.ChapterState state = AppDatabase.getInstance(this).chapterStateDao().getChapterState(chapterUrl);
-                if (state == null) {
-                    state = new com.fire.mangareader.database.ChapterState();
-                    state.chapterUrl = chapterUrl;
-                    state.mangaUrl = mangaUrl;
-                }
-                state.lastPage = currentPage - 1;
-                state.isRead = true;
-                if (currentPage == totalPages && totalPages > 0) {
-                    state.isCompleted = true;
-                }
-                AppDatabase.getInstance(this).chapterStateDao().insert(state);
-                
-                // Add to Supabase Read History
-                com.fire.mangareader.network.SupabaseManager.getInstance(this).markChapterRead(mangaUrl, chapterUrl, chapterTitle, null);
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-"""
+# Replace the toggle click listener
+old_listener_pattern = r'ImageView btnToggleDirection = findViewById\(R\.id\.btnToggleDirection\);.*?btnToggleDirection\.setOnClickListener\(v -> \{.*?\}\);'
 
-content = re.sub(r'private void saveReadingProgress\(int currentPage, int totalPages\)\s*\{.*?\n    \}', new_save.strip(), content, flags=re.DOTALL)
+new_listener = """ImageView btnToggleDirection = findViewById(R.id.btnToggleDirection);
+        btnToggleDirection.setOnClickListener(v -> {
+            String[] options = {"عمودي (ويب تون)", "أفقي (من اليسار لليمين)", "أفقي (من اليمين لليسار - مانجا)"};
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("اختر وضع القراءة")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) { // Vertical
+                        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+                        btnToggleDirection.setColorFilter(android.graphics.Color.WHITE);
+                        Toast.makeText(this, "وضع القراءة: عمودي", Toast.LENGTH_SHORT).show();
+                    } else if (which == 1) { // Horizontal LTR
+                        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+                        btnToggleDirection.setColorFilter(android.graphics.Color.GREEN);
+                        Toast.makeText(this, "وضع القراءة: أفقي (LTR)", Toast.LENGTH_SHORT).show();
+                    } else if (which == 2) { // Horizontal RTL
+                        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, true); // true for reverse layout
+                        btnToggleDirection.setColorFilter(android.graphics.Color.GREEN);
+                        Toast.makeText(this, "وضع القراءة: مانجا يابانية (RTL)", Toast.LENGTH_SHORT).show();
+                    }
+                    
+                    layoutManager.setItemPrefetchEnabled(true);
+                    layoutManager.setInitialPrefetchItemCount(5);
+                    recyclerView.setLayoutManager(layoutManager);
+                    
+                    if (which != 0) {
+                        recyclerView.setOnFlingListener(null);
+                        snapHelper.attachToRecyclerView(recyclerView);
+                    } else {
+                        recyclerView.setOnFlingListener(null);
+                    }
 
-with open('app/src/main/java/com/fire/mangareader/activity/ChapterReaderActivity.java', 'w') as f:
+                    if (adapter != null && !tvPageIndicator.getText().toString().isEmpty()) {
+                        try {
+                            int pos = Integer.parseInt(tvPageIndicator.getText().toString().split("/")[0].trim()) - 1;
+                            if (pos >= 0) layoutManager.scrollToPosition(pos);
+                        } catch (Exception e) {}
+                    }
+                })
+                .show();
+        });"""
+
+content = re.sub(old_listener_pattern, new_listener, content, flags=re.DOTALL)
+
+with open(filepath, 'w') as f:
     f.write(content)
+print("ChapterReaderActivity patched.")

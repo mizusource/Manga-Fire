@@ -1,9 +1,9 @@
 package com.fire.mangareader;
 
 import android.app.Application;
-import com.fire.mangareader.utils.AppAdminSettings;
-import com.fire.mangareader.utils.CacheManager;
-import com.fire.mangareader.utils.CrashHandler;
+import com.fire.mangareader.util.AppAdminSettings;
+import com.fire.mangareader.util.CacheManager;
+import com.fire.mangareader.util.CrashHandler;
 
 public class MangaApp extends Application {
     @Override

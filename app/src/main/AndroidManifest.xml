@@ -33,7 +33,7 @@
         </provider>
 
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".presentation.activity.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.MangaFire.Splash">
             <intent-filter>
@@ -43,35 +43,35 @@
         </activity>
 
         <activity
-            android:name=".ui.comments.MangaCommentsActivity"
+            android:name=".presentation.ui.comments.MangaCommentsActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
 
-        <activity android:name=".activity.LoginActivity" />
-        <activity android:name=".activity.RegisterActivity" />
-        <activity android:name=".activity.MainActivity" />
-        <activity android:name=".activity.MangaDetailActivity" />
-        <activity android:name=".activity.ChapterReaderActivity" />
-        <activity android:name=".activity.SearchActivity" />
-        <activity android:name=".activity.SettingsActivity" />
-        <activity android:name=".activity.ProfileActivity" />
-        <activity android:name=".activity.DownloadsActivity" />
-        <activity android:name=".activity.CommentsActivity" />
-        <activity android:name=".activity.RepliesActivity" />
-        <activity android:name=".activity.LibraryActivity" />
-        <activity android:name=".activity.StorageManagerActivity" android:exported="false" />
+        <activity android:name=".presentation.activity.LoginActivity" />
+        <activity android:name=".presentation.activity.RegisterActivity" />
+        <activity android:name=".presentation.activity.MainActivity" />
+        <activity android:name=".presentation.activity.MangaDetailActivity" />
+        <activity android:name=".presentation.activity.ChapterReaderActivity" />
+        <activity android:name=".presentation.activity.SearchActivity" />
+        <activity android:name=".presentation.activity.SettingsActivity" />
+        <activity android:name=".presentation.activity.ProfileActivity" />
+        <activity android:name=".presentation.activity.DownloadsActivity" />
+        <activity android:name=".presentation.activity.CommentsActivity" />
+        <activity android:name=".presentation.activity.RepliesActivity" />
+        <activity android:name=".presentation.activity.LibraryActivity" />
+        <activity android:name=".presentation.activity.StorageManagerActivity" android:exported="false" />
 
     
-        <service android:name=".service.DownloadService"
+        <service android:name=".data.service.DownloadService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
-            <activity android:name=".activity.AdminDashboardActivity"  />
-        <activity android:name=".activity.AdminLoginActivity" />
-            <activity android:name=".activity.NotificationsActivity" />
+            <activity android:name=".presentation.activity.AdminDashboardActivity"  />
+        <activity android:name=".presentation.activity.AdminLoginActivity" />
+            <activity android:name=".presentation.activity.NotificationsActivity" />
     
         <service
-            android:name=".service.MyFirebaseMessagingService"
+            android:name=".data.service.MyFirebaseMessagingService"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

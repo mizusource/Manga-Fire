@@ -136,7 +136,7 @@
                     android:layout_height="wrap_content"
                     android:padding="16dp">
                     
-                    <com.fire.mangareader.utils.DonutChartView
+                    <com.fire.mangareader.util.DonutChartView
                         android:id="@+id/donutChart"
                         android:layout_width="160dp"
                         android:layout_height="160dp"

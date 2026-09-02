@@ -1,0 +1,400 @@
+package com.fire.mangareader.presentation.activity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import com.google.firebase.messaging.FirebaseMessaging;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.fire.mangareader.util.AppAdminSettings;
+import androidx.cardview.widget.CardView;
+import android.widget.TextView;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.facebook.shimmer.ShimmerFrameLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.ImageView;
+
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.fire.mangareader.R;
+import com.fire.mangareader.presentation.adapter.MangaAdapter;
+
+import androidx.viewpager2.widget.ViewPager2;
+import com.fire.mangareader.presentation.adapter.HeroBannerAdapter;
+
+import com.fire.mangareader.domain.model.Manga;
+import com.fire.mangareader.util.TelegramManager;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    
+    private RecyclerView rvLatestUpdates;
+    private ViewPager2 vpHeroBanner;
+
+    private SwipeRefreshLayout swipeRefreshMain;
+    private ShimmerFrameLayout mainShimmerView;
+    private ImageView btnToggleView;
+    private boolean isListView = false;
+    private MangaAdapter adapter;
+    private List<Manga> mangaList;
+    private androidx.drawerlayout.widget.DrawerLayout drawerLayout;
+    private com.google.android.material.navigation.NavigationView navView;
+    private android.widget.ImageView btnMenuToggle;
+ 
+    private String BASE_URL = "https://mangalik.net/";
+
+    
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavHeader();
+    }
+    protected void onCreate(Bundle savedInstanceState) {
+        com.fire.mangareader.util.ThemeHelper.applyTheme(this);
+        super.onCreate(savedInstanceState);
+        
+        // Request Notification Permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
+        com.fire.mangareader.util.DisplayUtils.optimizeRefreshRate(this);
+        setContentView(R.layout.activity_main);
+        com.fire.mangareader.data.network.MangaScraper.globalCookies = getSharedPreferences("AppPrefs", MODE_PRIVATE).getString("cloudflare_cookies", "");
+        BASE_URL = com.fire.mangareader.data.network.SourceManager.getActiveSource(this);
+        com.fire.mangareader.data.network.MangaScraper.BASE_URL = BASE_URL;
+
+        
+        rvLatestUpdates = findViewById(R.id.rvLatestUpdates);
+        CardView announcementBanner = findViewById(R.id.announcementBanner);
+        TextView tvAnnouncementText = findViewById(R.id.tvAnnouncementText);
+        
+        AppAdminSettings.addListener(() -> {
+            if (AppAdminSettings.announcementEnabled && !AppAdminSettings.announcementText.isEmpty()) {
+                if (announcementBanner != null) announcementBanner.setVisibility(View.VISIBLE);
+                if (tvAnnouncementText != null) tvAnnouncementText.setText(AppAdminSettings.announcementText);
+            } else {
+                if (announcementBanner != null) announcementBanner.setVisibility(View.GONE);
+            }
+        });
+        
+        // Initial check
+        if (AppAdminSettings.announcementEnabled && !AppAdminSettings.announcementText.isEmpty()) {
+            if (announcementBanner != null) announcementBanner.setVisibility(View.VISIBLE);
+            if (tvAnnouncementText != null) tvAnnouncementText.setText(AppAdminSettings.announcementText);
+        } else {
+            if (announcementBanner != null) announcementBanner.setVisibility(View.GONE);
+        }
+
+        vpHeroBanner = findViewById(R.id.vpHeroBanner);
+
+        swipeRefreshMain = findViewById(R.id.swipeRefreshMain);
+        mainShimmerView = findViewById(R.id.mainShimmerView);
+        btnToggleView = findViewById(R.id.btnToggleView);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navView = findViewById(R.id.nav_view);
+        btnMenuToggle = findViewById(R.id.btnMenuToggle);
+   
+        android.widget.ImageView btnSearch = findViewById(R.id.btnSearch);
+        btnSearch.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, SearchActivity.class)));
+
+        // فتح القائمة عند الضغط على زر الهمبرغر
+        btnMenuToggle.setOnClickListener(v -> {
+            updateNavHeader();
+            drawerLayout.openDrawer(androidx.core.view.GravityCompat.START);
+        });
+
+        // برمجة الأزرار داخل القائمة الجانبية
+        navView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            
+            if (id == R.id.nav_home) {
+                // نحن في الرئيسية بالفعل
+            } else if (id == R.id.nav_currently_reading) {
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                intent.putExtra("FILTER_STATUS", "اشاهدها حاليا");
+                startActivity(intent);
+            } else if (id == R.id.nav_want_to_read) {
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                intent.putExtra("FILTER_STATUS", "ارغب بمشاهدتها");
+                startActivity(intent);
+            } else if (id == R.id.nav_completed) {
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                intent.putExtra("FILTER_STATUS", "تم مشاهدتها");
+                startActivity(intent);
+            } else if (id == R.id.nav_downloads) {
+                // الانتقال لشاشة التنزيلات
+                startActivity(new Intent(MainActivity.this, DownloadsActivity.class));
+            } else if (id == R.id.nav_favorites) {
+                // الانتقال للمفضلة
+                startActivity(new Intent(MainActivity.this, LibraryActivity.class));
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+            } else if (id == R.id.nav_admin) {
+                startActivity(new Intent(MainActivity.this, AdminLoginActivity.class));
+            } else if (id == R.id.nav_settings) {
+                // الانتقال لشاشة الإعدادات
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            } else if (id == R.id.nav_telegram) {
+                com.fire.mangareader.util.TelegramManager.openTelegramChannel(MainActivity.this, "wv_sj");
+            }
+
+            // إغلاق القائمة بعد اختيار أي عنصر
+            drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START);
+            return true;
+        });
+
+        rvLatestUpdates.setLayoutManager(new GridLayoutManager(this, 3));
+        // Start Background Sync for Updates
+        androidx.work.PeriodicWorkRequest updateRequest = new androidx.work.PeriodicWorkRequest.Builder(
+                com.fire.mangareader.util.UpdateCheckWorker.class, 12, java.util.concurrent.TimeUnit.HOURS)
+                .build();
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "MangaUpdateCheck",
+                androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                updateRequest);
+        com.fire.mangareader.presentation.activity.StorageManagerActivity.autoCleanOldCache(this);
+        mangaList = new ArrayList<>();
+        adapter = new MangaAdapter(this, mangaList);
+        rvLatestUpdates.setAdapter(adapter);
+        btnToggleView.setOnClickListener(v -> {
+            isListView = !isListView;
+            if (isListView) {
+                btnToggleView.setImageResource(android.R.drawable.ic_menu_gallery);
+                rvLatestUpdates.setLayoutManager(new LinearLayoutManager(this));
+            } else {
+                btnToggleView.setImageResource(android.R.drawable.ic_menu_sort_by_size);
+                rvLatestUpdates.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 3));
+            }
+            adapter.setListView(isListView);
+        });
+
+
+        swipeRefreshMain.setOnRefreshListener(() -> loadHomePageViaWebView(true));
+        loadHomePageViaWebView(false);
+    }
+
+    private void loadHomePageViaWebView(boolean isSilentRefresh) {
+        if (!isSilentRefresh) mainShimmerView.setVisibility(View.VISIBLE);
+        mainShimmerView.startShimmer();
+
+        android.view.ViewGroup rootView = findViewById(android.R.id.content);
+        android.webkit.WebView webView = new android.webkit.WebView(this); webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        
+        // 👻 جعل المتصفح بحجم بكسل واحد وشفاف تماماً لكي لا يلاحظه المستخدم
+        webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(1, 1));
+        webView.setAlpha(0.0f); 
+        rootView.addView(webView);
+
+        android.webkit.WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setLoadsImagesAutomatically(true); settings.setBlockNetworkImage(false);
+        settings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        
+        String agent = android.webkit.WebSettings.getDefaultUserAgent(this);
+        settings.setUserAgentString(agent);
+        com.fire.mangareader.data.network.MangaScraper.globalUserAgent = agent;
+
+        android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        cookieManager.setAcceptThirdPartyCookies(webView, true);
+
+        webView.setWebChromeClient(new android.webkit.WebChromeClient());
+        webView.setWebViewClient(new android.webkit.WebViewClient() {
+            @Override
+            public boolean onRenderProcessGone(android.webkit.WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                if (view != null) {
+                    view.destroy();
+                }
+                return true;
+            }
+
+            
+            
+            public void onReceivedError(android.webkit.WebView view, android.webkit.WebResourceRequest request, android.webkit.WebResourceError error) { if(!request.isForMainFrame()) return; isProcessed[0] = true; runOnUiThread(() -> { if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        } swipeRefreshMain.setRefreshing(false); Toast.makeText(MainActivity.this, "Network Error: " + error.getDescription(), Toast.LENGTH_SHORT).show(); });
+                rootView.removeView(webView);
+                try { webView.stopLoading(); webView.loadUrl("about:blank"); new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { try { webView.destroy(); } catch (Exception ignored2) {} }, 1500); } catch (Exception ignored) {}
+            }
+            boolean[] isProcessed = {false};
+            public void onPageFinished(android.webkit.WebView view, String url) {
+                if (isProcessed[0]) return;
+                String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
+                if (cookies != null) { com.fire.mangareader.data.network.MangaScraper.globalCookies = cookies; getSharedPreferences("AppPrefs", MODE_PRIVATE).edit().putString("cloudflare_cookies", cookies).apply(); }
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { 
+                    try {
+                        view.evaluateJavascript("(function() { return document.documentElement.outerHTML; })();", html -> {
+                            if (isProcessed[0]) return;
+                            if (html == null || html.equals("null")) return;
+
+                            if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { 
+                                runOnUiThread(() -> { 
+                                    if(mainShimmerView != null) {
+                                        mainShimmerView.stopShimmer();
+                                        mainShimmerView.setVisibility(View.GONE);
+                                    } 
+                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT, 
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT)); 
+                                    webView.setAlpha(1.0f); 
+                                    Toast.makeText(MainActivity.this, "يرجى حل اختبار التحقق (Cloudflare) للمتابعة", Toast.LENGTH_LONG).show(); 
+                                });
+                                return; 
+                            }
+                            
+                            isProcessed[0] = true;
+                            rootView.removeView(webView); 
+                            try { 
+                                webView.stopLoading(); 
+                                webView.loadUrl("about:blank"); 
+                                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { 
+                                    try { webView.destroy(); } catch (Exception ignored2) {} 
+                                }, 1500); 
+                            } catch (Exception ignored) {} 
+                            
+                            String cleanHtml = html.replaceAll("^\"|\"$", "").replace("\\u003C", "<").replace("\\u003E", ">").replace("\\\"", "\"").replace("\\n", " ").replace("\\t", " ").replace("\\\\", "");
+                            parseHtmlLocally(cleanHtml, isSilentRefresh);
+                        }); 
+                    } catch (Exception ignored) {}
+                }, 2500);
+            }
+        });
+        
+        webView.loadUrl(BASE_URL);
+    }
+
+    private void parseHtmlLocally(String html, boolean isSilentRefresh) {
+        new Thread(() -> {
+            try {
+                Document doc = Jsoup.parse(html, BASE_URL);
+                List<Manga> fetchedList = new ArrayList<>();
+
+                Elements items = doc.select(".page-item-detail, .manga-item, .bsx, .item, .c-tabs-item__content");
+
+                for (Element item : items) {
+                    Manga manga = new Manga();
+                    
+                    Element titleEl = item.select("h3 a, .post-title a, .tt, a.manga-title").first();
+                    if (titleEl != null) {
+                        manga.setTitle(titleEl.text().trim());
+                        manga.setUrl(titleEl.absUrl("href"));
+                    } else {
+                        continue; 
+                    }
+
+                    Element imgEl = item.select("img").first();
+                    if (imgEl != null) {
+                        String imgUrl = imgEl.attr("data-src").isEmpty() ? imgEl.attr("src") : imgEl.attr("data-src");
+                        manga.setCoverUrl(imgUrl);
+                    }
+
+                    Element chapEl = item.select(".chapter-item .chapter a, .epxs, .list-chapter a, .font-meta").first();
+                    if (chapEl != null) {
+                        manga.setLatestChapter(chapEl.text().trim());
+                    }
+
+                    Element ratingEl = item.select(".score, .numscore, .rating").first();
+                    if (ratingEl != null) {
+                        manga.setRating(ratingEl.text().trim());
+                    }
+
+                    fetchedList.add(manga);
+                }
+
+                runOnUiThread(() -> {
+                    if (!fetchedList.isEmpty()) {
+                        mangaList.clear();
+                        mangaList.addAll(fetchedList);
+                        
+                        // Setup Hero Banner with top 3-5 mangas
+                        if (mangaList.size() > 3) {
+                            java.util.List<Manga> bannerList = new java.util.ArrayList<>(mangaList.subList(0, Math.min(5, mangaList.size())));
+                            HeroBannerAdapter bannerAdapter = new HeroBannerAdapter(MainActivity.this, bannerList);
+                            vpHeroBanner.setAdapter(bannerAdapter);
+                            
+                            // Remove them from main list to avoid duplication if preferred, or keep them.
+                            // Let's keep them so the list is full.
+                        }
+
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        if (!isSilentRefresh) Toast.makeText(MainActivity.this, "لم نتمكن من جلب الفصول الرئيسية.", Toast.LENGTH_SHORT).show();
+                    }
+                    
+                    if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        }
+                    swipeRefreshMain.setRefreshing(false);
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    if(mainShimmerView != null) {
+                            mainShimmerView.stopShimmer();
+                            mainShimmerView.setVisibility(View.GONE);
+                        }
+                    swipeRefreshMain.setRefreshing(false);
+                    Toast.makeText(MainActivity.this, "حدث خطأ في قراءة بيانات الموقع", Toast.LENGTH_SHORT).show();
+                });
+            }
+        }).start();
+    }
+
+    private void updateNavHeader() {
+        com.fire.mangareader.data.network.SupabaseManager supabase = com.fire.mangareader.data.network.SupabaseManager.getInstance(this);
+        com.fire.mangareader.util.PreferenceManager prefs = new com.fire.mangareader.util.PreferenceManager(this);
+        
+        com.google.android.material.navigation.NavigationView navView = findViewById(R.id.nav_view);
+        android.view.View headerView = navView.getHeaderView(0);
+        android.widget.TextView navHeaderName = headerView.findViewById(R.id.navHeaderName);
+        android.widget.TextView navHeaderEmail = headerView.findViewById(R.id.navHeaderEmail);
+        android.widget.ImageView navHeaderImage = headerView.findViewById(R.id.navHeaderImage);
+        android.view.View btnNotifications = headerView.findViewById(R.id.btnNotifications);
+        if (btnNotifications != null) {
+            btnNotifications.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.presentation.activity.NotificationsActivity.class)));
+        }
+        
+        if (supabase.isLoggedIn()) {
+            String name = prefs.getUserName();
+            navHeaderName.setText(name != null && !name.isEmpty() ? name : "مستخدم");
+            String email = prefs.getUserEmail();
+            navHeaderEmail.setText(email != null ? email : "");
+            headerView.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.presentation.activity.ProfileActivity.class)));
+            
+            // Check admin
+            if (email != null && ("mstfybdwy633@gmail.com".equalsIgnoreCase(email.trim()) || email.trim().equalsIgnoreCase("admin@gmail.com"))) {
+                navView.getMenu().findItem(R.id.nav_admin).setVisible(true);
+            } else {
+                navView.getMenu().findItem(R.id.nav_admin).setVisible(false);
+            }
+        } else {
+            navHeaderName.setText("تسجيل الدخول");
+            navHeaderEmail.setText("انقر هنا لتسجيل الدخول");
+            navHeaderImage.setImageResource(R.drawable.ic_drawer_profile);
+            headerView.setOnClickListener(v -> startActivity(new android.content.Intent(MainActivity.this, com.fire.mangareader.presentation.activity.LoginActivity.class)));
+            navView.getMenu().findItem(R.id.nav_admin).setVisible(false);
+        }
+    }
+}
