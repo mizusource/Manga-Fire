@@ -89,10 +89,10 @@ public class AniListManager {
                         JSONObject media = data.getJSONObject("Media");
                         AniListMetadata meta = new AniListMetadata();
                         meta.anilistId = media.optInt("id", 0);
-                        meta.format = media.optString("format", "MANGA");
-                        meta.sourceFormat = meta.format;
-                        meta.countryOfOrigin = media.optString("countryOfOrigin", "JP");
-                        meta.originCountry = meta.countryOfOrigin;
+                        meta.sourceFormat = media.optString("format", "MANGA");
+                        meta.format = MangaExtensions.getMangaFormat(meta.sourceFormat);
+                        meta.originCountry = media.optString("countryOfOrigin", "JP");
+                        meta.countryOfOrigin = MangaExtensions.getMangaType(meta.originCountry);
                         
                         int avgScore = media.optInt("averageScore", 0);
                         meta.averageScore = avgScore;
@@ -105,7 +105,7 @@ public class AniListManager {
                             meta.coverUrl = coverImg.optString("extraLarge", coverImg.optString("large", ""));
                         }
 
-                        meta.statusArabic = mapStatusToArabic(media.optString("status", ""));
+                        meta.statusArabic = MangaExtensions.getMangaStatus(media.optString("status", ""));
                         meta.startDateText = formatDate(media.optJSONObject("startDate"));
                         meta.endDateText = formatDate(media.optJSONObject("endDate"));
                         meta.synopsisArabic = media.optString("description", "");

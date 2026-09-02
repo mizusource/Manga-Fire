@@ -74,7 +74,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         holder.tvChapterTitle.setText(chapter.getTitle());
 
         boolean isRead = readChapters != null && readChapters.contains(chapter.getUrl());
-        boolean isDownloaded = downloadedChapters != null && downloadedChapters.contains(chapter.getUrl());
+        boolean isDownloaded = (downloadedChapters != null && downloadedChapters.contains(chapter.getUrl())) || com.fire.mangareader.utils.DownloadChecker.isChapterDownloaded(context, mangaUrl, chapter.getUrl());
 
         holder.downloadProgress.setVisibility(View.GONE);
 
@@ -278,13 +278,10 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
 
                 @Override
                 public void onSuccess() {
-                    File[] downloadedFiles = chapterFolder.listFiles();
                     List<String> dPaths = new ArrayList<>();
-                    if (downloadedFiles != null) {
-                        java.util.Arrays.sort(downloadedFiles, (f1, f2) -> f1.getName().compareTo(f2.getName()));
-                        for (File f : downloadedFiles) {
-                            if (f.isFile()) dPaths.add(f.getAbsolutePath());
-                        }
+                    List<File> downloadedFiles = com.fire.mangareader.utils.DownloadChecker.getDownloadedImages(context, mangaUrl, chapter.getUrl());
+                    for (File f : downloadedFiles) {
+                        dPaths.add(f.getAbsolutePath());
                     }
                     com.fire.mangareader.utils.ChapterExportManager.exportChapter(context, mangaTitle, chapter.getTitle(), chapter.getUrl(), dPaths, format, "ORIGINAL", callback);
                 }

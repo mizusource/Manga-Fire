@@ -668,7 +668,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                     TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
                     TextView tvALRating = findViewById(R.id.tvALRating);
                     TextView tvALRatingCount = findViewById(R.id.tvALRatingCount);
-                    // TextView tvAniListFormat
+                    // TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);
                     // TextView tvAniListAuthor
                     // TextView tvAniListArtist
                     TextView tvAniListCountry = findViewById(R.id.tvAniListCountry);
@@ -682,7 +682,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                         int pop = metadata.popularity;
                         tvALRatingCount.setText(pop >= 1000 ? (pop / 1000) + "K" : String.valueOf(pop));
                     }
-                    if (false && metadata.format != null) {
+                    if (metadata.format != null) {
                         // tvAniListFormat(metadata.format);
                     }
                     if (false) {

@@ -1,25 +1,21 @@
-with open('app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java', 'r') as f:
+import os
+
+filepath = 'app/src/main/java/com/fire/mangareader/utils/AniListManager.java'
+with open(filepath, 'r') as f:
     content = f.read()
 
-success_block = '''                    if (tvAniListAuthor != null && metadata.author != null) {
-                        tvAniListAuthor.setText("المؤلف: " + metadata.author);
-                    }'''
+old_assignments = """                        meta.format = media.optString("format", "MANGA");
+                        meta.sourceFormat = meta.format;
+                        meta.countryOfOrigin = media.optString("countryOfOrigin", "JP");
+                        meta.originCountry = meta.countryOfOrigin;"""
 
-success_block_new = '''                    if (tvAniListAuthor != null) {
-                        tvAniListAuthor.setText("المؤلف: " + (metadata.author != null && !metadata.author.isEmpty() ? metadata.author : "غير متوفر"));
-                    }'''
+new_assignments = """                        meta.sourceFormat = media.optString("format", "MANGA");
+                        meta.format = MangaExtensions.getMangaFormat(meta.sourceFormat);
+                        meta.originCountry = media.optString("countryOfOrigin", "JP");
+                        meta.countryOfOrigin = MangaExtensions.getMangaType(meta.originCountry);"""
 
-content = content.replace(success_block, success_block_new)
+content = content.replace(old_assignments, new_assignments)
 
-error_block = '''            public void onError(String errorMessage) {'''
-error_block_new = '''            public void onError(String errorMessage) {
-                runOnUiThread(() -> {
-                    TextView tvAniListAuthor = findViewById(R.id.tvAniListAuthor);
-                    if (tvAniListAuthor != null && tvAniListAuthor.getText().toString().contains("جاري الجلب")) {
-                        tvAniListAuthor.setText("المؤلف: غير متوفر");
-                    }
-                });'''
-content = content.replace(error_block, error_block_new)
-
-with open('app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java', 'w') as f:
+with open(filepath, 'w') as f:
     f.write(content)
+print("Patched AniListManager.java again")
