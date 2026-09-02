@@ -162,7 +162,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
         
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemViewCacheSize(10); // الاحتفاظ بـ 10 صفحات سابقة في الرام لمنع التقطيع
-        recyclerView.setHasFixedSize(true); // تسريع الرسم
+        // recyclerView.setHasFixedSize(true); // تسريع الرسم
 
         adapter = new WebtoonAdapter();
         recyclerView.setAdapter(adapter);
