@@ -25,6 +25,11 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        android.view.View btnBack = findViewById(R.id.btnBackSettings);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
+
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()

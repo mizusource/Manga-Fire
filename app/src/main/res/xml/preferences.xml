@@ -2,12 +2,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/appearance">
         <ListPreference
-            android:key="theme"
+            android:key="app_theme"
             android:title="@string/theme"
             android:summary="@string/theme_summary"
             android:entries="@array/theme_entries"
             android:entryValues="@array/theme_values"
-            android:defaultValue="system" />
+            android:defaultValue="dark_neon_blue" />
         <ListPreference
             android:key="language"
             android:title="@string/language"
