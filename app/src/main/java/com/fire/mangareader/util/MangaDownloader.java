@@ -27,6 +27,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MangaDownloader {
+    public static volatile boolean isCancelled = false;
+
 
     public interface DownloadListener {
         void onProgressUpdate(int current, int total);
@@ -126,6 +128,8 @@ public class MangaDownloader {
                                     }
 
                                     java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(4); java.util.List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>(); java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger(0); for (int i = 0; i < imageUrls.size(); i++) { final int index = i; futures.add(executor.submit(() -> {
+                                        if (isCancelled) return;
+
                                         // 🚀 نعتمد على OkHttp للتنزيل 
                                         try { downloadImageFile(context, imageUrls.get(index), chapterUrl, new File(chapterFolder, index + ".jpg")); } catch(Exception e) { e.printStackTrace(); }
                                         
@@ -175,7 +179,7 @@ public class MangaDownloader {
     }
 
     // 🚀 دالة التحميل تعتمد على محرك OkHttp القوي المجهز مسبقاً مع تطبيق خيارات DownloadQuality
-    private static void downloadImageFile(Context context, String fileUrl, String chapterUrl, File outputFile) throws Exception {
+    private static void downloadImageFile(Context context, String fileUrl, String chapterUrl, java.io.File outputFile) throws Exception {
         fileUrl = fileUrl.trim().replace(" ", "%20");
         if (fileUrl.startsWith("//")) {
             fileUrl = "https:" + fileUrl;
@@ -190,20 +194,23 @@ public class MangaDownloader {
             qualityEnum = com.fire.mangareader.domain.model.DownloadQuality.MEDIUM;
         }
 
-        Request request = new Request.Builder()
+        // استخدام ملف مؤقت لمنع حفظ صور تالفة عند انقطاع الاتصال
+        java.io.File tmpFile = new java.io.File(outputFile.getAbsolutePath() + ".tmp");
+
+        okhttp3.Request request = new okhttp3.Request.Builder()
                 .url(fileUrl)
                 .header("Referer", chapterUrl) // مهم جداً لتخطي حظر الصور
                 .build();
+        okhttp3.Response response = MangaOkHttp.getClient().newCall(request).execute();
 
-        Response response = MangaOkHttp.getClient().newCall(request).execute();
         if (!response.isSuccessful() || response.body() == null) {
             throw new Exception("HTTP Error: " + response.code());
         }
 
         byte[] imageBytes = response.body().bytes();
-        
+
         if (qualityEnum == com.fire.mangareader.domain.model.DownloadQuality.HIGH) {
-            FileOutputStream fos = new FileOutputStream(outputFile);
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(tmpFile);
             fos.write(imageBytes);
             fos.flush();
             fos.close();
@@ -224,23 +231,32 @@ public class MangaDownloader {
                         }
                     }
                     
-                    FileOutputStream fos = new FileOutputStream(outputFile);
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(tmpFile);
                     bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, qualityEnum.getCompressionQuality(), fos);
                     fos.flush();
                     fos.close();
                     bitmap.recycle();
                 } else {
-                    FileOutputStream fos = new FileOutputStream(outputFile);
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(tmpFile);
                     fos.write(imageBytes);
                     fos.flush();
                     fos.close();
                 }
             } catch (Throwable t) {
-                FileOutputStream fos = new FileOutputStream(outputFile);
+                java.io.FileOutputStream fos = new java.io.FileOutputStream(tmpFile);
                 fos.write(imageBytes);
                 fos.flush();
                 fos.close();
             }
         }
+        
+        // بمجرد التأكد من كتابة الملف بنجاح دون أخطاء، نقوم بإعادة تسميته إلى الاسم الأصلي (.jpg)
+        if (tmpFile.exists()) {
+            if (outputFile.exists()) {
+                outputFile.delete();
+            }
+            tmpFile.renameTo(outputFile);
+        }
     }
 }
+

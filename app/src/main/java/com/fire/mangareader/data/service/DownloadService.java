@@ -3,6 +3,7 @@ package com.fire.mangareader.data.service;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,8 @@ public class DownloadService extends Service {
     private static final String CHANNEL_ID = "DownloadChannel";
     private NotificationManager notificationManager;
     private int notificationId = 1001;
+    
+    private static DownloadService instance;
 
     private static class DownloadTask {
         String mangaUrl;
@@ -33,6 +36,7 @@ public class DownloadService extends Service {
     private boolean isDownloading = false;
 
     public static void startDownload(Context context, String mangaUrl, String chapterUrl, String chapterTitle) {
+        MangaDownloader.isCancelled = false;
         Intent intent = new Intent(context, DownloadService.class);
         intent.putExtra("mangaUrl", mangaUrl);
         intent.putExtra("chapterUrl", chapterUrl);
@@ -45,11 +49,27 @@ public class DownloadService extends Service {
         }
     }
 
+    public static void cancelAllDownloads(Context context) {
+        if (instance != null) {
+            instance.downloadQueue.clear();
+            instance.isDownloading = false;
+            instance.stopForeground(true);
+            instance.stopSelf();
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannel();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        instance = null;
     }
 
     private void createNotificationChannel() {
@@ -61,10 +81,19 @@ public class DownloadService extends Service {
         }
     }
 
+    private PendingIntent getCancelIntent() {
+        Intent cancelIntent = new Intent(this, NotificationReceiver.class);
+        cancelIntent.setAction(NotificationReceiver.ACTION_CANCEL_DOWNLOAD);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        return PendingIntent.getBroadcast(this, 0, cancelIntent, flags);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) return START_NOT_STICKY;
-
         String mangaUrl = intent.getStringExtra("mangaUrl");
         String chapterUrl = intent.getStringExtra("chapterUrl");
         String chapterTitle = intent.getStringExtra("chapterTitle");
@@ -80,13 +109,14 @@ public class DownloadService extends Service {
         
         downloadQueue.offer(task);
         
-        // Show pending notification
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("في الانتظار: " + chapterTitle)
                 .setContentText("جاري الاستعداد...")
                 .setSmallIcon(android.R.drawable.stat_sys_download)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "إلغاء", getCancelIntent())
                 .build();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(task.notifId, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         } else {
             startForeground(task.notifId, notification);
@@ -99,7 +129,11 @@ public class DownloadService extends Service {
 
     private void processNextTask() {
         if (isDownloading) return;
-        if (downloadQueue.isEmpty()) return;
+        if (downloadQueue.isEmpty()) {
+            stopForeground(true);
+            stopSelf();
+            return;
+        }
         
         isDownloading = true;
         DownloadTask task = downloadQueue.poll();
@@ -109,56 +143,66 @@ public class DownloadService extends Service {
                 .setContentText("بدء التحميل...")
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setProgress(100, 0, true)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "إلغاء", getCancelIntent())
                 .build();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(task.notifId, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         } else {
             startForeground(task.notifId, notification);
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (MangaDownloader.isCancelled) {
+                finishTaskAndProceed(task.startId);
+                return;
+            }
+            
             MangaDownloader.downloadChapter(this, task.mangaUrl, task.chapterUrl, task.chapterTitle, new MangaDownloader.DownloadListener() {
                 @Override
                 public void onProgressUpdate(int current, int total) {
+                    if (MangaDownloader.isCancelled) return;
                     Notification updated = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("جاري تحميل: " + task.chapterTitle)
                             .setContentText("صفحة " + current + " من " + total)
                             .setSmallIcon(android.R.drawable.stat_sys_download)
                             .setProgress(total, current, false)
+                            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "إلغاء", getCancelIntent())
                             .build();
                     notificationManager.notify(task.notifId, updated);
                 }
 
                 @Override
                 public void onSuccess() {
+                    if (MangaDownloader.isCancelled) return;
                     Notification success = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("اكتمل التحميل")
                             .setContentText(task.chapterTitle + " تم تحميله بنجاح")
                             .setSmallIcon(android.R.drawable.stat_sys_download_done)
                             .build();
                     notificationManager.notify(task.notifId, success);
-                    
                     finishTaskAndProceed(task.startId);
                 }
 
                 @Override
                 public void onError(String errorMessage) {
+                    if (MangaDownloader.isCancelled) return;
                     Notification error = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("فشل التحميل")
                             .setContentText(task.chapterTitle + " - " + errorMessage)
                             .setSmallIcon(android.R.drawable.stat_notify_error)
                             .build();
                     notificationManager.notify(task.notifId, error);
-                    
                     finishTaskAndProceed(task.startId);
                 }
             });
-        }, 3000); // Wait 3 seconds between downloads to avoid server block
+        }, 3000); 
     }
     
     private void finishTaskAndProceed(int startId) {
         isDownloading = false;
         if (downloadQueue.isEmpty()) {
+            stopForeground(true);
             stopSelfResult(startId);
         } else {
             processNextTask();

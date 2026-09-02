@@ -63,7 +63,14 @@
         <activity android:name=".presentation.activity.StorageManagerActivity" android:exported="false" />
 
     
-        <service android:name=".data.service.DownloadService"
+        <receiver android:name=".data.service.NotificationReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.fire.mangareader.ACTION_CANCEL_DOWNLOAD" />
+            </intent-filter>
+        </receiver>
+        
+        <service
+ android:name=".data.service.DownloadService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
             <activity android:name=".presentation.activity.AdminDashboardActivity"  />
