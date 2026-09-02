@@ -53,6 +53,6 @@ public class MangaGlideModule extends AppGlideModule {
                 .dispatcher(dispatcher)
                 .build();
 
-        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(client));
+        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(com.fire.mangareader.util.MangaOkHttp.getClient()));
     }
 }

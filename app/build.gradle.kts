@@ -51,6 +51,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.16.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
+    implementation("com.google.code.gson:gson:2.10.1")
     
     // Google Services & Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
