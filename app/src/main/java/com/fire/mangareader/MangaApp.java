@@ -11,6 +11,7 @@ public class MangaApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        com.fire.mangareader.util.MangaOkHttp.init(this);
         // Initialize CrashHandler to prevent silent crashes and log them
         Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(this));
 

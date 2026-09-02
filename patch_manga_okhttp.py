@@ -1,4 +1,10 @@
-package com.fire.mangareader.util;
+import re
+
+filepath = 'app/src/main/java/com/fire/mangareader/util/MangaOkHttp.java'
+with open(filepath, 'r') as f:
+    content = f.read()
+
+new_content = """package com.fire.mangareader.util;
 
 import android.content.Context;
 import com.fire.mangareader.data.network.FastDns;
@@ -39,3 +45,8 @@ public class MangaOkHttp {
         return client;
     }
 }
+"""
+
+with open(filepath, 'w') as f:
+    f.write(new_content)
+print("Patched MangaOkHttp.java")
