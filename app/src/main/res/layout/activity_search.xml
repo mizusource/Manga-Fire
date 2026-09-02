@@ -10,10 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_margin="16dp"
-        app:cardBackgroundColor="?attr/colorSurface"
+        app:cardBackgroundColor="#1AFFFFFF"
+        app:strokeColor="#33FFFFFF"
+        app:strokeWidth="1dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="8dp"
-        app:strokeWidth="0dp">
+        >
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"

@@ -51,7 +51,8 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaAdapter.MangaViewHol
              .load(manga.getCoverUrl())
              .override(300, 400)
              .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
-             .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565) // تقليل الدقة قليلاً لتسريع التحميل وتوفير الرام
+             .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565)
+             .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade())
              .into(holder.mangaCover);
 
         // Set transition name for the shared element

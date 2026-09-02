@@ -43,6 +43,18 @@ public class MainActivity extends AppCompatActivity {
     
     private RecyclerView rvLatestUpdates;
     private ViewPager2 vpHeroBanner;
+    private android.os.Handler sliderHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private Runnable sliderRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (vpHeroBanner != null && vpHeroBanner.getAdapter() != null && vpHeroBanner.getAdapter().getItemCount() > 0) {
+                int currentItem = vpHeroBanner.getCurrentItem();
+                int nextItem = (currentItem + 1) % vpHeroBanner.getAdapter().getItemCount();
+                vpHeroBanner.setCurrentItem(nextItem, true);
+                sliderHandler.postDelayed(this, 3500);
+            }
+        }
+    };
 
     private SwipeRefreshLayout swipeRefreshMain;
     private ShimmerFrameLayout mainShimmerView;
@@ -330,7 +342,11 @@ public class MainActivity extends AppCompatActivity {
                         if (mangaList.size() > 3) {
                             java.util.List<Manga> bannerList = new java.util.ArrayList<>(mangaList.subList(0, Math.min(5, mangaList.size())));
                             HeroBannerAdapter bannerAdapter = new HeroBannerAdapter(MainActivity.this, bannerList);
-                            vpHeroBanner.setAdapter(bannerAdapter);
+                                                        vpHeroBanner.setAdapter(bannerAdapter);
+                            sliderHandler.removeCallbacks(sliderRunnable);
+                            if (bannerList.size() > 1) {
+                                sliderHandler.postDelayed(sliderRunnable, 3500);
+                            }
                             
                             // Remove them from main list to avoid duplication if preferred, or keep them.
                             // Let's keep them so the list is full.

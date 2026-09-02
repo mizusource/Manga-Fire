@@ -51,6 +51,7 @@ public class HeroBannerAdapter extends RecyclerView.Adapter<HeroBannerAdapter.Vi
         Glide.with(context)
                 .load(manga.getCoverUrl())
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade())
                 .into(holder.ivHeroCover);
 
         // Set transition name
