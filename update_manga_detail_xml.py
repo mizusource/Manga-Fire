@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+import os
+
+new_xml = """<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -13,7 +15,7 @@
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
         android:background="@android:color/transparent"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="@style/Theme.AppCompat.Dark.ActionBar">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/collapsingToolbar"
@@ -387,3 +389,8 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+"""
+
+with open('app/src/main/res/layout/activity_manga_detail.xml', 'w') as f:
+    f.write(new_xml)
+print("Updated activity_manga_detail.xml")

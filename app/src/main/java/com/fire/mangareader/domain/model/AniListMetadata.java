@@ -17,6 +17,7 @@ public class AniListMetadata {
     public String coverUrl = "";
     public int averageScore = 0;
     public int popularity = 0;
+    public java.util.List<String> genres = new java.util.ArrayList<>();
     public long lastUpdated = System.currentTimeMillis();
 
     public AniListMetadata() {}

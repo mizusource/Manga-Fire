@@ -671,7 +671,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                     // TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);
                     // TextView tvAniListAuthor
                     // TextView tvAniListArtist
-                    TextView tvAniListCountry = findViewById(R.id.tvAniListCountry);
+                    android.widget.TextView tvAniListCountry = findViewById(R.id.chipAniListCountry);
                     // TextView tvAniListDates
 
                     if (tvALRating != null && metadata.averageScore > 0) {
@@ -691,9 +691,29 @@ public class MangaDetailActivity extends AppCompatActivity {
                     if (false && metadata.artist != null) {
                         // tvAniListArtist("الرسام: " + metadata.artist);
                     }
+
                     if (tvAniListCountry != null && metadata.countryOfOrigin != null) {
-                        tvAniListCountry.setText("دولة المنشأ: " + metadata.countryOfOrigin);
+                        tvAniListCountry.setText(metadata.countryOfOrigin);
                     }
+                    
+                    android.widget.TextView chipFormat = findViewById(R.id.chipAniListFormat);
+                    if (chipFormat != null && metadata.format != null) {
+                        chipFormat.setText(metadata.format);
+                    }
+
+                    com.google.android.material.chip.ChipGroup chipGroup = findViewById(R.id.chipGroupGenres);
+                    if (chipGroup != null && metadata.genres != null && !metadata.genres.isEmpty()) {
+                        for (String genre : metadata.genres) {
+                            com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(MangaDetailActivity.this);
+                            chip.setText(genre);
+                            chip.setTextColor(android.graphics.Color.WHITE);
+                            chip.setChipBackgroundColorResource(android.R.color.transparent);
+                            chip.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#33FFFFFF")));
+                            chip.setChipStrokeWidth(0f);
+                            chipGroup.addView(chip);
+                        }
+                    }
+
                     if (false) {
                         // tvAniListDates("الإصدار: " + metadata.getFormattedDates());
                     }

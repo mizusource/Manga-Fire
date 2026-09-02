@@ -55,6 +55,7 @@ public class AniListManager {
                         "endDate { year month day } " +
                         "status " +
                         "averageScore " +
+                        "genres " +
                         "description(asHtml: false) " +
                         "bannerImage " +
                         "coverImage { extraLarge large } " +
@@ -96,7 +97,16 @@ public class AniListManager {
                         
                         int avgScore = media.optInt("averageScore", 0);
                         meta.averageScore = avgScore;
+                        
                         meta.popularity = media.optInt("popularity", 1250);
+                        
+                        org.json.JSONArray genresArray = media.optJSONArray("genres");
+                        if (genresArray != null) {
+                            for (int i = 0; i < genresArray.length(); i++) {
+                                meta.genres.add(genresArray.getString(i));
+                            }
+                        }
+
                         meta.scoreText = avgScore > 0 ? (avgScore / 10.0) + " / 10" : "غير مقيّم";
                         
                         meta.bannerUrl = media.optString("bannerImage", "");
