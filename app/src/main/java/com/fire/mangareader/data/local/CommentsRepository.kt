@@ -1,6 +1,12 @@
 package com.fire.mangareader.data.local
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.UUID
 
 class CommentsRepository(private val commentDao: CommentDao) {
@@ -24,7 +30,38 @@ class CommentsRepository(private val commentDao: CommentDao) {
             timestamp = System.currentTimeMillis(),
             isSpoiler = isSpoiler
         )
+        
+        // Save locally
         commentDao.insertComment(newComment)
+
+        // Send to Make.com Webhook
+        withContext(Dispatchers.IO) {
+            try {
+                val url = URL("https://hook.eu1.make.com/ud10lj71nvofrtucj1jq5ls6te8jqtdc")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+
+                val jsonParam = JSONObject()
+                jsonParam.put("commentId", newComment.id)
+                jsonParam.put("mangaUrl", mangaUrl)
+                jsonParam.put("userName", userName)
+                jsonParam.put("content", content)
+                jsonParam.put("isSpoiler", isSpoiler)
+                jsonParam.put("timestamp", newComment.timestamp)
+
+                val out = OutputStreamWriter(connection.outputStream)
+                out.write(jsonParam.toString())
+                out.flush()
+                out.close()
+
+                val responseCode = connection.responseCode
+                println("Webhook Response Code: $responseCode")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     suspend fun toggleLike(comment: CommentEntity) {
