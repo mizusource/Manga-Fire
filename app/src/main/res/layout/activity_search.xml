@@ -37,6 +37,15 @@
         android:gravity="center_vertical">
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/chipFilter"
+            style="@style/Widget.MaterialComponents.Chip.Action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="تصفية 🔍"
+            android:layout_marginEnd="8dp"
+            app:chipCornerRadius="16dp" />
+
+        <com.google.android.material.chip.Chip
             android:id="@+id/chipGlobalSearch"
             style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
