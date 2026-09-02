@@ -14,6 +14,8 @@ import com.fire.mangareader.R;
 import com.fire.mangareader.presentation.adapter.MangaAdapter;
 import com.fire.mangareader.domain.model.Manga;
 import com.fire.mangareader.data.network.SupabaseManager;
+import com.fire.mangareader.data.database.AppDatabase;
+import com.fire.mangareader.data.database.LibraryItem;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;

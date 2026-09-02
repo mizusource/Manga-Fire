@@ -10,6 +10,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
+import com.fire.mangareader.domain.usecase.user.EnableChapterNotificationUseCase;
 
 import com.fire.mangareader.R;
 import com.fire.mangareader.util.LocaleHelper;
@@ -172,6 +173,29 @@ public class SettingsActivity extends AppCompatActivity {
                 telegramTestPref.setOnPreferenceClickListener(preference -> {
                     com.fire.mangareader.util.TelegramManager tm = new com.fire.mangareader.util.TelegramManager(requireContext());
                     Toast.makeText(requireContext(), "توكن البوت: " + (tm.getBotToken().isEmpty() ? "غير مضبوط" : "متصل ✔️"), Toast.LENGTH_LONG).show();
+                    return true;
+                });
+            }
+
+            SwitchPreferenceCompat notifPref = findPreference("notifications_enabled");
+            if (notifPref != null) {
+                notifPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    boolean enabled = (Boolean) newValue;
+                    new EnableChapterNotificationUseCase(requireContext()).enableNewChapterNotification(enabled, new EnableChapterNotificationUseCase.Callback() {
+                        @Override
+                        public void onSuccess(String token) {
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(requireContext(), enabled ? "تم تفعيل الإشعارات بنجاح 🔔" : "تم إيقاف الإشعارات 🔕", Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                        @Override
+                        public void onError(String error) {
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                                notifPref.setChecked(!enabled); // revert
+                            });
+                        }
+                    });
                     return true;
                 });
             }

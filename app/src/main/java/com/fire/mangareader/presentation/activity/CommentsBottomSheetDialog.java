@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     private List<Comment> commentsList;
     private EditText etCommentInput;
     private android.widget.ImageView btnSendComment;
+    private CheckBox cbSpoiler;
     private ProgressBar progressBar;
     private TextView tvEmptyComments;
     private SupabaseManager supabaseManager;
@@ -68,6 +70,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         rvComments = view.findViewById(R.id.rvComments);
         etCommentInput = view.findViewById(R.id.etCommentInput);
         btnSendComment = view.findViewById(R.id.btnSendComment);
+        cbSpoiler = view.findViewById(R.id.cbSpoiler);
         progressBar = view.findViewById(R.id.progressBar);
         tvEmptyComments = view.findViewById(R.id.tvEmptyComments);
         
@@ -133,11 +136,14 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
             userName = "مستخدم";
         }
         
-        supabaseManager.addComment(mangaUrl, text, false, userName, new SupabaseManager.AuthCallback() {
+        boolean isSpoiler = cbSpoiler != null && cbSpoiler.isChecked();
+        
+        supabaseManager.addComment(mangaUrl, text, isSpoiler, userName, new SupabaseManager.AuthCallback() {
             @Override
             public void onSuccess(String message) {
                 btnSendComment.setEnabled(true);
                 etCommentInput.setText("");
+                if (cbSpoiler != null) cbSpoiler.setChecked(false);
                 loadComments();
             }
             @Override

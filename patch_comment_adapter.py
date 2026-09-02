@@ -1,38 +1,51 @@
-with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'r') as f:
-    adapter = f.read()
-
-new_like = """holder.btnLike.setOnClickListener(v -> {
-            if (comment.id != null) {
-                com.fire.mangareader.network.SupabaseManager.getInstance(context)
-                    .likeComment(comment.id, comment.likes + 1, new com.fire.mangareader.network.SupabaseManager.AuthCallback() {
-                        @Override
-                        public void onSuccess(String message) {
-                            ((android.app.Activity) context).runOnUiThread(() -> {
-                                comment.likes += 1;
-                                holder.tvLikeCount.setText(String.valueOf(comment.likes));
-                                holder.btnLike.setEnabled(false);
-                            });
-                        }
-                        @Override
-                        public void onError(String error) {
-                            ((android.app.Activity) context).runOnUiThread(() -> {
-                                android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show();
-                            });
-                        }
-                    });
-                
-                // Also send a notification if user_id is available
-                if (comment.user_id != null && !comment.user_id.isEmpty()) {
-                    String senderName = context.getSharedPreferences("supabase_prefs", android.content.Context.MODE_PRIVATE).getString("username", "مستخدم");
-                    com.fire.mangareader.network.SupabaseManager.getInstance(context)
-                        .sendNotification(comment.user_id, senderName, "أعجب بتعليقك", comment.mangaUrl, null);
-                }
-            }
-        });"""
-
 import re
-adapter = re.sub(r'holder\.btnLike\.setOnClickListener\(v -> \{.*?\}\);', new_like, adapter, flags=re.DOTALL)
 
-with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'w') as f:
-    f.write(adapter)
-print("Patched CommentAdapter with direct Supabase calls")
+filepath = 'app/src/main/java/com/fire/mangareader/presentation/adapter/CommentAdapter.java'
+with open(filepath, 'r') as f:
+    content = f.read()
+
+# Add blur effect imports if needed, though we can just hide text and show overlay
+if "import android.graphics.RenderEffect" not in content:
+    content = content.replace('import android.widget.TextView;', 'import android.widget.TextView;\nimport android.os.Build;\nimport android.graphics.RenderEffect;\nimport android.graphics.Shader;')
+
+# Update onBindViewHolder
+old_bind = """        holder.tvUsername.setText(comment.username != null ? comment.username : "User");
+        holder.tvCommentText.setText(comment.text != null ? comment.text : "");"""
+
+new_bind = """        holder.tvUsername.setText(comment.username != null ? comment.username : "User");
+        holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+        
+        TextView spoilerOverlay = holder.itemView.findViewById(R.id.spoilerOverlay);
+        if (comment.isSpoiler || comment.is_spoiler) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                holder.tvCommentText.setRenderEffect(RenderEffect.createBlurEffect(15f, 15f, Shader.TileMode.CLAMP));
+                if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvCommentText.setText("██████████████████");
+                if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.VISIBLE);
+            }
+            
+            holder.itemView.setOnClickListener(v -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    holder.tvCommentText.setRenderEffect(null);
+                } else {
+                    holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+                }
+                if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.GONE);
+                comment.isSpoiler = false;
+                comment.is_spoiler = false;
+            });
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                holder.tvCommentText.setRenderEffect(null);
+            }
+            holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+            if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.GONE);
+            holder.itemView.setOnClickListener(null);
+        }"""
+
+content = content.replace(old_bind, new_bind)
+
+with open(filepath, 'w') as f:
+    f.write(content)
+print("Patched CommentAdapter.java")

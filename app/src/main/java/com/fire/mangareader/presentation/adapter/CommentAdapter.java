@@ -5,6 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.os.Build;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
@@ -42,6 +45,35 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         Comment comment = comments.get(position);
         holder.tvUsername.setText(comment.username != null ? comment.username : "User");
         holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+        
+        TextView spoilerOverlay = holder.itemView.findViewById(R.id.spoilerOverlay);
+        if (comment.isSpoiler || comment.is_spoiler) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                holder.tvCommentText.setRenderEffect(RenderEffect.createBlurEffect(15f, 15f, Shader.TileMode.CLAMP));
+                if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvCommentText.setText("██████████████████");
+                if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.VISIBLE);
+            }
+            
+            holder.itemView.setOnClickListener(v -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    holder.tvCommentText.setRenderEffect(null);
+                } else {
+                    holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+                }
+                if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.GONE);
+                comment.isSpoiler = false;
+                comment.is_spoiler = false;
+            });
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                holder.tvCommentText.setRenderEffect(null);
+            }
+            holder.tvCommentText.setText(comment.text != null ? comment.text : "");
+            if (spoilerOverlay != null) spoilerOverlay.setVisibility(View.GONE);
+            holder.itemView.setOnClickListener(null);
+        }
 
         // Parse time and calculate time ago
         if (comment.created_at != null && !comment.created_at.isEmpty()) {

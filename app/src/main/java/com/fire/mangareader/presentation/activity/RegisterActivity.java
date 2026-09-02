@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.fire.mangareader.R;
 import com.fire.mangareader.util.PreferenceManager;
 import com.fire.mangareader.data.network.SupabaseManager;
+import com.fire.mangareader.domain.usecase.auth.UserAuthValidator;
+
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText etName, etEmail, etPassword;
