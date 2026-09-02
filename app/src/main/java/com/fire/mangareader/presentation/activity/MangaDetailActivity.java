@@ -774,7 +774,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                         TextView tvGlobalRatingCount = findViewById(R.id.tvGlobalRatingCount);
                         if (tvGlobalRating != null) tvGlobalRating.setText(String.format(java.util.Locale.US, "%.1f/10", newAverage));
                         if (tvGlobalRatingCount != null) tvGlobalRatingCount.setText(String.valueOf(totalVotes));
-                        Toast.makeText(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐", Toast.LENGTH_SHORT).show();
+                        com.fire.mangareader.util.SystemUtils.safeToast(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐");
                     });
                 }
 
@@ -814,7 +814,7 @@ public class MangaDetailActivity extends AppCompatActivity {
 
     private void toggleFavorite() {
         if (!com.fire.mangareader.data.network.SupabaseManager.getInstance(this).isLoggedIn()) {
-            Toast.makeText(this, "يجب تسجيل الدخول لإضافة المانجا للمكتبة", Toast.LENGTH_SHORT).show();
+            com.fire.mangareader.util.SystemUtils.safeToast(this, "يجب تسجيل الدخول لإضافة المانجا للمكتبة");
             return;
         }
         

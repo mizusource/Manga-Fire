@@ -44,6 +44,10 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "يرجى كتابة بريدك الإلكتروني في الحقل المخصص أولاً", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (!com.fire.mangareader.util.ValidationUtils.isValidEmail(email)) {
+            Toast.makeText(this, "يرجى إدخال بريد إلكتروني صالح", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
         btnForgotPassword.setEnabled(false);
         supabaseManager.resetPassword(email, new SupabaseManager.AuthCallback() {
@@ -71,6 +75,10 @@ public class LoginActivity extends AppCompatActivity {
 
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "يرجى تعبئة جميع الحقول", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!com.fire.mangareader.util.ValidationUtils.isValidEmail(email)) {
+            Toast.makeText(this, "يرجى إدخال بريد إلكتروني صالح", Toast.LENGTH_SHORT).show();
             return;
         }
 

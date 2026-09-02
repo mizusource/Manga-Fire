@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.fire.mangareader.R;
 import java.util.List;
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
+import com.fire.mangareader.util.SystemUtils;
 
 public class PageAdapter extends RecyclerView.Adapter<PageAdapter.PageViewHolder> {
     private Context context;
@@ -29,7 +31,12 @@ public class PageAdapter extends RecyclerView.Adapter<PageAdapter.PageViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull PageViewHolder holder, int position) {
-        Glide.with(context).load(imageUrls.get(position)).into(holder.pageImageView);
+                int maxTexture = SystemUtils.getMaxTextureSize();
+        Glide.with(context)
+             .load(imageUrls.get(position))
+             .downsample(DownsampleStrategy.AT_MOST)
+             .override(maxTexture, maxTexture)
+             .into(holder.pageImageView);
     }
 
     @Override

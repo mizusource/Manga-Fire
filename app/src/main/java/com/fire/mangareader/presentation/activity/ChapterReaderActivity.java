@@ -343,7 +343,7 @@ public class ChapterReaderActivity extends AppCompatActivity {
 
     private void checkIfChapterIsDownloadedAndLoad() {
         if (chapterUrl == null) {
-            Toast.makeText(this, "رابط الفصل غير صالح", Toast.LENGTH_SHORT).show();
+            com.fire.mangareader.util.SystemUtils.safeToast(this, "رابط الفصل غير صالح");
             return;
         }
         

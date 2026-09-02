@@ -46,6 +46,11 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "يرجى تعبئة جميع الحقول", Toast.LENGTH_SHORT).show();
             return;
         }
+        
+        if (!com.fire.mangareader.util.ValidationUtils.isValidEmail(email)) {
+            Toast.makeText(this, "يرجى إدخال بريد إلكتروني صالح (gmail, yahoo, إلخ)", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         btnRegister.setEnabled(false);
 

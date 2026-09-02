@@ -7,4 +7,5 @@ public class NotificationModel {
     public String mangaUrl;
     public String type;
     public boolean isRead;
+    public String createdAt;
 }

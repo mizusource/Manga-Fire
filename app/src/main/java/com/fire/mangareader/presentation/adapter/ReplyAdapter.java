@@ -44,24 +44,7 @@ public class ReplyAdapter extends RecyclerView.Adapter<ReplyAdapter.ViewHolder> 
                 sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
                 Date date = sdf.parse(reply.created_at);
                 if (date != null) {
-                    long timeInMillis = date.getTime();
-                    long now = System.currentTimeMillis();
-                    long diff = now - timeInMillis;
-                    
-                    String timeAgo;
-                    if (diff < 60000) {
-                        timeAgo = "الآن";
-                    } else if (diff < 3600000) {
-                        long mins = diff / 60000;
-                        timeAgo = "منذ " + mins + " دقيقة";
-                    } else if (diff < 86400000) {
-                        long hours = diff / 3600000;
-                        timeAgo = "منذ " + hours + " ساعة";
-                    } else {
-                        long days = diff / 86400000;
-                        timeAgo = "منذ " + days + " يوم";
-                    }
-                    holder.tvDate.setText(timeAgo);
+                    holder.tvDate.setText(com.fire.mangareader.util.TimeUtils.getTimeAgo(date.getTime()));
                 }
             } catch (ParseException e) {
                 holder.tvDate.setText("");

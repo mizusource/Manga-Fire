@@ -12,6 +12,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fire.mangareader.R;
 import com.fire.mangareader.domain.model.NotificationModel;
 import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
     private final Context context;
@@ -33,7 +37,23 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         NotificationModel model = list.get(position);
         holder.tvSender.setText(model.senderName != null ? model.senderName : "تنبيه");
-        holder.tvMessage.setText(model.message != null ? model.message : "");
+                holder.tvMessage.setText(model.message != null ? model.message : "");
+        
+        if (model.createdAt != null && !model.createdAt.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                Date date = sdf.parse(model.createdAt);
+                if (date != null) {
+                    holder.tvDate.setText(com.fire.mangareader.util.TimeUtils.getTimeAgo(date.getTime()));
+                }
+            } catch (ParseException e) {
+                holder.tvDate.setText("");
+            }
+        } else {
+            holder.tvDate.setText("");
+        }
+
         holder.itemView.setBackgroundColor(model.isRead ? Color.TRANSPARENT : Color.parseColor("#1A00E5FF"));
         
         holder.itemView.setOnClickListener(v -> {
@@ -50,12 +70,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return list.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvSender, tvMessage;
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView tvSender, tvMessage, tvDate;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvSender = itemView.findViewById(R.id.tvSender);
             tvMessage = itemView.findViewById(R.id.tvMessage);
+            tvDate = itemView.findViewById(R.id.tvDate);
         }
     }
-}
+    }

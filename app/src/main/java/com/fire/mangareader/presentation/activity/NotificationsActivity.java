@@ -60,6 +60,7 @@ public class NotificationsActivity extends AppCompatActivity {
                                 model.mangaUrl = obj.optString("manga_url");
                                 model.type = obj.optString("type");
                                 model.isRead = obj.optBoolean("is_read");
+                                model.createdAt = obj.optString("created_at");
                                 list.add(model);
                             }
                         } catch (Exception e) {}

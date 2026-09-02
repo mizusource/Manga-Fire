@@ -1,15 +1,13 @@
-import os
+import re
 
-filepath = 'app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java'
+filepath = 'app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java'
 with open(filepath, 'r') as f:
     content = f.read()
 
-# Enable format text
-content = content.replace("if (false && metadata.format != null) {", "if (metadata.format != null) {")
-content = content.replace('// tvAniListFormat(metadata.format);', 'TextView tvFormat = findViewById(R.id.tvAniListFormat);\n                        if (tvFormat != null) tvFormat.setText("النوع: " + metadata.format);')
-
-content = content.replace('// TextView tvAniListFormat', 'TextView tvAniListFormat = findViewById(R.id.tvAniListFormat);')
+# Let's replace the Toasts with safeToast in a few spots to demonstrate the integration
+content = content.replace('Toast.makeText(this, "يجب تسجيل الدخول لإضافة المانجا للمكتبة", Toast.LENGTH_SHORT).show();', 'com.fire.mangareader.util.SystemUtils.safeToast(this, "يجب تسجيل الدخول لإضافة المانجا للمكتبة");')
+content = content.replace('Toast.makeText(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐", Toast.LENGTH_SHORT).show();', 'com.fire.mangareader.util.SystemUtils.safeToast(MangaDetailActivity.this, "تم تسجيل تقييمك بنجاح! شكرًا لك ⭐");')
 
 with open(filepath, 'w') as f:
     f.write(content)
-print("Patched MangaDetailActivity")
+print("Patched MangaDetailActivity.java")
