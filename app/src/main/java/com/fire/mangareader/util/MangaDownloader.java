@@ -10,6 +10,7 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import com.fire.mangareader.data.database.AppDatabase;
+import com.fire.mangareader.domain.usecase.downloads.AddMangaDownloadUseCase;
 import com.fire.mangareader.data.database.DownloadedChapter;
 
 import org.jsoup.Jsoup;
@@ -140,7 +141,16 @@ public class MangaDownloader {
                                     downloaded.mangaUrl = mangaUrl;
                                     downloaded.chapterTitle = chapterTitle;
                                     downloaded.localFolderPath = chapterFolder.getAbsolutePath();
-                                    AppDatabase.getInstance(context).downloadDao().insert(downloaded);
+                                    
+                                    new AddMangaDownloadUseCase(context).execute(downloaded, new AddMangaDownloadUseCase.Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                        }
+
+                                        @Override
+                                        public void onError(String error) {
+                                        }
+                                    });
 
                                     mainHandler.post(() -> {
                                         if (listener != null) listener.onSuccess();

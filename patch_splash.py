@@ -1,33 +1,24 @@
-package com.fire.mangareader.presentation.activity;
+import re
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+filepath = 'app/src/main/java/com/fire/mangareader/presentation/activity/SplashActivity.java'
+with open(filepath, 'r') as f:
+    content = f.read()
 
-import androidx.appcompat.app.AppCompatActivity;
+content = content.replace('import com.fire.mangareader.util.PreferenceManager;', 'import com.fire.mangareader.util.PreferenceManager;\nimport com.fire.mangareader.domain.usecase.update.UpdateUseCase;\nimport com.fire.mangareader.domain.usecase.update.DownloadUpdateUseCase;\nimport com.fire.mangareader.domain.model.remote.Update;\nimport android.app.AlertDialog;\nimport android.app.ProgressDialog;\nimport android.widget.Toast;\nimport java.io.File;\nimport android.net.Uri;\nimport androidx.core.content.FileProvider;')
 
-import com.fire.mangareader.R;
-import com.fire.mangareader.util.PreferenceManager;
-import com.fire.mangareader.domain.usecase.update.UpdateUseCase;
-import com.fire.mangareader.domain.usecase.update.DownloadUpdateUseCase;
-import com.fire.mangareader.domain.model.remote.Update;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.widget.Toast;
-import java.io.File;
-import android.net.Uri;
-import androidx.core.content.FileProvider;
+old_logic = """        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            PreferenceManager prefs = new PreferenceManager(this);
+            Intent intent;
+            if (prefs.isFirstLaunch() || !prefs.isLoggedIn()) {
+                intent = new Intent(this, LoginActivity.class);
+            } else {
+                intent = new Intent(this, MainActivity.class);
+            }
+            startActivity(intent);
+            finish();
+        }, 1500);"""
 
-public class SplashActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        com.fire.mangareader.util.ThemeHelper.applyTheme(this);
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
-
-        checkAppUpdate();
+new_logic = """        checkAppUpdate();
     }
 
     private void checkAppUpdate() {
@@ -54,7 +45,7 @@ public class SplashActivity extends AppCompatActivity {
     private void showUpdateDialog(Update update) {
         new AlertDialog.Builder(this)
                 .setTitle("تحديث جديد متوفر!")
-                .setMessage(update.getMessage() + "\n" + update.getChangeLog())
+                .setMessage(update.getMessage() + "\\n" + update.getChangeLog())
                 .setPositiveButton("تحديث الآن", (dialog, which) -> downloadUpdate(update))
                 .setNegativeButton("لاحقاً", (dialog, which) -> proceedToNextScreen())
                 .setCancelable(false)
@@ -105,6 +96,10 @@ public class SplashActivity extends AppCompatActivity {
             }
             startActivity(intent);
             finish();
-        }, 500);
-    }
-}
+        }, 500);"""
+
+content = content.replace(old_logic, new_logic)
+
+with open(filepath, 'w') as f:
+    f.write(content)
+print("Patched SplashActivity.java")
