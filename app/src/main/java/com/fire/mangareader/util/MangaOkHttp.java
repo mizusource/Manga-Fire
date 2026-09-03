@@ -6,11 +6,14 @@ import com.fire.mangareader.data.network.cookie.PreferencesCookieJar;
 import com.fire.mangareader.data.network.interceptor.CommonHeadersInterceptor;
 import com.fire.mangareader.data.network.interceptor.RateLimitInterceptor;
 import com.fire.mangareader.data.network.interceptor.RetryInterceptor;
+import com.fire.mangareader.data.network.interceptor.DirectIpInterceptor;
+
 import java.util.concurrent.TimeUnit;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 
 public class MangaOkHttp {
+        public static DirectIpInterceptor directIpInterceptor = new DirectIpInterceptor(null);
     private static OkHttpClient client;
     private static Context appContext;
 
@@ -32,7 +35,8 @@ public class MangaOkHttp {
                     .cookieJar(new PreferencesCookieJar(appContext))
                     .addInterceptor(new CommonHeadersInterceptor(appContext))
                     .addInterceptor(new RateLimitInterceptor())
-                    .addInterceptor(new RetryInterceptor());
+                                        .addInterceptor(new RetryInterceptor())
+                    .addInterceptor(directIpInterceptor);
             
             client = TlsCompat.enableTls12And13(builder).build();
         }

@@ -4,6 +4,10 @@ import com.fire.mangareader.data.network.SupabaseManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
+import android.widget.EditText;
+import androidx.appcompat.app.AlertDialog;
+import com.fire.mangareader.data.parser.ParserConfigManager;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
@@ -223,6 +227,14 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
+            
+            Preference parserSyncPref = findPreference("parser_sync_url");
+            if (parserSyncPref != null) {
+                parserSyncPref.setOnPreferenceClickListener(preference -> {
+                    showParserSyncDialog();
+                    return true;
+                });
+            }
             Preference backupExport = findPreference("backup_export");
             if (backupExport != null) {
                 backupExport.setOnPreferenceClickListener(preference -> {
@@ -254,6 +266,52 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         // نافذة اختيار الجودة
+        
+        private void showParserSyncDialog() {
+            final EditText input = new EditText(requireContext());
+            input.setHint("https://.../config.json");
+            input.setText(ParserConfigManager.INSTANCE.getSyncUrl(requireContext()));
+            
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("رابط إعدادات المحرك الديناميكي")
+                    .setMessage("أدخل رابط ملف الـ JSON الخاص بإعدادات المواقع:")
+                    .setView(input)
+                    .setPositiveButton("تحديث", (dialog, which) -> {
+                        String url = input.getText().toString().trim();
+                        if (!url.isEmpty()) {
+                            android.widget.Toast.makeText(requireContext(), "جاري التحديث...", android.widget.Toast.LENGTH_SHORT).show();
+                            new Thread(() -> {
+                                try {
+                                    okhttp3.Request req = new okhttp3.Request.Builder().url(url).build();
+                                    okhttp3.Response res = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(req).execute();
+                                    if(res.isSuccessful() && res.body() != null) {
+                                        String json = res.body().string();
+                                        requireContext().getSharedPreferences("parser_config_prefs", android.content.Context.MODE_PRIVATE)
+                                            .edit()
+                                            .putString("config_json", json)
+                                            .putString("sync_url", url)
+                                            .apply();
+                                        ParserConfigManager.INSTANCE.init(requireContext());
+                                        requireActivity().runOnUiThread(() -> {
+                                            android.widget.Toast.makeText(requireContext(), "تم التحديث بنجاح!", android.widget.Toast.LENGTH_LONG).show();
+                                        });
+                                    } else {
+                                        requireActivity().runOnUiThread(() -> {
+                                            android.widget.Toast.makeText(requireContext(), "فشل التحديث: خطأ بالاتصال", android.widget.Toast.LENGTH_LONG).show();
+                                        });
+                                    }
+                                } catch (Exception e) {
+                                    requireActivity().runOnUiThread(() -> {
+                                        android.widget.Toast.makeText(requireContext(), "فشل التحديث: " + e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                                    });
+                                }
+                            }).start();
+                        }
+                    })
+                    .setNegativeButton("إلغاء", null)
+                    .show();
+        }
+
         private void showImageQualityDialog() {
             String[] options = {"الأصلية (100%)", "عالية (80%)", "متوسطة (60%)", "منخفضة (40%)"};
             int[] values = {100, 80, 60, 40};

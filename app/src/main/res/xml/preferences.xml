@@ -73,4 +73,11 @@
             android:title="@string/logout"
             android:summary="@string/logout_summary" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="محرك البيانات (Parser Engine)">
+        <Preference
+            android:key="parser_sync_url"
+            android:title="تحديث إعدادات المحرك"
+            android:summary="جلب أحدث إعدادات تخطي الحجب ومسارات المواقع" />
+    </PreferenceCategory>
 </PreferenceScreen>

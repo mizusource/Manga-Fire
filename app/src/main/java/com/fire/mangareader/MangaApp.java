@@ -1,6 +1,8 @@
 package com.fire.mangareader;
 
 import android.app.Application;
+import com.fire.mangareader.data.parser.ParserConfigManager;
+
 import com.fire.mangareader.util.AppAdminSettings;
 import com.fire.mangareader.util.CacheManager;
 import com.fire.mangareader.util.CrashHandler;
@@ -12,6 +14,8 @@ public class MangaApp extends Application {
     public void onCreate() {
         super.onCreate();
         com.fire.mangareader.util.MangaOkHttp.init(this);
+        ParserConfigManager.INSTANCE.init(this);
+
         // Initialize CrashHandler to prevent silent crashes and log them
         Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(this));
 
