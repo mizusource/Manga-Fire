@@ -1,4 +1,6 @@
-package com.fire.mangareader.presentation.ui.screens.reader
+import sys
+
+content = """package com.fire.mangareader.presentation.ui.screens.reader
 
 import android.view.WindowManager
 import androidx.compose.foundation.background
@@ -306,3 +308,7 @@ fun ZoomableImage(imageUrl: String, onTap: (Offset, Float) -> Unit) {
         )
     }
 }
+"""
+
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/reader/ChapterReaderScreen.kt", "w") as f:
+    f.write(content)
