@@ -1,0 +1,82 @@
+--- app/src/main/java/com/fire/mangareader/data/network/MangaScraper.java
++++ app/src/main/java/com/fire/mangareader/data/network/MangaScraper.java
+@@ -37,2 +37,36 @@
++    public static List<Manga> fetchLatestSingleSource(String sourceUrl) throws Exception {
++        Document doc = Jsoup.connect(sourceUrl)
++                .userAgent(globalUserAgent)
++                .header("Cookie", globalCookies)
++                .referrer(sourceUrl)
++                .timeout(15000)
++                .get();
++        List<Manga> mangaList = new ArrayList<>();
++        Set<String> uniqueUrls = new HashSet<>();
++        Elements mangaElements = doc.select(".page-item-detail");
++        for (Element element : mangaElements) {
++            Manga manga = new Manga();
++            Element titleElement = element.select("h3 a, .post-title a").first();
++            if (titleElement != null) {
++                manga.setTitle(titleElement.text().trim());
++                manga.setUrl(titleElement.absUrl("href"));
++            }
++            if (manga.getUrl() != null && uniqueUrls.contains(manga.getUrl())) continue;
++            Element imgElement = element.select(".tab-thumb img, .item-thumb img").first();
++            if (imgElement != null) {
++                manga.setCoverUrl(extractImageUrlFromImgTag(imgElement));
++            }
++            Element chapterElement = element.select(".chapter-item .chapter, .list-chapter .chapter").first();
++            if (chapterElement != null) {
++                manga.setLatestChapter(chapterElement.text().trim());
++            }
++            Element ratingElement = element.select(".score").first();
++            if (ratingElement != null) {
++                manga.setRating(ratingElement.text().trim());
++            }
++            if (manga.getUrl() != null && !manga.getUrl().isEmpty()) {
++                uniqueUrls.add(manga.getUrl());
++                mangaList.add(manga);
++            }
++        }
++        return mangaList;
++    }
++
++    public static void fetchLatestFromAllSources(ScrapingCallback callback) {
++        new Thread(() -> {
++            String[] sources = SourceManager.getAllSources();
++            List<Manga> combinedList = new ArrayList<>();
++            Set<String> addedUrls = new HashSet<>();
++            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(sources.length);
++            java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(sources.length);
++            
++            for (String src : sources) {
++                executor.execute(() -> {
++                    try {
++                        List<Manga> res = fetchLatestSingleSource(src);
++                        synchronized (combinedList) {
++                            for (Manga m : res) {
++                                if (m.getUrl() != null && !addedUrls.contains(m.getUrl())) {
++                                    addedUrls.add(m.getUrl());
++                                    combinedList.add(m);
++                                }
++                            }
++                        }
++                    } catch(Exception ignored) {} finally {
++                        latch.countDown();
++                    }
++                });
++            }
++            
++            try {
++                latch.await(15, java.util.concurrent.TimeUnit.SECONDS);
++            } catch (Exception ignored) {}
++            executor.shutdown();
++            
++            // Shuffle to mix sources
++            java.util.Collections.shuffle(combinedList);
++            
++            new Handler(Looper.getMainLooper()).post(() -> {
++                if (!combinedList.isEmpty()) callback.onSuccess(combinedList);
++                else callback.onError("لم يتم العثور على أي نتائج من المصادر.");
++            });
++        }).start();
++    }
++

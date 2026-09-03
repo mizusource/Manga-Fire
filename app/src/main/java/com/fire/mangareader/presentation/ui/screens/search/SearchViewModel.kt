@@ -76,7 +76,7 @@ class SearchViewModel : ViewModel() {
 
     private fun extractIdFromUrl(url: String?): String {
         if (url == null) return ""
-        val parts = url.trimEnd('/').split("/")
-        return parts.lastOrNull() ?: ""
+        val safeUrl = url
+        return android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING)
     }
 }

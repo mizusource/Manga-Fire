@@ -27,7 +27,7 @@ class HomeViewModel : ViewModel() {
     fun fetchData() {
         _isLoading.value = true
         _error.value = null
-        MangaScraper.fetchLatestManga(object : MangaScraper.ScrapingCallback {
+        MangaScraper.fetchLatestFromAllSources(object : MangaScraper.ScrapingCallback {
             override fun onSuccess(mangas: MutableList<com.fire.mangareader.domain.model.Manga>?) {
                 if (mangas == null || mangas.isEmpty()) {
                     _error.value = "لا توجد بيانات"
@@ -64,7 +64,7 @@ class HomeViewModel : ViewModel() {
     private fun extractIdFromUrl(url: String?): String {
         if (url == null) return ""
         // عادة رابط المانجا بيكون mangalik.net/manga/manga-name
-        val parts = url.trimEnd('/').split("/")
-        return parts.lastOrNull() ?: ""
+        val safeUrl = url.replace("https://", "").replace("http://", "")
+        return android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING)
     }
 }

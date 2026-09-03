@@ -72,13 +72,37 @@ fun MangaDetailScreen(
             }
         } else if (error != null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
                     Text(error!!, color = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(8.dp))
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     Button(onClick = { viewModel.fetchDetails(mangaId) }) {
                         Text("إعادة المحاولة")
                     }
+                    if (error!!.contains("403") || error!!.contains("Cloudflare")) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = {
+                            val mangaUrl = try {
+                                String(android.util.Base64.decode(mangaId, android.util.Base64.URL_SAFE))
+                            } catch (e: Exception) {
+                                com.fire.mangareader.data.network.MangaScraper.BASE_URL
+                            }
+                            val safeUrl = if (mangaUrl.startsWith("http")) mangaUrl else com.fire.mangareader.data.network.MangaScraper.BASE_URL
+                            com.fire.mangareader.data.network.CloudflareBypassDialog(context, safeUrl, object : com.fire.mangareader.data.network.CloudflareBypassDialog.BypassCallback {
+                                override fun onSuccess(cookies: String?, userAgent: String?) {
+                                    viewModel.fetchDetails(mangaId)
+                                }
+                                override fun onFailed() {
+                                    // Handle failure if needed
+                                }
+                            }).show()
+                        }) {
+                            Text("تخطي حماية Cloudflare")
+                        }
+                    }
                 }
+
             }
         } else {
             LazyColumn(
@@ -137,7 +161,7 @@ fun MangaDetailScreen(
                 
                 items(chapters) { chapter ->
                     // نأخذ الجزء الأخير من الرابط فقط ليكون الـ ID
-                    val chapterId = chapter.url?.trimEnd('/')?.split("/")?.lastOrNull() ?: ""
+                    val chapterId = android.util.Base64.encodeToString((chapter.url ?: "").toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING)
                     ChapterItem(
                         title = chapter.title ?: "بدون عنوان", 
                         onClick = { onChapterClick(chapterId) },

@@ -1,0 +1,1 @@
+sed -i 's/val chapterId = chapter.url?.trimEnd('\''\/'\'')?.split("\/")?.lastOrNull() ?: ""/val chapterId = android.util.Base64.encodeToString((chapter.url ?: "").toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING)/g' app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt

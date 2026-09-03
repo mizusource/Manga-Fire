@@ -1,14 +1,13 @@
 package com.fire.mangareader.presentation.ui.screens.reader
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.fire.mangareader.data.network.ApiMangaScraper
 import com.fire.mangareader.data.network.MangaScraper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class ReaderViewModel : ViewModel() {
+
     private val _pages = MutableStateFlow<List<String>>(emptyList())
     val pages: StateFlow<List<String>> = _pages
 
@@ -18,15 +17,21 @@ class ReaderViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private fun decodeIdToUrl(id: String): String {
+        return try {
+            val decoded = String(android.util.Base64.decode(id, android.util.Base64.URL_SAFE))
+            if (decoded.startsWith("http")) decoded else MangaScraper.BASE_URL + "manga/" + id
+        } catch (e: Exception) {
+            MangaScraper.BASE_URL + "manga/" + id
+        }
+    }
+
     fun fetchPages(chapterId: String) {
         _isLoading.value = true
         _error.value = null
         
-        // نفترض أن مسار القراءة يكون بهذا الشكل في موقع مانجا ليك
-        // يتم استخدام API سريع للصور إذا توفر
-        val chapterUrl = MangaScraper.BASE_URL + "manga/" + chapterId
+        val chapterUrl = decodeIdToUrl(chapterId)
         
-        // نستخدم الطريقة المعتمدة في التطبيق لجلب الصور
         ApiMangaScraper.fetchChapterPagesFast(chapterUrl, object : MangaScraper.ChapterPagesCallback {
             override fun onSuccess(imageUrls: MutableList<String>?) {
                 _pages.value = imageUrls ?: emptyList()

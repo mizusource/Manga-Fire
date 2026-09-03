@@ -1,0 +1,2 @@
+sed -i 's/val parts = url.trimEnd('\''\/'\'').split("\/")/val safeUrl = url/g' app/src/main/java/com/fire/mangareader/presentation/ui/screens/search/SearchViewModel.kt
+sed -i 's/return parts.lastOrNull() ?: ""/return android.util.Base64.encodeToString(url.toByteArray(), android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING)/g' app/src/main/java/com/fire/mangareader/presentation/ui/screens/search/SearchViewModel.kt

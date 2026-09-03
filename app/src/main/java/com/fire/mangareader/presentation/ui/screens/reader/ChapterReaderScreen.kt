@@ -44,13 +44,35 @@ fun ChapterReaderScreen(
             }
         } else if (error != null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
                     Text(error!!, color = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(8.dp))
+                    val context = androidx.compose.ui.platform.LocalContext.current
                     Button(onClick = { viewModel.fetchPages(chapterId) }) {
                         Text("إعادة المحاولة")
                     }
+                    if (error!!.contains("403") || error!!.contains("Cloudflare")) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = {
+                            val url = try {
+                                String(android.util.Base64.decode(chapterId, android.util.Base64.URL_SAFE))
+                            } catch (e: Exception) {
+                                com.fire.mangareader.data.network.MangaScraper.BASE_URL
+                            }
+                            val safeUrl = if (url.startsWith("http")) url else com.fire.mangareader.data.network.MangaScraper.BASE_URL
+                            com.fire.mangareader.data.network.CloudflareBypassDialog(context, safeUrl, object : com.fire.mangareader.data.network.CloudflareBypassDialog.BypassCallback {
+                                override fun onSuccess(cookies: String?, userAgent: String?) {
+                                    viewModel.fetchPages(chapterId)
+                                }
+                                override fun onFailed() {}
+                            }).show()
+                        }) {
+                            Text("تخطي حماية Cloudflare")
+                        }
+                    }
                 }
+
             }
         } else {
             LazyColumn(

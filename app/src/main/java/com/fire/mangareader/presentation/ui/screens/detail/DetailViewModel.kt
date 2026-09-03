@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class DetailViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val favoriteDao = db.favoriteDao()
-
+    
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite
 
@@ -34,16 +34,17 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+    
+    private var currentCoverUrl: String = ""
 
     fun saveToHistory(mangaId: String, chapter: com.fire.mangareader.domain.model.Chapter) {
-        val coverUrl = "https://mangalik.net/uploads/manga/cover/$mangaId/cover_250x350.jpg"
         viewModelScope.launch {
             db.recentDao().insertRecent(
                 com.fire.mangareader.data.local.entity.RecentManga(
                     id = mangaId,
                     title = _mangaTitle.value.ifEmpty { "Unknown" },
-                    coverUrl = coverUrl,
-                    lastReadChapterId = chapter.url?.trimEnd('/')?.split("/")?.lastOrNull() ?: "",
+                    coverUrl = currentCoverUrl,
+                    lastReadChapterId = android.util.Base64.encodeToString(chapter.url?.toByteArray() ?: ByteArray(0), android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP or android.util.Base64.NO_PADDING),
                     lastReadChapterName = chapter.title ?: "Unknown"
                 )
             )
@@ -59,7 +60,6 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun toggleFavorite(mangaId: String) {
-        val coverUrl = "https://mangalik.net/uploads/manga/cover/$mangaId/cover_250x350.jpg"
         viewModelScope.launch {
             if (_isFavorite.value) {
                 favoriteDao.deleteFavorite(mangaId)
@@ -68,7 +68,7 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
                     FavoriteManga(
                         id = mangaId,
                         title = _mangaTitle.value.ifEmpty { "Unknown" },
-                        coverUrl = coverUrl,
+                        coverUrl = currentCoverUrl,
                         latestChapter = _chapters.value.firstOrNull()?.title ?: "",
                         rating = ""
                     )
@@ -76,12 +76,27 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
+    
+    private fun decodeIdToUrl(id: String): String {
+        return try {
+            val decoded = String(android.util.Base64.decode(id, android.util.Base64.URL_SAFE))
+            if (decoded.startsWith("http")) decoded else MangaScraper.BASE_URL + "manga/" + id
+        } catch (e: Exception) {
+            MangaScraper.BASE_URL + "manga/" + id
+        }
+    }
 
     fun fetchDetails(mangaId: String) {
         _isLoading.value = true
         _error.value = null
-        val mangaUrl = MangaScraper.BASE_URL + "manga/" + mangaId
-        _mangaTitle.value = mangaId.replace("-", " ").capitalize()
+        
+        val mangaUrl = decodeIdToUrl(mangaId)
+        
+        // Extract title from URL as fallback
+        val parts = mangaUrl.trimEnd('/').split("/")
+        val fallbackTitle = parts.lastOrNull()?.replace("-", " ")?.capitalize() ?: ""
+        _mangaTitle.value = fallbackTitle
+        
         MangaScraper.fetchMangaDetails(mangaUrl, object : MangaScraper.MangaDetailsCallback {
             override fun onSuccess(
                 description: String?,
@@ -90,7 +105,7 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
             ) {
                 _description.value = description ?: "لا يوجد وصف"
                 _status.value = status ?: "غير معروف"
-                _chapters.value = chapters?.reversed() ?: emptyList()
+                _chapters.value = chapters ?: emptyList()
                 _isLoading.value = false
             }
 

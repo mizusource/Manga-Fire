@@ -1,4 +1,4 @@
-with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/reader/ChapterReaderScreen.kt", "r") as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "r") as f:
     content = f.read()
 
 replacement = """
@@ -6,23 +6,25 @@ replacement = """
                     Text(error!!, color = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(8.dp))
                     val context = androidx.compose.ui.platform.LocalContext.current
-                    Button(onClick = { viewModel.fetchPages(chapterId) }) {
+                    Button(onClick = { viewModel.fetchDetails(mangaId) }) {
                         Text("إعادة المحاولة")
                     }
                     if (error!!.contains("403") || error!!.contains("Cloudflare")) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = {
-                            val url = try {
-                                String(android.util.Base64.decode(chapterId, android.util.Base64.URL_SAFE))
+                            val mangaUrl = try {
+                                String(android.util.Base64.decode(mangaId, android.util.Base64.URL_SAFE))
                             } catch (e: Exception) {
                                 com.fire.mangareader.data.network.MangaScraper.BASE_URL
                             }
-                            val safeUrl = if (url.startsWith("http")) url else com.fire.mangareader.data.network.MangaScraper.BASE_URL
+                            val safeUrl = if (mangaUrl.startsWith("http")) mangaUrl else com.fire.mangareader.data.network.MangaScraper.BASE_URL
                             com.fire.mangareader.data.network.CloudflareBypassDialog(context, safeUrl, object : com.fire.mangareader.data.network.CloudflareBypassDialog.BypassCallback {
                                 override fun onSuccess(cookies: String?, userAgent: String?) {
-                                    viewModel.fetchPages(chapterId)
+                                    viewModel.fetchDetails(mangaId)
                                 }
-                                override fun onFailed() {}
+                                override fun onFailed() {
+                                    // Handle failure if needed
+                                }
                             }).show()
                         }) {
                             Text("تخطي حماية Cloudflare")
@@ -34,10 +36,10 @@ replacement = """
 content = content.replace("""                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(error!!, color = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { viewModel.fetchPages(chapterId) }) {
+                    Button(onClick = { viewModel.fetchDetails(mangaId) }) {
                         Text("إعادة المحاولة")
                     }
                 }""", replacement)
 
-with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/reader/ChapterReaderScreen.kt", "w") as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "w") as f:
     f.write(content)
