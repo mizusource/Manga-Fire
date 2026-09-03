@@ -26,6 +26,8 @@ import com.fire.mangareader.presentation.ui.screens.detail.MangaDetailScreen
 import com.fire.mangareader.presentation.ui.screens.home.HomeScreen
 import com.fire.mangareader.presentation.ui.screens.search.SearchScreen
 import com.fire.mangareader.presentation.ui.screens.reader.ChapterReaderScreen
+import com.fire.mangareader.presentation.ui.screens.library.LibraryScreen
+import com.fire.mangareader.presentation.ui.screens.profile.ProfileScreen
 
 class MainComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,8 +59,13 @@ class MainComposeActivity : ComponentActivity() {
                                 onMangaClick = { mangaId -> navController.navigate("detail/$mangaId") }
                             ) 
                         }
-                        composable("library") { LibraryScreen() }
-                        composable("settings") { SettingsScreen() }
+                        composable("library") { 
+                            LibraryScreen(
+                                onMangaClick = { mangaId -> navController.navigate("detail/$mangaId") }, 
+                                onChapterClick = { chapterId -> navController.navigate("reader/$chapterId") }
+                            ) 
+                        }
+                        composable("settings") { ProfileScreen() }
                         
                         composable(
                             "detail/{mangaId}",
@@ -127,13 +134,6 @@ fun BottomNavigationBar(navController: NavHostController) {
                 }
             )
         }
-    }
-}
-
-@Composable
-fun LibraryScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("المكتبة (Library)", style = MaterialTheme.typography.titleLarge)
     }
 }
 

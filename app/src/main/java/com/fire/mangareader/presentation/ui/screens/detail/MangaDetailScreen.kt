@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ fun MangaDetailScreen(
     val status by viewModel.status.collectAsState()
     val chapters by viewModel.chapters.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
     val error by viewModel.error.collectAsState()
 
     // نفترض أن الغلاف يتبع هذا النمط في موقع مانجا ليك غالباً

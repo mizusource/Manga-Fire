@@ -1,7 +1,7 @@
-with open('app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java', 'r') as f:
+with open('app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt', 'r') as f:
     content = f.read()
 
-content = content.replace('com.fire.mangareader.network.DownloadService', 'com.fire.mangareader.service.DownloadService')
+content = content.replace('viewModel.saveToHistory(chapter)', 'viewModel.saveToHistory(mangaId, chapter)')
 
-with open('app/src/main/java/com/fire/mangareader/activity/MangaDetailActivity.java', 'w') as f:
+with open('app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt', 'w') as f:
     f.write(content)
