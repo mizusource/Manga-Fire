@@ -118,8 +118,7 @@ public class MangaScraper {
             java.util.Collections.shuffle(combinedList);
             
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (!combinedList.isEmpty()) callback.onSuccess(combinedList);
-                else callback.onError("لم يتم العثور على أي نتائج من المصادر.");
+                callback.onSuccess(combinedList);
             });
         }).start();
     }
@@ -159,8 +158,7 @@ public class MangaScraper {
                 }
 
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    if (!mangaList.isEmpty()) callback.onSuccess(mangaList);
-                    else callback.onError("لم يتم العثور على مانجات.");
+                    callback.onSuccess(mangaList);
                 });
             } catch (Exception e) {
                 new Handler(Looper.getMainLooper()).post(() -> callback.onError("خطأ في الاتصال: " + e.getMessage()));
@@ -256,8 +254,7 @@ public class MangaScraper {
             executor.shutdown();
 
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (!combinedList.isEmpty()) callback.onSuccess(combinedList);
-                else callback.onError("لم يتم العثور على نتائج في أي مصدر.");
+                callback.onSuccess(combinedList);
             });
         }).start();
     }
@@ -351,8 +348,7 @@ public class MangaScraper {
             executor.shutdown();
             
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (!combinedList.isEmpty()) callback.onSuccess(combinedList);
-                else callback.onError("لم يتم العثور على أي نتائج إضافية.");
+                callback.onSuccess(combinedList);
             });
         }).start();
     }
@@ -507,8 +503,7 @@ public class MangaScraper {
                 }
 
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    if (!mangaList.isEmpty()) callback.onSuccess(mangaList);
-                    else callback.onError("لم يتم العثور على نتائج للبحث.");
+                    callback.onSuccess(mangaList);
                 });
 
             } catch (Exception e) {
