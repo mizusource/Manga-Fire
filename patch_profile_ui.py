@@ -1,30 +1,9 @@
-package com.fire.mangareader.presentation.ui.screens.profile
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/profile/ProfileScreen.kt", "r") as f:
+    content = f.read()
 
+replacement = """
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,7 +145,8 @@ fun ProfileScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
+        // Using a LazyColumn or vertical scroll is better here
+        androidx.compose.foundation.lazy.LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
@@ -285,20 +265,15 @@ fun ProfileScreen(
         }
     }
 }
+"""
 
-@Composable
-fun StatCard(title: String, count: Int) {
-    Card(
-        modifier = Modifier.width(120.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = count.toString(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = title, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
+import re
+pattern = re.compile(r"@OptIn\(ExperimentalMaterial3Api::class\)\s*@Composable\s*fun ProfileScreen\(\s*viewModel: ProfileViewModel = viewModel\(\)\s*\) \{.*?\}\s*\}", re.DOTALL)
+content = pattern.sub(replacement.strip(), content)
+
+# ensure android.content.Context and foundation.selection.selectable are there
+if "import android.content.Context" not in content:
+    content = content.replace("import android.content.Intent", "import android.content.Intent\nimport android.content.Context\nimport androidx.compose.foundation.selection.selectable")
+
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/profile/ProfileScreen.kt", "w") as f:
+    f.write(content)
