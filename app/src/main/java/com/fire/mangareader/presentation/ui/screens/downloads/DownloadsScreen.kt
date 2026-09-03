@@ -24,7 +24,7 @@ import com.fire.mangareader.data.local.entity.DownloadedChapter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsScreen(
-    onChapterClick: (String) -> Unit,
+    onChapterClick: (String, String, String, String, String) -> Unit,
     viewModel: DownloadsViewModel = viewModel()
 ) {
     val downloads by viewModel.downloads.collectAsState()
@@ -55,7 +55,7 @@ fun DownloadsScreen(
                         download = download,
                         onClick = {
                             if (download.state == 2) {
-                                onChapterClick(download.chapterId)
+                                onChapterClick(download.chapterId, download.mangaId, download.chapterTitle, download.mangaTitle, "")
                             }
                         },
                         onCancel = { viewModel.cancelDownload(download.chapterId) },

@@ -28,7 +28,7 @@ data class UIManga(val id: String, val title: String, val coverUrl: String, val 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onMangaClick: (String) -> Unit,
+    onMangaClick: (String, String, String) -> Unit,
     viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val heroMangas by viewModel.heroMangas.collectAsState()
@@ -108,7 +108,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HeroBanner(mangas: List<UIManga>, onMangaClick: (String) -> Unit) {
+fun HeroBanner(mangas: List<UIManga>, onMangaClick: (String, String, String) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { mangas.size })
     
     HorizontalPager(
@@ -123,7 +123,7 @@ fun HeroBanner(mangas: List<UIManga>, onMangaClick: (String) -> Unit) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .clickable { onMangaClick(manga.id) }
+                .clickable { onMangaClick(manga.id, manga.title, manga.coverUrl) }
         ) {
             AsyncImage(
                 model = manga.coverUrl,
@@ -154,11 +154,11 @@ fun HeroBanner(mangas: List<UIManga>, onMangaClick: (String) -> Unit) {
 }
 
 @Composable
-fun MangaCard(manga: UIManga, onMangaClick: (String) -> Unit) {
+fun MangaCard(manga: UIManga, onMangaClick: (String, String, String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onMangaClick(manga.id) }
+            .clickable { onMangaClick(manga.id, manga.title, manga.coverUrl) }
     ) {
         Box(
             modifier = Modifier

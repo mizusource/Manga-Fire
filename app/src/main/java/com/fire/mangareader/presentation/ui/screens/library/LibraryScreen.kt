@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LibraryScreen(
-    onMangaClick: (String) -> Unit,
-    onChapterClick: (String) -> Unit,
+    onMangaClick: (String, String, String) -> Unit,
+    onChapterClick: (String, String, String, String, String) -> Unit,
     viewModel: LibraryViewModel = viewModel()
 ) {
     val favorites by viewModel.favorites.collectAsState()
@@ -76,7 +76,7 @@ fun LibraryScreen(
 @Composable
 fun FavoritesTab(
     favorites: List<UIManga>, 
-    onMangaClick: (String) -> Unit,
+    onMangaClick: (String, String, String) -> Unit,
     onDeleteClick: (String) -> Unit
 ) {
     if (favorites.isEmpty()) {
@@ -119,8 +119,8 @@ fun FavoritesTab(
 @Composable
 fun HistoryTab(
     history: List<RecentManga>, 
-    onMangaClick: (String) -> Unit, 
-    onChapterClick: (String) -> Unit,
+    onMangaClick: (String, String, String) -> Unit, 
+    onChapterClick: (String, String, String, String, String) -> Unit,
     onDeleteClick: (String) -> Unit
 ) {
     if (history.isEmpty()) {
@@ -137,7 +137,7 @@ fun HistoryTab(
         ) {
             items(history) { manga ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().clickable { onMangaClick(manga.id) },
+                    modifier = Modifier.fillMaxWidth().clickable { onMangaClick(manga.id, manga.title, manga.coverUrl) },
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Box {
@@ -160,7 +160,7 @@ fun HistoryTab(
                                     text = "مواصلة: " + manga.lastReadChapterName,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.clickable { onChapterClick(manga.lastReadChapterId) }
+                                    modifier = Modifier.clickable { onChapterClick(manga.lastReadChapterId, manga.id, manga.lastReadChapterName, manga.title, manga.coverUrl) }
                                 )
                             }
                         }

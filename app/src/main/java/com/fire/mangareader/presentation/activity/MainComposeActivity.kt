@@ -1,5 +1,8 @@
 package com.fire.mangareader.presentation.activity
 
+import android.content.Intent
+import com.fire.mangareader.presentation.activity.MangaDetailActivity
+import com.fire.mangareader.presentation.activity.ChapterReaderActivity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -68,23 +71,62 @@ class MainComposeActivity : ComponentActivity() {
                     ) {
                         composable("home") { 
                             HomeScreen(
-                                onMangaClick = { mangaId -> navController.navigate("detail/$mangaId") }
+                                onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
+                                    val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
+                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("mangaTitle", mangaTitle)
+                                        putExtra("mangaCover", mangaCover)
+                                    }
+                                    startActivity(intent)
+                                }
                             ) 
                         }
                         composable("search") { 
                             SearchScreen(
-                                onMangaClick = { mangaId -> navController.navigate("detail/$mangaId") }
+                                onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
+                                    val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
+                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("mangaTitle", mangaTitle)
+                                        putExtra("mangaCover", mangaCover)
+                                    }
+                                    startActivity(intent)
+                                }
                             ) 
                         }
                         composable("library") { 
                             LibraryScreen(
-                                onMangaClick = { mangaId -> navController.navigate("detail/$mangaId") }, 
-                                onChapterClick = { chapterId -> navController.navigate("reader/$chapterId") }
+                                onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
+                                    val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
+                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("mangaTitle", mangaTitle)
+                                        putExtra("mangaCover", mangaCover)
+                                    }
+                                    startActivity(intent)
+                                },
+                                onChapterClick = { chapterId: String, mangaId: String, chapterTitle: String, mangaTitle: String, mangaCover: String -> 
+                                    val intent = Intent(this@MainComposeActivity, ChapterReaderActivity::class.java).apply {
+                                        putExtra("chapterUrl", chapterId)
+                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("chapterTitle", chapterTitle)
+                                        putExtra("mangaTitle", mangaTitle)
+                                        putExtra("mangaCover", mangaCover)
+                                    }
+                                    startActivity(intent)
+                                }
                             ) 
                         }
                         composable("downloads") {
                             DownloadsScreen(
-                                onChapterClick = { chapterId -> navController.navigate("reader/$chapterId") }
+                                onChapterClick = { chapterId: String, mangaId: String, chapterTitle: String, mangaTitle: String, mangaCover: String -> 
+                                    val intent = Intent(this@MainComposeActivity, ChapterReaderActivity::class.java).apply {
+                                        putExtra("chapterUrl", chapterId)
+                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("chapterTitle", chapterTitle)
+                                        putExtra("mangaTitle", mangaTitle)
+                                        putExtra("mangaCover", mangaCover)
+                                    }
+                                    startActivity(intent)
+                                }
                             )
                         }
 composable("settings") { 

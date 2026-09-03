@@ -26,7 +26,7 @@ import com.fire.mangareader.presentation.ui.screens.home.MangaCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    onMangaClick: (String) -> Unit,
+    onMangaClick: (String, String, String) -> Unit,
     viewModel: SearchViewModel = viewModel()
 ) {
     val filter by viewModel.filter.collectAsState()
