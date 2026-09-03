@@ -92,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
                 PreferenceManager prefs = new PreferenceManager(LoginActivity.this);
                 // Save user info, name defaults to email initially, we can fetch profile later if needed
                 prefs.saveUser(supabaseManager.getCurrentUserId(), email, email, false);
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                startActivity(new Intent(LoginActivity.this, MainComposeActivity.class));
                 finish();
             }
 

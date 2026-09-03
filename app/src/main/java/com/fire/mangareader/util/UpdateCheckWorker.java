@@ -12,7 +12,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.fire.mangareader.R;
-import com.fire.mangareader.presentation.activity.MainActivity;
+import com.fire.mangareader.presentation.activity.MainComposeActivity;
 import com.fire.mangareader.data.database.AppDatabase;
 import com.fire.mangareader.data.database.LibraryItem;
 
@@ -87,7 +87,7 @@ public class UpdateCheckWorker extends Worker {
             notificationManager.createNotificationChannel(channel);
         }
 
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent = new Intent(getApplicationContext(), MainComposeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 

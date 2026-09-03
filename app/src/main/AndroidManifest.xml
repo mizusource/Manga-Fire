@@ -50,7 +50,8 @@
 
         <activity android:name=".presentation.activity.LoginActivity" />
         <activity android:name=".presentation.activity.RegisterActivity" />
-        <activity android:name=".presentation.activity.MainActivity" />
+        <activity android:name=".presentation.activity.MainComposeActivity" />
+        <activity android:name=".presentation.activity.CloudflareBypassActivity" />
         <activity android:name=".presentation.activity.MangaDetailActivity" />
         <activity android:name=".presentation.activity.ChapterReaderActivity" />
         <activity android:name=".presentation.activity.SearchActivity" />
