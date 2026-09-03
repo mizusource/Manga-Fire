@@ -75,6 +75,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.paging:paging-compose:3.3.0")
+    implementation("androidx.paging:paging-runtime-ktx:3.3.0")
+
 
 
     implementation(libs.androidx.room.runtime)

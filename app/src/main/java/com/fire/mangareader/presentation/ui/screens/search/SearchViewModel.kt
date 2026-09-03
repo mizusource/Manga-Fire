@@ -2,74 +2,49 @@ package com.fire.mangareader.presentation.ui.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fire.mangareader.data.network.MangaScraper
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
+import com.fire.mangareader.data.network.MangaPagingSource
 import com.fire.mangareader.presentation.ui.screens.home.UIManga
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 
 class SearchViewModel : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    private val _searchResults = MutableStateFlow<List<UIManga>>(emptyList())
-    val searchResults: StateFlow<List<UIManga>> = _searchResults
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
-    private var searchJob: Job? = null
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    val searchResults: Flow<PagingData<UIManga>> = _searchQuery
+        .debounce(500)
+        .filter { it.length >= 3 || it.isEmpty() }
+        .flatMapLatest { query ->
+            if (query.isEmpty()) {
+                flowOf(PagingData.empty())
+            } else {
+                Pager(
+                    config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+                    pagingSourceFactory = { MangaPagingSource(query) }
+                ).flow.map { pagingData ->
+                    pagingData.map { manga ->
+                        UIManga(
+                            id = extractIdFromUrl(manga.url),
+                            title = manga.title ?: "بدون عنوان",
+                            coverUrl = manga.coverUrl ?: "",
+                            latestChapter = manga.latestChapter ?: "",
+                            rating = manga.rating ?: ""
+                        )
+                    }
+                }
+            }
+        }
+        .cachedIn(viewModelScope)
 
     fun onQueryChange(query: String) {
         _searchQuery.value = query
-        searchJob?.cancel()
-        if (query.length < 3) {
-            _searchResults.value = emptyList()
-            _error.value = null
-            _isLoading.value = false
-            return
-        }
-
-        searchJob = viewModelScope.launch {
-            delay(500) // Debounce for 500ms
-            performSearch(query)
-        }
-    }
-
-    private fun performSearch(query: String) {
-        _isLoading.value = true
-        _error.value = null
-
-        MangaScraper.searchManga(query, object : MangaScraper.ScrapingCallback {
-            override fun onSuccess(mangas: MutableList<com.fire.mangareader.domain.model.Manga>?) {
-                if (mangas == null || mangas.isEmpty()) {
-                    _error.value = "لا توجد نتائج للبحث"
-                    _searchResults.value = emptyList()
-                } else {
-                    _searchResults.value = mangas.map {
-                        UIManga(
-                            id = extractIdFromUrl(it.url),
-                            title = it.title ?: "بدون عنوان",
-                            coverUrl = it.coverUrl ?: "",
-                            latestChapter = it.latestChapter ?: "",
-                            rating = it.rating ?: ""
-                        )
-                    }
-                    _error.value = null
-                }
-                _isLoading.value = false
-            }
-
-            override fun onError(errorMessage: String?) {
-                _error.value = errorMessage ?: "حدث خطأ أثناء البحث"
-                _isLoading.value = false
-            }
-        })
     }
 
     private fun extractIdFromUrl(url: String?): String {
