@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +31,8 @@ import coil.compose.AsyncImage
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    onDownloadsClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -254,7 +258,37 @@ fun ProfileScreen(
                                 }
                             )
                         }
+                        
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable { onDownloadsClick() }.padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("قائمة التنزيلات")
+                                Text("إدارة الفصول المحملة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable { onNotificationsClick() }.padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("صندوق الإشعارات")
+                                Text("عرض التنبيهات السابقة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Icon(androidx.compose.material.icons.Icons.Default.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
+
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
                         
                         Row(
                             modifier = Modifier.fillMaxWidth().clickable { showQualityDialog = true }.padding(vertical = 8.dp),

@@ -28,10 +28,27 @@ import com.fire.mangareader.presentation.ui.screens.search.SearchScreen
 import com.fire.mangareader.presentation.ui.screens.reader.ChapterReaderScreen
 import com.fire.mangareader.presentation.ui.screens.library.LibraryScreen
 import com.fire.mangareader.presentation.ui.screens.profile.ProfileScreen
+import com.fire.mangareader.presentation.ui.screens.notifications.NotificationsScreen
+
+
+import com.fire.mangareader.presentation.ui.screens.downloads.DownloadsScreen
 
 class MainComposeActivity : ComponentActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Sync FCM token
+        if (com.fire.mangareader.data.network.SupabaseManager.getInstance(this).isLoggedIn) {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    com.fire.mangareader.data.network.SupabaseManager.getInstance(this).updateFcmToken(token)
+                }
+            }
+        }
+
         setContent {
             MangaFireTheme {
                 val navController = rememberNavController()
@@ -65,7 +82,22 @@ class MainComposeActivity : ComponentActivity() {
                                 onChapterClick = { chapterId -> navController.navigate("reader/$chapterId") }
                             ) 
                         }
-                        composable("settings") { ProfileScreen() }
+                        composable("downloads") {
+                            DownloadsScreen(
+                                onChapterClick = { chapterId -> navController.navigate("reader/$chapterId") }
+                            )
+                        }
+composable("settings") { 
+                            ProfileScreen(
+                                onDownloadsClick = { navController.navigate("downloads") },
+                                onNotificationsClick = { navController.navigate("notifications") }
+                            ) 
+                        }
+                        composable("notifications") {
+                            NotificationsScreen(
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
                         
                         composable(
                             "detail/{mangaId}",

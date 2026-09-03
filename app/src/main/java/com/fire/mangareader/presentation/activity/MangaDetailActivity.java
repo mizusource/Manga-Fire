@@ -247,14 +247,14 @@ public class MangaDetailActivity extends AppCompatActivity {
         if (btnComments != null) { btnComments.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-                    Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.presentation.ui.comments.MangaCommentsActivity.class);
+                    Intent intent = new Intent(MangaDetailActivity.this, CommentsActivity.class);
                     intent.putExtra("mangaUrl", mangaUrl);
                     startActivity(intent);
                 }).start();
             });
         } else {
             btnComments.setOnClickListener(v -> {
-                Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.presentation.ui.comments.MangaCommentsActivity.class);
+                Intent intent = new Intent(MangaDetailActivity.this, CommentsActivity.class);
                 intent.putExtra("mangaUrl", mangaUrl);
                 startActivity(intent);
             });

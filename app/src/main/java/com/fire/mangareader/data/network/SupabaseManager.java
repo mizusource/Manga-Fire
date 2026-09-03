@@ -48,6 +48,25 @@ public class SupabaseManager {
         return accessToken != null && currentUserId != null;
     }
     
+    
+    private void triggerMakeWebhook(String actionType, JSONObject commentData) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("action_type", actionType);
+            payload.put("data", commentData);
+            
+            RequestBody body = RequestBody.create(payload.toString(), JSON);
+            Request request = new Request.Builder()
+                    .url("https://hook.eu1.make.com/ud10lj71nvofrtucj1jq5ls6te8jqtdc")
+                    .post(body)
+                    .build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override public void onFailure(Call call, java.io.IOException e) {}
+                @Override public void onResponse(Call call, Response response) {}
+            });
+        } catch (Exception e) {}
+    }
+
     public String getCurrentUserId() {
         return currentUserId;
     }
@@ -445,6 +464,7 @@ public class SupabaseManager {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
+                    triggerMakeWebhook("new_comment", json);
                     postAuthCallback(callback, true, "تم إضافة التعليق");
                 } else {
                     String errorBody = response.body() != null ? response.body().string() : "";

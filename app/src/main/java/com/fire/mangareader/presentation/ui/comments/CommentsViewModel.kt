@@ -23,7 +23,7 @@ class CommentsViewModel(application: Application) : AndroidViewModel(application
 
     init {
         val database = AppDatabase.getDatabase(application)
-        repository = CommentsRepository(database.commentDao())
+        repository = CommentsRepository(database.commentDao(), application)
         
         // Seed some data for demo if needed, but we'll let the user add them
     }

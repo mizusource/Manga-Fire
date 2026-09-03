@@ -37,7 +37,7 @@ android {
 dependencies {
     implementation("androidx.palette:palette:1.0.0")
     implementation("de.hdodenhof:circleimageview:3.1.0")
-    implementation("androidx.work:work-runtime:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0")
     
     implementation("com.facebook.shimmer:shimmer:0.5.0")

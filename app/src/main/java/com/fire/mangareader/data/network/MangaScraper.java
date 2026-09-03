@@ -31,6 +31,19 @@ public class MangaScraper {
         void onError(String errorMessage);
     }
 
+    
+    public static Document getDocument(String url) throws Exception {
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(url)
+                .build();
+        okhttp3.Response response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new Exception("HTTP " + response.code());
+        }
+        String html = response.body().string();
+        return Jsoup.parse(html, url);
+    }
+
     public interface ChapterPagesCallback {
         void onSuccess(List<String> imageUrls);
         void onError(String errorMessage);
@@ -39,12 +52,7 @@ public class MangaScraper {
     
 
     public static List<Manga> fetchLatestSingleSource(String sourceUrl) throws Exception {
-        Document doc = Jsoup.connect(sourceUrl)
-                .userAgent(globalUserAgent)
-                .header("Cookie", globalCookies)
-                .referrer(sourceUrl)
-                .timeout(15000)
-                .get();
+        Document doc = getDocument(sourceUrl);
         List<Manga> mangaList = new ArrayList<>();
         Set<String> uniqueUrls = new HashSet<>();
         Elements mangaElements = doc.select(".page-item-detail");
@@ -119,12 +127,7 @@ public class MangaScraper {
     public static void fetchLatestManga(ScrapingCallback callback) {
         new Thread(() -> {
             try {
-                Document doc = Jsoup.connect(BASE_URL)
-                        .userAgent(globalUserAgent)
-                        .header("Cookie", globalCookies)
-                        .referrer(BASE_URL)
-                        .timeout(15000)
-                        .get();
+                Document doc = getDocument(BASE_URL);
 
                 List<Manga> mangaList = new ArrayList<>();
                 Set<String> uniqueUrls = new HashSet<>();
@@ -178,12 +181,7 @@ public class MangaScraper {
             Document doc = null;
             for (String url : possibleUrls) {
                 try {
-                    doc = Jsoup.connect(url)
-                            .userAgent(globalUserAgent)
-                            .header("Cookie", globalCookies)
-                            .referrer(sourceBaseUrl)
-                            .timeout(10000)
-                            .get();
+                    doc = getDocument(url);
                     break;
                 } catch (Exception ignored) {}
             }
@@ -382,12 +380,7 @@ public class MangaScraper {
 
                 for (String url : possibleUrls) {
                     try {
-                        doc = Jsoup.connect(url)
-                                .userAgent(globalUserAgent)
-                                .header("Cookie", globalCookies)
-                                .referrer(BASE_URL)
-                                .timeout(15000)
-                                .get();
+                        doc = getDocument(url);
                         break;
                     } catch (org.jsoup.HttpStatusException e) {
                         if (e.getStatusCode() == 404) {
@@ -469,12 +462,7 @@ public class MangaScraper {
                 String lastError = "";
                 for (String url : possibleUrls) {
                     try {
-                        doc = Jsoup.connect(url)
-                                .userAgent(globalUserAgent)
-                                .header("Cookie", globalCookies)
-                                .referrer(BASE_URL)
-                                .timeout(15000)
-                                .get();
+                        doc = getDocument(url);
                         break; // Success
                     } catch (org.jsoup.HttpStatusException e) {
                         if (e.getStatusCode() == 404) {
@@ -532,12 +520,7 @@ public class MangaScraper {
     public static void fetchMangaDetails(String mangaUrl, MangaDetailsCallback callback) {
         new Thread(() -> {
             try {
-                Document doc = Jsoup.connect(mangaUrl)
-                        .userAgent(globalUserAgent)
-                        .header("Cookie", globalCookies)
-                        .referrer(BASE_URL)
-                        .timeout(15000)
-                        .get();
+                Document doc = getDocument(mangaUrl);
                 
                 Element descElement = doc.select(".summary__content p, .manga-excerpt p, .description-summary p").first();
                 String tempDescription = "لا يوجد وصف متاح.";
@@ -675,12 +658,7 @@ public class MangaScraper {
     public static void fetchChapterPages(String chapterUrl, ChapterPagesCallback callback) {
         new Thread(() -> {
             try {
-                Document doc = Jsoup.connect(chapterUrl)
-                        .userAgent(globalUserAgent)
-                        .header("Cookie", globalCookies)
-                        .referrer(BASE_URL)
-                        .timeout(15000)
-                        .get();
+                Document doc = getDocument(chapterUrl);
                 
                 List<String> imageUrls = new ArrayList<>();
                 Set<String> uniqueUrls = new HashSet<>();

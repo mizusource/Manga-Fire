@@ -2,44 +2,51 @@ with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail
     content = f.read()
 
 replacement = """
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
-                    Text(error!!, color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    Button(onClick = { viewModel.fetchDetails(mangaId) }) {
-                        Text("إعادة المحاولة")
-                    }
-                    if (error!!.contains("403") || error!!.contains("Cloudflare")) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = {
-                            val mangaUrl = try {
-                                String(android.util.Base64.decode(mangaId, android.util.Base64.URL_SAFE))
-                            } catch (e: Exception) {
-                                com.fire.mangareader.data.network.MangaScraper.BASE_URL
-                            }
-                            val safeUrl = if (mangaUrl.startsWith("http")) mangaUrl else com.fire.mangareader.data.network.MangaScraper.BASE_URL
-                            com.fire.mangareader.data.network.CloudflareBypassDialog(context, safeUrl, object : com.fire.mangareader.data.network.CloudflareBypassDialog.BypassCallback {
-                                override fun onSuccess(cookies: String?, userAgent: String?) {
-                                    viewModel.fetchDetails(mangaId)
-                                }
-                                override fun onFailed() {
-                                    // Handle failure if needed
-                                }
-                            }).show()
-                        }) {
-                            Text("تخطي حماية Cloudflare")
-                        }
-                    }
-                }
+import androidx.compose.ui.platform.LocalContext
+import com.fire.mangareader.data.download.DownloadManager
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MangaDetailScreen(
+    mangaId: String,
+    onBackClick: () -> Unit,
+    onChapterClick: (String) -> Unit,
+    viewModel: DetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    val context = LocalContext.current
+    val downloadManager = remember { DownloadManager(context) }
+    val coroutineScope = rememberCoroutineScope()
 """
 
-content = content.replace("""                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(error!!, color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { viewModel.fetchDetails(mangaId) }) {
-                        Text("إعادة المحاولة")
-                    }
-                }""", replacement)
+import re
+content = re.sub(r"@OptIn\(ExperimentalMaterial3Api::class\)\s*@Composable\s*fun MangaDetailScreen\(\s*mangaId: String,\s*onBackClick: \(\) -> Unit,\s*onChapterClick: \(String\) -> Unit,\s*viewModel: DetailViewModel = androidx\.lifecycle\.viewmodel\.compose\.viewModel\(\)\s*\) \{", replacement.strip(), content, flags=re.DOTALL)
+
+# Add import rememberCoroutineScope
+if "import androidx.compose.runtime.rememberCoroutineScope" not in content:
+    content = content.replace("import androidx.compose.runtime.remember", "import androidx.compose.runtime.remember\nimport androidx.compose.runtime.rememberCoroutineScope")
+
+
+chapter_item_call = """
+                    ChapterItem(
+                        title = chapter.title ?: "بدون عنوان", 
+                        onClick = { onChapterClick(chapterId) },
+                        onDownloadClick = {
+                            coroutineScope.launch {
+                                downloadManager.enqueueDownload(
+                                    chapterId = chapterId,
+                                    mangaId = mangaId,
+                                    mangaTitle = title,
+                                    chapterTitle = chapter.title ?: "بدون عنوان"
+                                )
+                                android.widget.Toast.makeText(context, "تمت الإضافة لطابور التحميل", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+"""
+
+content = re.sub(r"ChapterItem\(\s*title = chapter\.title \?: \"بدون عنوان\",\s*onClick = \{ onChapterClick\(chapterId\) \},\s*onDownloadClick = \{\}\s*\)", chapter_item_call.strip(), content)
 
 with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "w") as f:
     f.write(content)
+

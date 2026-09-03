@@ -1,4 +1,7 @@
-package com.fire.mangareader.data.network.interceptor;
+with open("app/src/main/java/com/fire/mangareader/data/network/interceptor/CommonHeadersInterceptor.java", "r") as f:
+    content = f.read()
+
+new_content = """package com.fire.mangareader.data.network.interceptor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -42,3 +45,7 @@ public class CommonHeadersInterceptor implements Interceptor {
         return chain.proceed(builder.build());
     }
 }
+"""
+
+with open("app/src/main/java/com/fire/mangareader/data/network/interceptor/CommonHeadersInterceptor.java", "w") as f:
+    f.write(new_content)

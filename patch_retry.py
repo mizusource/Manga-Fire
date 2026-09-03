@@ -1,4 +1,7 @@
-package com.fire.mangareader.data.network.interceptor;
+with open("app/src/main/java/com/fire/mangareader/data/network/interceptor/RetryInterceptor.java", "r") as f:
+    content = f.read()
+
+new_content = """package com.fire.mangareader.data.network.interceptor;
 
 import java.io.IOException;
 import okhttp3.Interceptor;
@@ -47,3 +50,7 @@ public class RetryInterceptor implements Interceptor {
         throw new IOException("Failed to execute request after " + maxRetries + " retries");
     }
 }
+"""
+
+with open("app/src/main/java/com/fire/mangareader/data/network/interceptor/RetryInterceptor.java", "w") as f:
+    f.write(new_content)

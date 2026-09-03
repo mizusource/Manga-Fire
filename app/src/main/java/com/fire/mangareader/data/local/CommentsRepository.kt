@@ -3,13 +3,15 @@ package com.fire.mangareader.data.local
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.UUID
 
-class CommentsRepository(private val commentDao: CommentDao) {
+class CommentsRepository(private val commentDao: CommentDao, private val context: android.content.Context) {
 
     fun getComments(mangaUrl: String, sortOption: String): Flow<List<CommentEntity>> {
         return when (sortOption) {
@@ -20,11 +22,15 @@ class CommentsRepository(private val commentDao: CommentDao) {
         }
     }
 
-    suspend fun addComment(mangaUrl: String, content: String, isSpoiler: Boolean, userName: String = "You") {
+    suspend fun addComment(mangaUrl: String, content: String, isSpoiler: Boolean) {
+        val supabaseManager = com.fire.mangareader.data.network.SupabaseManager.getInstance(context)
+        val currentUserId = if (supabaseManager.isLoggedIn) supabaseManager.currentUserId else "guest_${java.util.UUID.randomUUID().toString().substring(0, 8)}"
+        val userName = if (supabaseManager.isLoggedIn) "User" else "Guest"
+        
         val newComment = CommentEntity(
-            id = UUID.randomUUID().toString(),
+            id = java.util.UUID.randomUUID().toString(),
             mangaUrl = mangaUrl,
-            userId = "current_user_123",
+            userId = currentUserId,
             userName = userName,
             content = content,
             timestamp = System.currentTimeMillis(),
@@ -35,29 +41,28 @@ class CommentsRepository(private val commentDao: CommentDao) {
         commentDao.insertComment(newComment)
 
         // Send to Make.com Webhook
-        withContext(Dispatchers.IO) {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             try {
-                val url = URL("https://hook.eu1.make.com/ud10lj71nvofrtucj1jq5ls6te8jqtdc")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
-
-                val jsonParam = JSONObject()
+                val client = okhttp3.OkHttpClient()
+                val jsonParam = org.json.JSONObject()
                 jsonParam.put("commentId", newComment.id)
                 jsonParam.put("mangaUrl", mangaUrl)
+                jsonParam.put("userId", currentUserId)
                 jsonParam.put("userName", userName)
                 jsonParam.put("content", content)
                 jsonParam.put("isSpoiler", isSpoiler)
                 jsonParam.put("timestamp", newComment.timestamp)
-
-                val out = OutputStreamWriter(connection.outputStream)
-                out.write(jsonParam.toString())
-                out.flush()
-                out.close()
-
-                val responseCode = connection.responseCode
-                println("Webhook Response Code: $responseCode")
+                
+                
+                val body = jsonParam.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+                val request = okhttp3.Request.Builder()
+                    .url("https://hook.eu1.make.com/ud10lj71nvofrtucj1jq5ls6te8jqtdc")
+                    .post(body)
+                    .build()
+                
+                client.newCall(request).execute().use { response ->
+                    println("Webhook Response Code: ${response.code}")
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

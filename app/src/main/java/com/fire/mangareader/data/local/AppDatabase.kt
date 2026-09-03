@@ -6,14 +6,20 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.fire.mangareader.data.local.entity.FavoriteManga
 import com.fire.mangareader.data.local.entity.RecentManga
+import com.fire.mangareader.data.local.entity.DownloadedChapter
+import com.fire.mangareader.data.local.entity.NotificationEntity
 import com.fire.mangareader.data.local.dao.FavoriteDao
 import com.fire.mangareader.data.local.dao.RecentDao
+import com.fire.mangareader.data.local.dao.DownloadDao
+import com.fire.mangareader.data.local.dao.NotificationDao
 
-@Database(entities = [CommentEntity::class, FavoriteManga::class, RecentManga::class], version = 3, exportSchema = false)
+@Database(entities = [CommentEntity::class, FavoriteManga::class, RecentManga::class, DownloadedChapter::class, NotificationEntity::class], version = 5, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun recentDao(): RecentDao
+    abstract fun downloadDao(): DownloadDao
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         @Volatile

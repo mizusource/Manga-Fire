@@ -1,17 +1,11 @@
 with open("app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt", "r") as f:
     content = f.read()
 
-replacement = """
-import com.fire.mangareader.presentation.ui.screens.notifications.NotificationsScreen
-
-class MainComposeActivity : ComponentActivity() {
-"""
-content = content.replace("class MainComposeActivity : ComponentActivity() {", replacement)
-
 nav_host_replacement = """
                         composable("settings") { 
                             ProfileScreen(
-                                onDownloadsClick = { navController.navigate("downloads") }
+                                onDownloadsClick = { navController.navigate("downloads") },
+                                onNotificationsClick = { navController.navigate("notifications") }
                             ) 
                         }
                         composable("notifications") {
@@ -20,8 +14,12 @@ nav_host_replacement = """
                             )
                         }
 """
-import re
-content = re.sub(r'composable\("settings"\) \{ \n                            ProfileScreen\(\n                                onDownloadsClick = \{ navController.navigate\("downloads"\) \}\n                            ) \n                        }', nav_host_replacement.strip(), content, flags=re.DOTALL)
+
+content = content.replace("""                        composable("settings") { 
+                            ProfileScreen(
+                                onDownloadsClick = { navController.navigate("downloads") }
+                            ) 
+                        }""", nav_host_replacement.strip())
 
 with open("app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt", "w") as f:
     f.write(content)

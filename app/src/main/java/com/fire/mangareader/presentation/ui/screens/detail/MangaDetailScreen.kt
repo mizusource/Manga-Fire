@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
+import androidx.compose.ui.platform.LocalContext
+import com.fire.mangareader.data.download.DownloadManager
+import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MangaDetailScreen(
@@ -36,6 +42,9 @@ fun MangaDetailScreen(
     onChapterClick: (String) -> Unit,
     viewModel: DetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+    val context = LocalContext.current
+    val downloadManager = remember { DownloadManager(context) }
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(mangaId) {
         viewModel.fetchDetails(mangaId)
     }
@@ -165,7 +174,17 @@ fun MangaDetailScreen(
                     ChapterItem(
                         title = chapter.title ?: "بدون عنوان", 
                         onClick = { onChapterClick(chapterId) },
-                        onDownloadClick = {}
+                        onDownloadClick = {
+                            coroutineScope.launch {
+                                downloadManager.enqueueDownload(
+                                    chapterId = chapterId,
+                                    mangaId = mangaId,
+                                    mangaTitle = title,
+                                    chapterTitle = chapter.title ?: "بدون عنوان"
+                                )
+                                android.widget.Toast.makeText(context, "تمت الإضافة لطابور التحميل", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     )
                 }
             }
