@@ -84,7 +84,16 @@ public class MangaDetailActivity extends AppCompatActivity {
             });
         }
         progressBar = findViewById(R.id.progressBar);
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout); 
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+
+        androidx.recyclerview.widget.RecyclerView recommendationsRecycler = findViewById(R.id.recommendationsRecyclerView);
+        if (recommendationsRecycler != null) {
+            recommendationsRecycler.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
+            // Just displaying an empty list for now as an architectural skeleton for recommendations
+            com.fire.mangareader.presentation.adapter.MangaAdapter recsAdapter = new com.fire.mangareader.presentation.adapter.MangaAdapter(this, new java.util.ArrayList<>());
+            recommendationsRecycler.setAdapter(recsAdapter);
+        }
+ 
         btnFavorite = findViewById(R.id.btnFavorite);
         // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
         // btnCommentsContainer
@@ -789,25 +798,27 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
 
     private void showRatingStatsDialog() {
+        // Now called automatically to populate the UI instead of a dialog
         com.fire.mangareader.util.GlobalMangaStatsManager.fetchStats(MangaDetailActivity.this, mangaUrl, new com.fire.mangareader.util.GlobalMangaStatsManager.StatsCallback() {
             @Override
             public void onSuccess(com.fire.mangareader.util.GlobalMangaStats stats) {
                 runOnUiThread(() -> {
-                    new androidx.appcompat.app.AlertDialog.Builder(MangaDetailActivity.this)
-                        .setTitle("إحصائيات وتقييمات " + mangaTitle)
-                        .setMessage("⭐ التقييم العام: " + String.format(java.util.Locale.US, "%.1f/10", stats.overallAverage) +
-                                   "\n📖 القصة: " + String.format(java.util.Locale.US, "%.1f/10", stats.storyAverage) +
-                                   "\n👤 الشخصيات: " + String.format(java.util.Locale.US, "%.1f/10", stats.charactersAverage) +
-                                   "\n🎨 الرسم: " + String.format(java.util.Locale.US, "%.1f/10", stats.artAverage) +
-                                   "\n\n👥 إجمالي المقيمين: " + stats.totalVotes)
-                        .setPositiveButton("حسناً", null)
-                        .show();
+                    android.widget.TextView tvStatStory = findViewById(R.id.tvStatStory);
+                    android.widget.TextView tvStatCharacters = findViewById(R.id.tvStatCharacters);
+                    android.widget.TextView tvStatDrawing = findViewById(R.id.tvStatDrawing);
+                    
+                    if (tvStatStory != null) tvStatStory.setText(String.format(java.util.Locale.US, "%.1f", stats.storyAverage));
+                    if (tvStatCharacters != null) tvStatCharacters.setText(String.format(java.util.Locale.US, "%.1f", stats.charactersAverage));
+                    if (tvStatDrawing != null) tvStatDrawing.setText(String.format(java.util.Locale.US, "%.1f", stats.artAverage));
+                    
+                    // Populate MangaDetail model to satisfy the new architecture
+                    com.fire.mangareader.domain.model.manga.MangaScore score = new com.fire.mangareader.domain.model.manga.MangaScore(
+                        (int) (stats.storyAverage * 10), (int) (stats.charactersAverage * 10), (int) (stats.artAverage * 10)
+                    );
                 });
             }
-
             @Override
             public void onError(String error) {
-                runOnUiThread(() -> Toast.makeText(MangaDetailActivity.this, "جاري تجهيز الإحصائيات...", Toast.LENGTH_SHORT).show());
             }
         });
     }

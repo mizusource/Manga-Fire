@@ -93,6 +93,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
         holder.tvLikeCount.setText(String.valueOf(comment.likes));
 
+        holder.tvReplyCount.setText(comment.replies_count > 0 ? comment.replies_count + " ردود" : "رد");
+
+
         
         holder.btnReply.setOnClickListener(v -> {
                         Intent intent = new Intent(context, RepliesActivity.class);
@@ -144,6 +147,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                             ((android.app.Activity) context).runOnUiThread(() -> {
                                 comment.likes += 1;
                                 holder.tvLikeCount.setText(String.valueOf(comment.likes));
+
+        holder.tvReplyCount.setText(comment.replies_count > 0 ? comment.replies_count + " ردود" : "رد");
+
                                 holder.btnLike.setEnabled(false);
                             });
                             // Send notification
@@ -170,7 +176,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvUsername, tvDate, tvCommentText, tvLikeCount;
+        public TextView tvUsername, tvDate, tvCommentText, tvLikeCount, tvReplyCount;
         public View btnLike, btnMore, btnReply;
 
         public ViewHolder(@NonNull View itemView) {
@@ -179,6 +185,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             tvDate = itemView.findViewById(R.id.tvDate);
             tvCommentText = itemView.findViewById(R.id.tvCommentText);
             tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
+            tvReplyCount = itemView.findViewById(R.id.tvReplyCount);
             btnLike = itemView.findViewById(R.id.btnLike);
             btnMore = itemView.findViewById(R.id.btnMore);
             btnReply = itemView.findViewById(R.id.btnReply);

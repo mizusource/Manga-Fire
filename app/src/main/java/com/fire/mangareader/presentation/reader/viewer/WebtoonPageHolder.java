@@ -34,6 +34,7 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
     private LinearLayout errorLayout;
     private Button btnRetry;
     private String currentUrl;
+    private com.fire.mangareader.domain.model.reader.Page currentPage;
     private String currentCookies;
     private String refererUrl;
 
@@ -62,17 +63,19 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
         container.addView(errorLayout);
 
         btnRetry.setOnClickListener(v -> {
-            if (currentUrl != null) bind(currentUrl, currentCookies, refererUrl);
+            if (currentUrl != null) if (currentPage != null) { bind(currentPage, currentCookies, refererUrl); }
         });
     }
 
-    public void bind(String imageUrl, String cookies, String referer) {
+    public void bind(final com.fire.mangareader.domain.model.reader.Page page, String cookies, String referer) {
+        String imageUrl = page.getImageUrl() != null ? page.getImageUrl() : page.getUrl();
         // 🚀 الإصلاح السحري: الروابط الناقصة
         if (imageUrl != null && imageUrl.startsWith("//")) {
             imageUrl = "https:" + imageUrl;
         }
 
         this.currentUrl = imageUrl;
+        this.currentPage = page;
         this.currentCookies = cookies;
         this.refererUrl = referer;
         
@@ -123,6 +126,7 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
                     @Override
                     public void onImageLoadError(Exception e) {
                         progressBar.setVisibility(View.GONE);
+                        page.setStatus(com.fire.mangareader.domain.model.reader.Page.ERROR);
                         errorLayout.setVisibility(View.VISIBLE);
                     }
                 });
@@ -149,7 +153,29 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
                             throw new Exception("HTTP " + response.code());
                         }
 
-                        byte[] bytes = response.body().bytes();
+                        page.setStatus(com.fire.mangareader.domain.model.reader.Page.DOWNLOAD_IMAGE);
+                        java.io.InputStream is = response.body().byteStream();
+                        long contentLength = response.body().contentLength();
+                        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+                        int nRead;
+                        byte[] data = new byte[16384];
+                        long totalRead = 0;
+                        while ((nRead = is.read(data, 0, data.length)) != -1) {
+                            buffer.write(data, 0, nRead);
+                            totalRead += nRead;
+                            page.update(totalRead, contentLength, false);
+                            
+                            // Optional: Post progress to UI if we had a dedicated progress text
+                            // final int p = page.getProgress();
+                            // new Handler(Looper.getMainLooper()).post(() -> {
+                            //    // update progress bar if it supports percentage
+                            // });
+                        }
+                        buffer.flush();
+                        byte[] bytes = buffer.toByteArray();
+                        page.update(totalRead, contentLength, true);
+                        page.setStatus(com.fire.mangareader.domain.model.reader.Page.READY);
+
 
                         // 🗜️ فحص إعداد جودة الصور (توفير البيانات)
                         android.content.SharedPreferences prefs = itemView.getContext().getSharedPreferences("MangaFirePrefs", android.content.Context.MODE_PRIVATE);
@@ -213,7 +239,8 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
                                 @Override
                                 public void onImageLoadError(Exception e) {
                                     progressBar.setVisibility(View.GONE);
-                                    errorLayout.setVisibility(View.VISIBLE);
+                                    page.setStatus(com.fire.mangareader.domain.model.reader.Page.ERROR);
+                        errorLayout.setVisibility(View.VISIBLE);
                                 }
                             });
                         }
@@ -222,6 +249,7 @@ public class WebtoonPageHolder extends RecyclerView.ViewHolder {
                     e.printStackTrace();
                     new Handler(Looper.getMainLooper()).post(() -> {
                         progressBar.setVisibility(View.GONE);
+                        page.setStatus(com.fire.mangareader.domain.model.reader.Page.ERROR);
                         errorLayout.setVisibility(View.VISIBLE);
                     });
                 }

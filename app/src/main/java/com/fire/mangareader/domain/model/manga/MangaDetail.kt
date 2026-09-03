@@ -1,0 +1,32 @@
+package com.fire.mangareader.domain.model.manga
+
+data class MangaDetail(
+    val _id: Int,
+    val nameId: String?,
+    val title: String?,
+    val titles: Title?,
+    val author: String?,
+    val score: Double?,
+    val scoredBy: Int?,
+    val overview: String?,
+    val synonyms: List<String>?,
+    val source: Int?,
+    val country: String?,
+    val status: Int?,
+    val format: Int?,
+    val started: String?,
+    val ended: String?,
+    val bannerImage: String?,
+    val poster: PosterSource?,
+    val genre: List<String>?,
+    val trailer: String?,
+    val recommendations: List<Manga> = emptyList(),
+    val relations: List<Manga> = emptyList(),
+    val chapters: Int?,
+    val isFavorite: Boolean?,
+    val userStatue: Int?,
+    val userMangaScore: MangaScore?,
+    val mangaMainScore: Double?,
+    val usersScoredBy: Int?,
+    val mangaStats: MangaStats?
+)

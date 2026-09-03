@@ -12,14 +12,18 @@ import com.fire.mangareader.data.local.dao.FavoriteDao
 import com.fire.mangareader.data.local.dao.RecentDao
 import com.fire.mangareader.data.local.dao.DownloadDao
 import com.fire.mangareader.data.local.dao.NotificationDao
+import com.fire.mangareader.data.local.entity.CustomListEntity
+import com.fire.mangareader.data.local.entity.CustomListMangaCrossRef
+import com.fire.mangareader.data.local.dao.CustomListDao
 
-@Database(entities = [CommentEntity::class, FavoriteManga::class, RecentManga::class, DownloadedChapter::class, NotificationEntity::class], version = 5, exportSchema = false)
+@Database(entities = [CommentEntity::class, FavoriteManga::class, RecentManga::class, DownloadedChapter::class, NotificationEntity::class, CustomListEntity::class, CustomListMangaCrossRef::class], version = 6, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun recentDao(): RecentDao
     abstract fun downloadDao(): DownloadDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun customListDao(): CustomListDao
 
     companion object {
         @Volatile

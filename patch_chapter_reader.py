@@ -1,25 +1,35 @@
 import re
 
-filepath = 'app/src/main/java/com/fire/mangareader/presentation/activity/ChapterReaderActivity.java'
-with open(filepath, 'r') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/ChapterReaderActivity.java", "r") as f:
     content = f.read()
 
-# Replace the Toast in checkIfChapterIsDownloadedAndLoad to use safeToast
-content = content.replace('Toast.makeText(this, "رابط الفصل غير صالح", Toast.LENGTH_SHORT).show();', 'com.fire.mangareader.util.SystemUtils.safeToast(this, "رابط الفصل غير صالح");')
-
-# Add network check before setupWebViewScraper()
-target_logic = """                        if (!com.fire.mangareader.util.SystemUtils.isNetworkAvailable(ChapterReaderActivity.this)) {
-                            runOnUiThread(() -> {
-                                loadingProgressBar.setVisibility(View.GONE);
-                                com.fire.mangareader.util.SystemUtils.safeToast(ChapterReaderActivity.this, "لا يوجد اتصال بالإنترنت");
-                            });
-                            return;
+# Replace setPages with Page mapping
+old_onSuccess = """                    @Override
+                    public void onSuccess(List<String> imageUrls) {
+                        progressBar.setVisibility(View.GONE);
+                        if (imageUrls != null && !imageUrls.isEmpty()) {
+                            adapter.setPages(imageUrls, cookies, chapterUrl);
+                        } else {
+                            Toast.makeText(ChapterReaderActivity.this, "لا توجد صفحات", Toast.LENGTH_SHORT).show();
                         }
-                        
-                        runOnUiThread(() -> setupWebViewScraper());"""
+                    }"""
 
-content = content.replace('runOnUiThread(() -> setupWebViewScraper());', target_logic)
+new_onSuccess = """                    @Override
+                    public void onSuccess(List<String> imageUrls) {
+                        progressBar.setVisibility(View.GONE);
+                        if (imageUrls != null && !imageUrls.isEmpty()) {
+                            List<com.fire.mangareader.domain.model.reader.Page> pageList = new java.util.ArrayList<>();
+                            for (int i = 0; i < imageUrls.size(); i++) {
+                                com.fire.mangareader.domain.model.reader.Page page = new com.fire.mangareader.domain.model.reader.Page(i, imageUrls.get(i), imageUrls.get(i), null);
+                                pageList.add(page);
+                            }
+                            adapter.setPages(pageList, cookies, chapterUrl);
+                        } else {
+                            Toast.makeText(ChapterReaderActivity.this, "لا توجد صفحات", Toast.LENGTH_SHORT).show();
+                        }
+                    }"""
 
-with open(filepath, 'w') as f:
+content = content.replace(old_onSuccess, new_onSuccess)
+
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/ChapterReaderActivity.java", "w") as f:
     f.write(content)
-print("Patched ChapterReaderActivity.java")

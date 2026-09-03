@@ -377,7 +377,11 @@ public class ChapterReaderActivity extends AppCompatActivity {
                             loadingProgressBar.setVisibility(View.GONE);
                             scraperWebView.setVisibility(View.GONE); 
                             
-                            adapter.setPages(localPages, null, null); 
+                            List<com.fire.mangareader.domain.model.reader.Page> pageList = new java.util.ArrayList<>();
+                            for (int i = 0; i < localPages.size(); i++) {
+                                pageList.add(new com.fire.mangareader.domain.model.reader.Page(i, localPages.get(i), localPages.get(i), null));
+                            }
+                            adapter.setPages(pageList, null, null); 
                             
                             int total = localPages.size();
                             tvPageIndicator.setText("1 / " + total);
@@ -539,7 +543,11 @@ public class ChapterReaderActivity extends AppCompatActivity {
                     loadingProgressBar.setVisibility(View.GONE);
                     if (!pages.isEmpty()) {
                         scraperWebView.setVisibility(View.GONE); 
-                        adapter.setPages(pages, cookies, refererUrl);
+                        List<com.fire.mangareader.domain.model.reader.Page> pageList = new java.util.ArrayList<>();
+                        for (int i = 0; i < pages.size(); i++) {
+                            pageList.add(new com.fire.mangareader.domain.model.reader.Page(i, pages.get(i), pages.get(i), null));
+                        }
+                        adapter.setPages(pageList, cookies, refererUrl);
                         
                         int total = pages.size();
                         tvPageIndicator.setText("1 / " + total);

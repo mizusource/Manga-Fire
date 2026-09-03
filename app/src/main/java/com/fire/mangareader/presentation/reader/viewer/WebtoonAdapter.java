@@ -6,13 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
+import com.fire.mangareader.domain.model.reader.Page;
 
 public class WebtoonAdapter extends RecyclerView.Adapter<WebtoonPageHolder> {
-    private List<String> pages = new ArrayList<>();
+    private List<Page> pages = new ArrayList<>();
     private String cookies = "";
     private String refererUrl = "";
 
-    public void setPages(List<String> pages, String cookies, String refererUrl) {
+    public void setPages(List<Page> pages, String cookies, String refererUrl) {
         this.pages = pages;
         this.cookies = cookies;
         this.refererUrl = refererUrl;
