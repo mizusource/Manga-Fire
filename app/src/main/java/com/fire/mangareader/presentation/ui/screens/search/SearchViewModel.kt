@@ -13,21 +13,27 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 
+data class SearchFilter(
+    val query: String = "",
+    val status: String = "",
+    val type: String = "",
+    val genres: List<String> = emptyList()
+)
+
 class SearchViewModel : ViewModel() {
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
+    private val _filter = MutableStateFlow(SearchFilter())
+    val filter: StateFlow<SearchFilter> = _filter
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-    val searchResults: Flow<PagingData<UIManga>> = _searchQuery
+    val searchResults: Flow<PagingData<UIManga>> = _filter
         .debounce(500)
-        .filter { it.length >= 3 || it.isEmpty() }
-        .flatMapLatest { query ->
-            if (query.isEmpty()) {
+        .flatMapLatest { currentFilter ->
+            if (currentFilter.query.isEmpty() && currentFilter.status.isEmpty() && currentFilter.type.isEmpty() && currentFilter.genres.isEmpty()) {
                 flowOf(PagingData.empty())
             } else {
                 Pager(
                     config = PagingConfig(pageSize = 20, enablePlaceholders = false),
-                    pagingSourceFactory = { MangaPagingSource(query) }
+                    pagingSourceFactory = { MangaPagingSource(currentFilter.query, currentFilter.genres, currentFilter.status, currentFilter.type) }
                 ).flow.map { pagingData ->
                     pagingData.map { manga ->
                         UIManga(
@@ -43,8 +49,29 @@ class SearchViewModel : ViewModel() {
         }
         .cachedIn(viewModelScope)
 
-    fun onQueryChange(query: String) {
-        _searchQuery.value = query
+    fun onQueryChange(query: String) { _filter.update { it.copy(query = query) } }
+    
+    fun onStatusChange(status: String) { 
+        _filter.update { it.copy(status = if (it.status == status) "" else status) } 
+    }
+    
+    fun onTypeChange(type: String) { 
+        _filter.update { it.copy(type = if (it.type == type) "" else type) } 
+    }
+    
+    fun toggleGenre(genre: String) {
+        _filter.update {
+            val newGenres = if (it.genres.contains(genre)) {
+                it.genres - genre
+            } else {
+                it.genres + genre
+            }
+            it.copy(genres = newGenres)
+        }
+    }
+    
+    fun clearFilters() {
+        _filter.update { it.copy(status = "", type = "", genres = emptyList()) }
     }
 
     private fun extractIdFromUrl(url: String?): String {

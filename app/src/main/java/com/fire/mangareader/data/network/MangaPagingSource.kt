@@ -8,14 +8,17 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class MangaPagingSource(
-    private val query: String
+    private val query: String,
+    private val genres: List<String>,
+    private val status: String,
+    private val type: String
 ) : PagingSource<Int, Manga>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Manga> {
         val page = params.key ?: 1
         return try {
             val response = suspendCancellableCoroutine<List<Manga>> { continuation ->
-                MangaScraper.searchMangaPaginated(query, page, object : MangaScraper.ScrapingCallback {
+                MangaScraper.searchAdvancedPaginated(query, genres, status, type, page, object : MangaScraper.ScrapingCallback {
                     override fun onSuccess(mangas: MutableList<Manga>?) {
                         if (continuation.isActive) {
                             continuation.resume(mangas ?: emptyList())
