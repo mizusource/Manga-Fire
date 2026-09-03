@@ -125,7 +125,7 @@ class DownloadWorker(
         }
         val chapterUrl = if (url.startsWith("http")) url else MangaScraper.BASE_URL + "manga/" + chapterId
         
-        ApiMangaScraper.fetchChapterPagesFast(chapterUrl, object : MangaScraper.ChapterPagesCallback {
+        MangaScraper.fetchChapterPages(chapterUrl, object : MangaScraper.ChapterPagesCallback {
             override fun onSuccess(imageUrls: MutableList<String>?) {
                 if (cont.isActive) cont.resume(imageUrls?.toList() ?: emptyList())
             }

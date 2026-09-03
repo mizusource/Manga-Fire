@@ -1,5 +1,8 @@
 package com.fire.mangareader.presentation.ui.screens.profile
 
+import androidx.compose.material.icons.filled.Refresh
+import android.widget.Toast
+import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -45,7 +48,10 @@ fun ProfileScreen(
     var showNameDialog by remember { mutableStateOf(false) }
     var tempName by remember { mutableStateOf("") }
     var showQualityDialog by remember { mutableStateOf(false) }
-    var showClearCacheDialog by remember { mutableStateOf(false) }
+var showClearCacheDialog by remember { mutableStateOf(false) }
+    var showParserSyncDialog by remember { mutableStateOf(false) }
+    var syncUrlText by remember { mutableStateOf(com.fire.mangareader.data.parser.ParserConfigManager.getSyncUrl(context)) }
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
     val sharedPreferences = remember { context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) }
     var notificationsEnabled by remember { mutableStateOf(sharedPreferences.getBoolean("notifications_enabled", true)) }
@@ -134,6 +140,48 @@ fun ProfileScreen(
             confirmButton = {
                 TextButton(onClick = { showQualityDialog = false }) {
                     Text("إغلاق")
+                }
+            }
+        )
+    }
+
+if (showParserSyncDialog) {
+        AlertDialog(
+            onDismissRequest = { showParserSyncDialog = false },
+            title = { Text("إعدادات المحرك الديناميكي") },
+            text = {
+                Column {
+                    Text("أدخل رابط ملف הـ JSON الخاص بإعدادات المواقع لتخطي الحجب وتحديث المسارات:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    androidx.compose.material3.OutlinedTextField(
+                        value = syncUrlText ?: "",
+                        onValueChange = { syncUrlText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("https://.../config.json") }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showParserSyncDialog = false
+                        Toast.makeText(context, "جاري التحديث...", Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            val result = com.fire.mangareader.data.parser.ParserConfigManager.syncConfig(context, syncUrlText.trim())
+                            if (result.isSuccess) {
+                                Toast.makeText(context, "تم التحديث بنجاح!", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(context, "فشل التحديث: خطأ بالاتصال", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                ) {
+                    Text("تحديث")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showParserSyncDialog = false }) {
+                    Text("إلغاء")
                 }
             }
         )
@@ -302,6 +350,18 @@ fun ProfileScreen(
                         }
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable { showParserSyncDialog = true }.padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("تحديث إعدادات المحرك")
+                                Text("تخطي الحجب والمصادر", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Icon(androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        }
                         Row(
                             modifier = Modifier.fillMaxWidth().clickable { showClearCacheDialog = true }.padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,

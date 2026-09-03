@@ -32,7 +32,7 @@ class ReaderViewModel : ViewModel() {
         
         val chapterUrl = decodeIdToUrl(chapterId)
         
-        ApiMangaScraper.fetchChapterPagesFast(chapterUrl, object : MangaScraper.ChapterPagesCallback {
+        MangaScraper.fetchChapterPages(chapterUrl, object : MangaScraper.ChapterPagesCallback {
             override fun onSuccess(imageUrls: MutableList<String>?) {
                 _pages.value = imageUrls ?: emptyList()
                 _isLoading.value = false
