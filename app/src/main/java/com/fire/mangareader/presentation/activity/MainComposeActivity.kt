@@ -38,6 +38,16 @@ import com.fire.mangareader.presentation.ui.screens.downloads.DownloadsScreen
 
 class MainComposeActivity : ComponentActivity() {
 
+    private fun decodeUrl(id: String): String {
+        if (id.startsWith("http://") || id.startsWith("https://")) return id
+        return try {
+            String(android.util.Base64.decode(id, android.util.Base64.URL_SAFE))
+        } catch (e: Exception) {
+            id
+        }
+    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +83,7 @@ class MainComposeActivity : ComponentActivity() {
                             HomeScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
                                     val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
-                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("mangaUrl", decodeUrl(mangaId))
                                         putExtra("mangaTitle", mangaTitle)
                                         putExtra("mangaCover", mangaCover)
                                     }
@@ -85,7 +95,7 @@ class MainComposeActivity : ComponentActivity() {
                             SearchScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
                                     val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
-                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("mangaUrl", decodeUrl(mangaId))
                                         putExtra("mangaTitle", mangaTitle)
                                         putExtra("mangaCover", mangaCover)
                                     }
@@ -97,7 +107,7 @@ class MainComposeActivity : ComponentActivity() {
                             LibraryScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
                                     val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
-                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("mangaUrl", decodeUrl(mangaId))
                                         putExtra("mangaTitle", mangaTitle)
                                         putExtra("mangaCover", mangaCover)
                                     }
@@ -105,8 +115,8 @@ class MainComposeActivity : ComponentActivity() {
                                 },
                                 onChapterClick = { chapterId: String, mangaId: String, chapterTitle: String, mangaTitle: String, mangaCover: String -> 
                                     val intent = Intent(this@MainComposeActivity, ChapterReaderActivity::class.java).apply {
-                                        putExtra("chapterUrl", chapterId)
-                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("chapterUrl", decodeUrl(chapterId))
+                                        putExtra("mangaUrl", decodeUrl(mangaId))
                                         putExtra("chapterTitle", chapterTitle)
                                         putExtra("mangaTitle", mangaTitle)
                                         putExtra("mangaCover", mangaCover)
@@ -119,8 +129,8 @@ class MainComposeActivity : ComponentActivity() {
                             DownloadsScreen(
                                 onChapterClick = { chapterId: String, mangaId: String, chapterTitle: String, mangaTitle: String, mangaCover: String -> 
                                     val intent = Intent(this@MainComposeActivity, ChapterReaderActivity::class.java).apply {
-                                        putExtra("chapterUrl", chapterId)
-                                        putExtra("mangaUrl", mangaId)
+                                        putExtra("chapterUrl", decodeUrl(chapterId))
+                                        putExtra("mangaUrl", decodeUrl(mangaId))
                                         putExtra("chapterTitle", chapterTitle)
                                         putExtra("mangaTitle", mangaTitle)
                                         putExtra("mangaCover", mangaCover)

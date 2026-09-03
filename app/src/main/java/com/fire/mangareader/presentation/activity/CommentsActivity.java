@@ -47,7 +47,7 @@ public class CommentsActivity extends AppCompatActivity {
         supabaseManager = SupabaseManager.getInstance(this);
         prefManager = new PreferenceManager(this);
 
-        rvComments = findViewById(R.id.rvComments);
+        rvComments = findViewById(R.id.commentsRecyclerView);
         etComment = findViewById(R.id.etComment);
         btnSend = findViewById(R.id.btnSendComment);
         progressBar = findViewById(R.id.progressBar);
