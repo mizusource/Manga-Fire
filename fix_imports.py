@@ -1,15 +1,16 @@
-with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/profile/ProfileScreen.kt", "r") as f:
-    lines = f.readlines()
+import re
 
-new_imports = [
-    "import kotlinx.coroutines.launch\n",
-    "import android.widget.Toast\n",
-    "import androidx.compose.material.icons.filled.Refresh\n"
-]
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "r") as f:
+    text = f.read()
 
-for imp in new_imports:
-    if imp not in lines:
-        lines.insert(2, imp)
+imports_to_add = """
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+"""
 
-with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/profile/ProfileScreen.kt", "w") as f:
-    f.writelines(lines)
+text = text.replace("import androidx.compose.runtime.collectAsState", imports_to_add + "import androidx.compose.runtime.collectAsState")
+
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "w") as f:
+    f.write(text)

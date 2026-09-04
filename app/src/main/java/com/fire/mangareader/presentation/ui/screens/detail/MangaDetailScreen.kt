@@ -15,6 +15,11 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.LaunchedEffect
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,8 +64,13 @@ fun MangaDetailScreen(
     val status by viewModel.status.collectAsState()
     val chapters by viewModel.chapters.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    
     val isFavorite by viewModel.isFavorite.collectAsState()
     val error by viewModel.error.collectAsState()
+    
+    var showListSheet by remember { mutableStateOf(false) }
+    var selectedList by remember { mutableStateOf("reading") }
+    
 
     // نفترض أن الغلاف يتبع هذا النمط في موقع مانجا ليك غالباً
     val coverUrl = "https://mangalik.net/uploads/manga/cover/$mangaId/cover_250x350.jpg"
@@ -199,6 +209,48 @@ fun MangaDetailScreen(
                         }
                     )
                 }
+            }
+        }
+    }
+    
+    if (showListSheet) {
+        androidx.compose.material3.ModalBottomSheet(
+            onDismissRequest = { showListSheet = false },
+            sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                Text("إضافة إلى قائمتي", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                val lists = listOf(
+                    "reading" to "أقرأها حالياً",
+                    "completed" to "مكتملة",
+                    "plan_to_read" to "أرغب بقراءتها",
+                    "dropped" to "متوقفة"
+                )
+                
+                lists.forEach { (id, name) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { 
+                                selectedList = id
+                                viewModel.toggleFavorite(mangaId)
+                                showListSheet = false
+                                android.widget.Toast.makeText(context, "تم النقل إلى: $name", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        androidx.compose.material3.RadioButton(
+                            selected = selectedList == id,
+                            onClick = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(name, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
