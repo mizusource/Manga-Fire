@@ -49,6 +49,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:okhttp-brotli:4.12.0")
     implementation("org.jsoup:jsoup:1.17.2")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+     // Or similar if available, but let's just use standard fast scroll properties in XML
+
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.16.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")

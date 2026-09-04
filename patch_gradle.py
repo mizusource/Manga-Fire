@@ -1,14 +1,19 @@
-filepath = 'app/build.gradle.kts'
-with open(filepath, 'r') as f:
-    content = f.read()
+import re
 
-deps_to_add = """    implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.foundation:foundation")
+with open("app/build.gradle.kts", "r") as f:
+    text = f.read()
+
+# Add MPAndroidChart repository if not there
+if "jitpack.io" not in text:
+    pass # Actually, jitpack is usually in settings.gradle.kts. Let's check settings.gradle.kts later.
+
+# Add dependencies
+deps = """
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.github.l4digital:FastScroll:3.0.0") // Or similar if available, but let's just use standard fast scroll properties in XML
 """
+if "MPAndroidChart" not in text:
+    text = text.replace('implementation("org.jsoup:jsoup:1.17.2")', 'implementation("org.jsoup:jsoup:1.17.2")' + deps)
 
-content = content.replace('implementation("androidx.navigation:navigation-compose:2.7.7")',
-                          'implementation("androidx.navigation:navigation-compose:2.7.7")\n' + deps_to_add)
-
-with open(filepath, 'w') as f:
-    f.write(content)
+with open("app/build.gradle.kts", "w") as f:
+    f.write(text)

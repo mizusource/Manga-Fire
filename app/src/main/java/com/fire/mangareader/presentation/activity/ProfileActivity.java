@@ -17,7 +17,14 @@ import com.bumptech.glide.Glide;
 import com.fire.mangareader.R;
 import com.fire.mangareader.data.database.AppDatabase;
 import com.fire.mangareader.util.PreferenceManager;
-import com.fire.mangareader.util.DonutChartView;
+
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import android.graphics.Color;
+import java.util.ArrayList;
+
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -28,7 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ActivityResultLauncher<Intent> bannerPickerLauncher;
 
-    private DonutChartView donutChart;
+    private PieChart donutChart;
     private TextView legendFav, legendRead, legendPlan, legendComp, legendDrop, tvTotalChapters;
 
     @Override
@@ -147,7 +154,29 @@ public class ProfileActivity extends AppCompatActivity {
                 
                 tvTotalChapters.setText("عدد الفصول التي تم مشاهدتها: " + readCount);
                 
-                donutChart.setData(favCount, (readCount > 0 ? 1 : 0), planCount, compCount, dropCount);
+                
+                ArrayList<PieEntry> entries = new ArrayList<>();
+                if (favCount > 0) entries.add(new PieEntry(favCount, "المفضلة"));
+                int readMangaCount = readCount > 0 ? 1 : 0;
+                if (readMangaCount > 0) entries.add(new PieEntry(readMangaCount, "أشاهدها"));
+                if (planCount > 0) entries.add(new PieEntry(planCount, "أرغب"));
+                if (compCount > 0) entries.add(new PieEntry(compCount, "مكتمل"));
+                if (dropCount > 0) entries.add(new PieEntry(dropCount, "مسقط"));
+                
+                if (entries.isEmpty()) {
+                    entries.add(new PieEntry(1, "لا يوجد بيانات"));
+                }
+                
+                PieDataSet dataSet = new PieDataSet(entries, "الإحصائيات");
+                dataSet.setColors(new int[]{Color.parseColor("#5A9CC4"), Color.parseColor("#44A85F"), Color.parseColor("#C33B32"), Color.parseColor("#6A3CC4"), Color.parseColor("#8E24AA")});
+                PieData data = new PieData(dataSet);
+                donutChart.setData(data);
+                donutChart.getDescription().setEnabled(false);
+                donutChart.setDrawHoleEnabled(true);
+                donutChart.setHoleColor(Color.TRANSPARENT);
+                donutChart.getLegend().setEnabled(false); // We have custom legend
+                donutChart.invalidate(); // refresh
+
             });
         }).start();
     }
