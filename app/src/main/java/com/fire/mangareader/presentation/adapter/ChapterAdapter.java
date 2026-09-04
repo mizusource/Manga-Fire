@@ -23,12 +23,25 @@ import com.fire.mangareader.util.MangaDownloader;
 
 import com.fire.mangareader.presentation.activity.DownloadQualityDialog;
 import com.fire.mangareader.data.service.DownloadService;
+import com.fire.mangareader.core.di.DownloadModule;
+import com.fire.mangareader.data.download.DownloadManager;
  
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterViewHolder> {
+    private java.util.Map<String, Integer> downloadProgresses = new java.util.HashMap<>();
+    
+    public void setDownloadProgresses(java.util.Map<String, Integer> progresses) {
+        this.downloadProgresses = progresses;
+        notifyDataSetDataSetChanged(); // Simple refresh for now, or could use DiffUtil
+    }
+    
+    private void notifyDataSetDataSetChanged() {
+        notifyDataSetChanged();
+    }
+
     private Context context;
     private List<Chapter> chapters;
     private String mangaUrl;
@@ -156,7 +169,7 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
                     } else {
                         DownloadQualityDialog.show(context, quality -> {
                             Toast.makeText(context, "بدء التحميل في الخلفية...", Toast.LENGTH_SHORT).show();
-                            DownloadService.startDownload(context, mangaUrl, chapter.getUrl(), chapter.getTitle());
+                            DownloadModule.getInstance(context).provideDownloadManager().startDownload(mangaUrl, chapter.getUrl(), chapter.getTitle());
                             
                             new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
                                 holder.downloadProgress.setVisibility(View.GONE);

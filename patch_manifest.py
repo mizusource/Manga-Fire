@@ -1,12 +1,15 @@
 import re
 
-filepath = 'app/src/main/AndroidManifest.xml'
-with open(filepath, 'r') as f:
-    content = f.read()
+with open("app/src/main/AndroidManifest.xml", "r") as f:
+    text = f.read()
 
-content = content.replace('<activity android:name=".presentation.activity.MainActivity" />', 
-                          '<activity android:name=".presentation.activity.MainComposeActivity" />\n        <activity android:name=".presentation.activity.CloudflareBypassActivity" />')
+# Make sure INTERNET permission is there
+if "android.permission.INTERNET" not in text:
+    text = text.replace("<application", "<uses-permission android:name=\"android.permission.INTERNET\" />\n    <application")
 
-with open(filepath, 'w') as f:
-    f.write(content)
-print("Patched AndroidManifest.xml")
+# Make sure ACCESS_NETWORK_STATE permission is there
+if "android.permission.ACCESS_NETWORK_STATE" not in text:
+    text = text.replace("<application", "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />\n    <application")
+
+with open("app/src/main/AndroidManifest.xml", "w") as f:
+    f.write(text)

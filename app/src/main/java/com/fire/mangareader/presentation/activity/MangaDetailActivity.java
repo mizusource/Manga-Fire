@@ -15,6 +15,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.bumptech.glide.Glide;
 import com.fire.mangareader.R;
 import com.fire.mangareader.presentation.adapter.ChapterAdapter;
+import com.fire.mangareader.core.di.DownloadModule;
+import com.fire.mangareader.data.download.DownloadManager;
 import com.fire.mangareader.data.database.AppDatabase;
 import com.fire.mangareader.data.database.LibraryItem;
 import com.fire.mangareader.domain.model.Chapter;
@@ -47,6 +49,13 @@ public class MangaDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         com.fire.mangareader.util.ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        // Observe active downloads
+        DownloadModule.getInstance(this).provideDownloadManager().getDownloadProgress().observe(this, progresses -> {
+            if (chapterAdapter != null) {
+                chapterAdapter.setDownloadProgresses(progresses);
+            }
+        });
+
         setContentView(R.layout.activity_manga_detail);
 
         mangaUrl = getIntent().getStringExtra("mangaUrl");
@@ -209,7 +218,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                             // TODO: check if read
                             // For simplicity, download all in this demo or implement full check
                         }
-                        com.fire.mangareader.data.service.DownloadService.startDownload(this, mangaUrl, c.getUrl(), c.getTitle());
+                        DownloadModule.getInstance(this).provideDownloadManager().startDownload(mangaUrl, c.getUrl(), c.getTitle());
                         count++;
                         if (item.getItemId() == 2 && count >= 10) break; // limit to 10 for "unread" to prevent overload
                     }

@@ -1,11 +1,25 @@
 import re
 
-filepath = 'app/src/main/java/com/fire/mangareader/data/network/MangaGlideModule.java'
-with open(filepath, 'r') as f:
-    content = f.read()
+with open("app/src/main/java/com/fire/mangareader/data/network/MangaGlideModule.java", "r") as f:
+    text = f.read()
 
-content = content.replace('new OkHttpUrlLoader.Factory(client)', 'new OkHttpUrlLoader.Factory(com.fire.mangareader.util.MangaOkHttp.getClient())')
+pattern = r'registry\.replace\(GlideUrl\.class, InputStream\.class, new OkHttpUrlLoader\.Factory\(com\.fire\.mangareader\.util\.MangaOkHttp\.getClient\(\)\)\);'
 
-with open(filepath, 'w') as f:
-    f.write(content)
-print("Patched MangaGlideModule")
+replacement = r'''
+        // Default client without heavy interceptors
+        OkHttpClient defaultClient = client;
+        
+        // Special client with CookieJar and Interceptors for specific domains
+        OkHttpClient specialClient = com.fire.mangareader.util.MangaOkHttp.getClient();
+
+        registry.replace(
+                GlideUrl.class, 
+                InputStream.class, 
+                new SmartOkHttpUrlLoader.Factory(specialClient, defaultClient)
+        );
+'''
+
+text = re.sub(pattern, replacement, text)
+
+with open("app/src/main/java/com/fire/mangareader/data/network/MangaGlideModule.java", "w") as f:
+    f.write(text)

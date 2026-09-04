@@ -14,6 +14,8 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.fire.mangareader.util.MangaDownloader;
+import com.fire.mangareader.core.di.DownloadModule;
+import com.fire.mangareader.data.download.DownloadManager;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -162,6 +164,9 @@ public class DownloadService extends Service {
                 @Override
                 public void onProgressUpdate(int current, int total) {
                     if (MangaDownloader.isCancelled) return;
+                    int progress = (int) (((float) current / total) * 100);
+                    DownloadModule.getInstance(DownloadService.this).provideDownloadManager().updateProgress(task.chapterUrl, progress);
+
                     Notification updated = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("جاري تحميل: " + task.chapterTitle)
                             .setContentText("صفحة " + current + " من " + total)
@@ -175,6 +180,8 @@ public class DownloadService extends Service {
                 @Override
                 public void onSuccess() {
                     if (MangaDownloader.isCancelled) return;
+                    DownloadModule.getInstance(DownloadService.this).provideDownloadManager().removeProgress(task.chapterUrl);
+
                     Notification success = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("اكتمل التحميل")
                             .setContentText(task.chapterTitle + " تم تحميله بنجاح")
@@ -187,6 +194,8 @@ public class DownloadService extends Service {
                 @Override
                 public void onError(String errorMessage) {
                     if (MangaDownloader.isCancelled) return;
+                    DownloadModule.getInstance(DownloadService.this).provideDownloadManager().removeProgress(task.chapterUrl);
+
                     Notification error = new NotificationCompat.Builder(DownloadService.this, CHANNEL_ID)
                             .setContentTitle("فشل التحميل")
                             .setContentText(task.chapterTitle + " - " + errorMessage)

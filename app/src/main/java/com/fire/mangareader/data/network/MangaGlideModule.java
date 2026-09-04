@@ -53,6 +53,18 @@ public class MangaGlideModule extends AppGlideModule {
                 .dispatcher(dispatcher)
                 .build();
 
-        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(com.fire.mangareader.util.MangaOkHttp.getClient()));
+        
+        // Default client without heavy interceptors
+        OkHttpClient defaultClient = client;
+        
+        // Special client with CookieJar and Interceptors for specific domains
+        OkHttpClient specialClient = com.fire.mangareader.util.MangaOkHttp.getClient();
+
+        registry.replace(
+                GlideUrl.class, 
+                InputStream.class, 
+                new SmartOkHttpUrlLoader.Factory(specialClient, defaultClient)
+        );
+
     }
 }

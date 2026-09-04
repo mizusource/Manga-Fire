@@ -10,6 +10,11 @@ import com.fire.mangareader.data.network.interceptor.DirectIpInterceptor;
 
 import java.util.concurrent.TimeUnit;
 import okhttp3.ConnectionPool;
+
+import com.fire.mangareader.data.network.cookie.AndroidCookieJar;
+import com.fire.mangareader.data.network.ssl.SSLHelper;
+import com.fire.mangareader.data.network.interceptor.IgnoreGzipInterceptor;
+import okhttp3.brotli.BrotliInterceptor;
 import okhttp3.OkHttpClient;
 
 public class MangaOkHttp {
@@ -32,13 +37,24 @@ public class MangaOkHttp {
                     .readTimeout(30, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS)
                     .connectionPool(new ConnectionPool(8, 5L, TimeUnit.MINUTES))
-                    .cookieJar(new PreferencesCookieJar(appContext))
+                    .cookieJar(new AndroidCookieJar())
                     .addInterceptor(new CommonHeadersInterceptor(appContext))
                     .addInterceptor(new RateLimitInterceptor())
+                    .addInterceptor(new IgnoreGzipInterceptor())
+                    .addInterceptor(BrotliInterceptor.INSTANCE)
+
                                         .addInterceptor(new RetryInterceptor())
                     .addInterceptor(directIpInterceptor);
             
-            client = TlsCompat.enableTls12And13(builder).build();
+            
+            try {
+                SSLHelper.SSLContextResult sslResult = SSLHelper.getSslContext();
+                builder.sslSocketFactory(sslResult.socketFactory, sslResult.trustManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            client = builder.build();
+
         }
         return client;
     }
