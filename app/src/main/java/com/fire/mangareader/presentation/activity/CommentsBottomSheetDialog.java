@@ -31,7 +31,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
     private CommentAdapter adapter;
     private List<Comment> commentsList;
     private EditText etCommentInput;
-    private android.widget.ImageView btnSendComment;
+    private android.widget.ImageButton btnSendComment;
     private CheckBox cbSpoiler;
     private ProgressBar progressBar;
     private TextView tvEmptyComments;
@@ -71,6 +71,7 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         etCommentInput = view.findViewById(R.id.etCommentInput);
         btnSendComment = view.findViewById(R.id.btnSendComment);
         cbSpoiler = view.findViewById(R.id.cbSpoiler);
+        if (cbSpoiler != null) cbSpoiler.setVisibility(View.VISIBLE);
         progressBar = view.findViewById(R.id.progressBar);
         tvEmptyComments = view.findViewById(R.id.tvEmptyComments);
         
@@ -80,6 +81,14 @@ public class CommentsBottomSheetDialog extends BottomSheetDialogFragment {
         rvComments.setAdapter(adapter);
         
         btnSendComment.setOnClickListener(v -> sendComment());
+        
+        View btnAttach = view.findViewById(R.id.btnAttach);
+        if (btnAttach != null) {
+            btnAttach.setOnClickListener(v -> {
+                Toast.makeText(getContext(), "قريباً: إضافة صور ومرفقات للتعليق!", Toast.LENGTH_SHORT).show();
+            });
+        }
+
         
         loadComments();
     }

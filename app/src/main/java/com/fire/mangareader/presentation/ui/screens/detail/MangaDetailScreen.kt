@@ -177,10 +177,10 @@ fun MangaDetailScreen(
                         onDownloadClick = {
                             coroutineScope.launch {
                                 downloadManager.enqueueDownload(
-                                    chapterId = chapterId,
-                                    mangaId = mangaId,
-                                    mangaTitle = title,
-                                    chapterTitle = chapter.title ?: "بدون عنوان"
+                                    chapterId,
+                                    mangaId,
+                                    title,
+                                    chapter.title ?: "بدون عنوان"
                                 )
                                 android.widget.Toast.makeText(context, "تمت الإضافة لطابور التحميل", android.widget.Toast.LENGTH_SHORT).show()
                             }

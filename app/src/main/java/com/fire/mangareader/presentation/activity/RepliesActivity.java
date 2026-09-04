@@ -57,8 +57,8 @@ public class RepliesActivity extends AppCompatActivity {
         prefManager = new PreferenceManager(this);
 
         rvReplies = findViewById(R.id.rvReplies);
-        etReply = findViewById(R.id.etReply);
-        btnSend = findViewById(R.id.btnSend);
+        etReply = findViewById(R.id.etCommentInput);
+        btnSend = findViewById(R.id.btnSendComment);
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
 

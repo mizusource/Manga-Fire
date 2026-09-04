@@ -1,53 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 🚀 تم إزالة مصفوفات الثيم -->
-    <string-array name="language_entries">
+    <array name="initial_slider_values">
+        <item>0.0</item>
+        <item>1000.0</item>
+    </array>
+
+
+    <array name="theme_entries">
+        <item>مظلم (أزرق نيون)</item>
+        <item>مظلم (بنفسجي)</item>
+        <item>فاتح</item>
+        <item>الأسود الخالص (AMOLED)</item>
+    </array>
+    <array name="theme_values">
+        <item>dark_neon_blue</item>
+        <item>dark_purple</item>
+        <item>light</item>
+        <item>amoled</item>
+    </array>
+    <array name="language_entries">
         <item>العربية</item>
         <item>English</item>
-    </string-array>
-    <string-array name="language_values">
+    </array>
+    <array name="language_values">
         <item>ar</item>
         <item>en</item>
-    </string-array>
-    
-    <string-array name="direction_entries">
-        <item>من اليمين لليسار</item>
-        <item>من اليسار لليمين</item>
-    </string-array>
-    <string-array name="direction_values">
-        <item>rtl</item>
-        <item>ltr</item>
-    </string-array>
-    <string-array name="theme_entries">
-        <item>Dark Neon Blue</item>
-        <item>Dark Neon Red</item>
-        <item>Dark Neon Purple</item>
-        <item>Dark Neon Yellow</item>
-        <item>Classic White</item>
-        <item>Classic Red</item>
-        <item>Classic Blue</item>
-        <item>Classic Purple</item>
-        <item>Classic Navy</item>
-    </string-array>
-    <string-array name="theme_values">
-        <item>dark_neon_blue</item>
-        <item>dark_neon_red</item>
-        <item>dark_neon_purple</item>
-        <item>dark_neon_yellow</item>
-        <item>classic_white</item>
-        <item>classic_red</item>
-        <item>classic_blue</item>
-        <item>classic_purple</item>
-        <item>classic_navy</item>
-    </string-array>
-    <string-array name="download_quality_entries">
-        <item>جودة فائقة الوضوح (الأصلية HQ - بدون ضغط)</item>
-        <item>جودة متوازنة (موصى بها - توفير 60%)</item>
-        <item>جودة فائقة التوفير (اقتصادية LQ - توفير 80%)</item>
-    </string-array>
-    <string-array name="download_quality_values">
+    </array>
+    <array name="download_quality_entries">
+        <item>أصلية (عالية جداً)</item>
+        <item>متوسطة (موفرة للبيانات)</item>
+    </array>
+    <array name="download_quality_values">
         <item>HIGH</item>
         <item>MEDIUM</item>
-        <item>LOW</item>
-    </string-array>
+    </array>
+
 </resources>

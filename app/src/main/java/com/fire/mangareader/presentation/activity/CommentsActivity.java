@@ -48,7 +48,9 @@ public class CommentsActivity extends AppCompatActivity {
         prefManager = new PreferenceManager(this);
 
         rvComments = findViewById(R.id.commentsRecyclerView);
-        etComment = findViewById(R.id.etComment);
+        etComment = findViewById(R.id.etCommentInput);
+        android.view.View cbSpoiler = findViewById(R.id.cbSpoiler);
+        if (cbSpoiler != null) cbSpoiler.setVisibility(android.view.View.VISIBLE);
         btnSend = findViewById(R.id.btnSendComment);
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmptyComments);

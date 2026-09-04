@@ -16,6 +16,24 @@ public class DownloadManager {
     // Key: chapterUrl, Value: Integer progress (0-100)
     private final MutableLiveData<Map<String, Integer>> downloadProgress = new MutableLiveData<>(new HashMap<>());
 
+    
+    
+    
+    // ADDED FOR COMPOSE COMPATIBILITY
+    public void enqueueDownload(String chapterId, String mangaId, String mangaTitle, String chapterTitle) {
+        startDownload(mangaId, chapterId, chapterTitle);
+    }
+
+    public kotlinx.coroutines.flow.Flow<java.util.List<com.fire.mangareader.data.local.entity.DownloadedChapter>> getDownloadsFlow() {
+        return kotlinx.coroutines.flow.FlowKt.emptyFlow();
+    }
+    
+    public void deleteDownload(String chapterId) {
+        cancelDownload(chapterId);
+    }
+
+
+
     public DownloadManager(Context context) {
         this.context = context.getApplicationContext();
     }
