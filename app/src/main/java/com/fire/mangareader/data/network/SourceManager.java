@@ -9,6 +9,7 @@ public class SourceManager {
     public static final String SOURCE_LEKMANGA = "https://lekmanga.net/";
     public static final String SOURCE_SWATMANGA = "https://swatmanga.co/";
     public static final String SOURCE_MANGAPRO = "https://mangapro.me/";
+    public static final String SOURCE_DILAR = "https://dilar.tube/";
 
     public static String[] getAllSources() {
         return new String[]{
@@ -16,7 +17,8 @@ public class SourceManager {
             SOURCE_MANGA_STARZ,
             SOURCE_LEKMANGA,
             SOURCE_SWATMANGA,
-            SOURCE_MANGAPRO
+            SOURCE_MANGAPRO,
+            SOURCE_DILAR
         };
     }
 
@@ -31,6 +33,7 @@ public class SourceManager {
         if (url.equals(SOURCE_LEKMANGA)) return "LekManga";
         if (url.equals(SOURCE_SWATMANGA)) return "SwatManga";
         if (url.equals(SOURCE_MANGAPRO)) return "MangaPro";
+        if (url.equals(SOURCE_DILAR)) return "Dilar (سريع)";
         return "Manga Lik";
     }
 

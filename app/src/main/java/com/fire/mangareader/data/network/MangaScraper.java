@@ -124,6 +124,17 @@ public class MangaScraper {
     }
 
     public static void fetchLatestManga(ScrapingCallback callback) {
+        if (BASE_URL.contains("dilar.tube")) {
+            DilarScraper.fetchLatestManga(callback);
+            return;
+        }
+
+        // إذا كان المصدر هو Dilar
+        if (BASE_URL.contains("dilar.tube")) {
+            DilarScraper.fetchLatestManga(callback);
+            return;
+        }
+
         new Thread(() -> {
             try {
                 Document doc = getDocument(BASE_URL);
@@ -513,6 +524,16 @@ public class MangaScraper {
     }
 
     public static void fetchMangaDetails(String mangaUrl, MangaDetailsCallback callback) {
+        if (mangaUrl.contains("dilar.tube")) {
+            DilarScraper.fetchMangaDetails(mangaUrl, callback);
+            return;
+        }
+
+        if (mangaUrl.contains("dilar.tube")) {
+            DilarScraper.fetchMangaDetails(mangaUrl, callback);
+            return;
+        }
+
         new Thread(() -> {
             try {
                 Document doc = getDocument(mangaUrl);
