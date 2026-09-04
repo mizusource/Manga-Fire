@@ -1,15 +1,15 @@
-with open('app/src/main/res/layout/item_comment.xml', 'r') as f:
-    content = f.read()
-
-like_button = '''                    <ImageView
-                        android:id="@+id/ivLike"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_favorite_border"
-                        app:tint="?attr/colorOnSurfaceVariant" />'''
-
 import re
-content = re.sub(r'<ImageView\s+android:id="@+id/ivLike".*?/>', like_button, content, flags=re.DOTALL)
 
-with open('app/src/main/res/layout/item_comment.xml', 'w') as f:
-    f.write(content)
+with open("app/src/main/res/layout/item_comment.xml", "r") as f:
+    text = f.read()
+
+pattern = r'<LinearLayout\s+android:id="@+id/btnLike".*?</LinearLayout>'
+
+replacement = """<include 
+                    android:id="@+id/btnLike"
+                    layout="@layout/widget_comment_action" />"""
+
+text = re.sub(pattern, replacement, text, flags=re.DOTALL)
+
+with open("app/src/main/res/layout/item_comment.xml", "w") as f:
+    f.write(text)

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ViewFlipper
+        android:id="@+id/actionFlipper"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:inAnimation="@android:anim/fade_in"
+        android:outAnimation="@android:anim/fade_out">
+        
+        <!-- State 0: Normal / Not Liked -->
+        <ImageView
+            android:id="@+id/ivActionNormal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_favorite_border"
+            app:tint="?attr/colorOnSurfaceVariant" />
+            
+        <!-- State 1: Loading -->
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="2dp"
+            android:indeterminateTint="?attr/colorPrimary" />
+            
+        <!-- State 2: Liked / Active -->
+        <ImageView
+            android:id="@+id/ivActionActive"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_favorite_border"
+            app:tint="#E91E63" />
+            
+    </ViewFlipper>
+
+    <TextView
+        android:id="@+id/tvLikeCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:layout_marginStart="6dp"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="14sp"
+        android:textStyle="bold"/>
+        
+</LinearLayout>

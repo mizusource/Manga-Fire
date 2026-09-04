@@ -15,18 +15,28 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ViewDay
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Slider
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.graphics.BlendMode
+
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -51,7 +61,13 @@ fun ChapterReaderScreen(
     val error by viewModel.error.collectAsState()
     
     var isControlsVisible by remember { mutableStateOf(true) }
-    var readingMode by remember { mutableStateOf("webtoon") } // "webtoon" or "pager_rtl"
+    var readingMode by remember { mutableStateOf("webtoon") }
+    var showSettings by remember { mutableStateOf(false) }
+    var keepScreenOn by remember { mutableStateOf(true) }
+    var filterMode by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { pages.size })
+    val coroutineScope = rememberCoroutineScope()
+     // "webtoon" or "pager_rtl"
 
     val view = LocalView.current
     val context = LocalContext.current
@@ -59,21 +75,24 @@ fun ChapterReaderScreen(
     val window = activity?.window
 
     // إعدادات الـ System UI وإبقاء الشاشة مضاءة (تطبيق مزايا MangaSlayer)
-    LaunchedEffect(isControlsVisible) {
+    
+    LaunchedEffect(isControlsVisible, keepScreenOn) {
         window?.let {
             val insetsController = WindowCompat.getInsetsController(it, view)
             if (isControlsVisible) {
                 insetsController.show(WindowInsetsCompat.Type.systemBars())
-                it.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             } else {
                 insetsController.hide(WindowInsetsCompat.Type.systemBars())
                 insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+            if (keepScreenOn) {
                 it.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                it.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }
     }
-    
-    // تنظيف الخصائص عند الخروج من القارئ
+// تنظيف الخصائص عند الخروج من القارئ
     DisposableEffect(Unit) {
         onDispose {
             window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -149,7 +168,7 @@ fun ChapterReaderScreen(
                     }
                 }
             } else {
-                val pagerState = rememberPagerState(initialPage = 0, pageCount = { pages.size })
+                
                 
                 HorizontalPager(
                     state = pagerState,
@@ -207,35 +226,88 @@ fun ChapterReaderScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "رجوع", tint = Color.White)
                     }
                 },
+                actions = {
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Settings, contentDescription = "الإعدادات", tint = Color.White)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Black.copy(alpha = 0.85f)
                 ),
                 modifier = Modifier.align(Alignment.TopCenter)
             )
 
+            
             // شريط الإعدادات السفلي
             Surface(
                 color = Color.Black.copy(alpha = 0.85f),
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { readingMode = "webtoon" }) {
-                        Icon(Icons.Default.List, contentDescription = "عمودي", tint = if (readingMode == "webtoon") MaterialTheme.colorScheme.primary else Color.White)
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    // Page slider
+                    if (pages.isNotEmpty()) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            Text("${pagerState.currentPage + 1}", color = Color.White)
+                            Slider(
+                                value = pagerState.currentPage.toFloat(),
+                                onValueChange = { 
+                                    // Update pager on drag
+                                },
+                                onValueChangeFinished = { 
+                                    // coroutineScope.launch { pagerState.animateScrollToPage(page) }
+                                },
+                                valueRange = 0f..(pages.size - 1).coerceAtLeast(1).toFloat(),
+                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                colors = androidx.compose.material3.SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary)
+                            )
+                            Text("${pages.size}", color = Color.White)
+                        }
                     }
-                    IconButton(onClick = { readingMode = "pager_rtl" }) {
-                        Icon(Icons.Default.ViewDay, contentDescription = "أفقي", tint = if (readingMode == "pager_rtl") MaterialTheme.colorScheme.primary else Color.White)
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { readingMode = "webtoon" }) {
+                            Icon(Icons.Default.List, contentDescription = "عمودي", tint = if (readingMode == "webtoon") MaterialTheme.colorScheme.primary else Color.White)
+                        }
+                        IconButton(onClick = { readingMode = "pager_rtl" }) {
+                            Icon(Icons.Default.ViewDay, contentDescription = "أفقي", tint = if (readingMode == "pager_rtl") MaterialTheme.colorScheme.primary else Color.White)
+                        }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
+        
+        // Color Filter Overlay (حماية العين و الوضع الليلي)
+        if (filterMode > 0) {
+            val filterColor = when (filterMode) {
+                1 -> Color.Black.copy(alpha = 0.4f) // تظليل
+                2 -> Color(0x33FF9800) // دافيء
+                3 -> Color(0x4D000000) // ليلي قوي
+                else -> Color.Transparent
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(filterColor)
+            )
+        }
+        
+        // Settings Sheet
+        if (showSettings) {
+            ReaderSettingsSheet(
+                onDismiss = { showSettings = false },
+                readingMode = readingMode,
+                onReadingModeChange = { readingMode = it },
+                keepScreenOn = keepScreenOn,
+                onKeepScreenOnChange = { keepScreenOn = it },
+                filterMode = filterMode,
+                onFilterModeChange = { filterMode = it }
+            )
+        }
+} } @Composable
 fun ZoomableImage(imageUrl: String, onTap: (Offset, Float) -> Unit) {
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
@@ -304,5 +376,58 @@ fun ZoomableImage(imageUrl: String, onTap: (Offset, Float) -> Unit) {
                     translationY = offset.y
                 )
         )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReaderSettingsSheet(
+    onDismiss: () -> Unit,
+    readingMode: String,
+    onReadingModeChange: (String) -> Unit,
+    keepScreenOn: Boolean,
+    onKeepScreenOnChange: (Boolean) -> Unit,
+    filterMode: Int,
+    onFilterModeChange: (Int) -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+            Text("إعدادات القراءة", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Reading direction
+            Text("اتجاه القراءة", style = MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                Button(onClick = { onReadingModeChange("webtoon") }, colors = ButtonDefaults.buttonColors(containerColor = if (readingMode == "webtoon") MaterialTheme.colorScheme.primary else Color.Gray)) {
+                    Text("عمودي (Webtoon)")
+                }
+                Button(onClick = { onReadingModeChange("pager_rtl") }, colors = ButtonDefaults.buttonColors(containerColor = if (readingMode == "pager_rtl") MaterialTheme.colorScheme.primary else Color.Gray)) {
+                    Text("أفقي (RTL)")
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Keep screen on
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text("إبقاء الشاشة مضاءة", style = MaterialTheme.typography.bodyMedium)
+                Switch(checked = keepScreenOn, onCheckedChange = onKeepScreenOnChange)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Color Filter (Eye protection)
+            Text("فلتر الألوان (حماية العين)", style = MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                val filters = listOf("بدون", "تظليل", "دافيء", "قراءة ليلية")
+                filters.forEachIndexed { index, name ->
+                    androidx.compose.material3.FilterChip(
+                        selected = filterMode == index,
+                        onClick = { onFilterModeChange(index) },
+                        label = { Text(name) }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
