@@ -1,176 +1,10 @@
-package com.fire.mangareader.presentation.ui.comments
+import re
 
-import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material.icons.automirrored.filled.*
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/comments/MangaCommentsActivity.kt", "r") as f:
+    content = f.read()
 
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fire.mangareader.data.local.CommentEntity
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-class MangaCommentsActivity : ComponentActivity() {
-    private val viewModel by viewModels<CommentsViewModel>()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        
-        val mangaUrl = intent.getStringExtra("mangaUrl") ?: ""
-        viewModel.setMangaUrl(mangaUrl)
-        
-        enableEdgeToEdge()
-        setContent {
-            MaterialTheme(
-                colorScheme = darkColorScheme(
-                    primary = Color(0xFFE21C42), // MangaSlayer red
-                    background = Color(0xFF121212),
-                    surface = Color(0xFF1E1E1E),
-                    onPrimary = Color.White,
-                    onBackground = Color.White,
-                    onSurface = Color.White
-                )
-            ) {
-                CommentsScreen(viewModel)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CommentsScreen(viewModel: CommentsViewModel) {
-    val comments by viewModel.comments.collectAsStateWithLifecycle()
-    val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
-    
-    var showRules by remember { mutableStateOf(true) } // In a real app, read from DataStore/SharedPreferences
-
-    if (showRules) {
-        RulesDialog(onDismiss = { showRules = false })
-    }
-
-    var showSortDialog by remember { mutableStateOf(false) }
-    
-    if (showSortDialog) {
-        SortCommentsDialog(
-            onDismissRequest = { showSortDialog = false },
-            onSortSelected = { sort, hide ->
-                viewModel.changeSortOption(sort)
-            }
-        )
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("التعليقات (Comments)") },
-                actions = {
-                    IconButton(onClick = { showSortDialog = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "ترتيب")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
-        bottomBar = {
-            CommentInputBar(onSend = { content, isSpoiler -> 
-                viewModel.addComment(content, isSpoiler) 
-            })
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
-        ) {
-            if (comments.isEmpty()) {
-                item {
-                    Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("لا توجد تعليقات. كن أول من يعلق!", color = Color.Gray)
-                    }
-                }
-            } else {
-                items(comments, key = { it.id }) { comment ->
-                    CommentItem(
-                        comment = comment,
-                        onLike = { viewModel.toggleLike(comment) },
-                        onDislike = { viewModel.toggleDislike(comment) },
-                        onDelete = { viewModel.deleteComment(comment.id) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SortDropdown(currentSort: String, onSortChange: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(Icons.Default.MoreVert, contentDescription = "Sort")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text("الأحدث (Newest)") },
-                onClick = { onSortChange("newest"); expanded = false }
-            )
-            DropdownMenuItem(
-                text = { Text("الأقدم (Oldest)") },
-                onClick = { onSortChange("oldest"); expanded = false }
-            )
-            DropdownMenuItem(
-                text = { Text("أفضل التعليقات (Most Liked)") },
-                onClick = { onSortChange("most_liked"); expanded = false }
-            )
-        }
-    }
-}
-
-@Composable
+# First replace CommentItem
+new_comment_item = """@Composable
 fun CommentItem(
     comment: CommentEntity,
     onLike: () -> Unit,
@@ -207,13 +41,13 @@ fun CommentItem(
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(comment.userName.first().toString(), color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
+                    Text(comment.author.first().toString(), color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
                 }
                 
                 Spacer(modifier = Modifier.width(12.dp))
                 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(comment.userName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(comment.author, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Text(SimpleDateFormat("dd/MM/yyyy HH:mm").format(comment.timestamp), fontSize = 12.sp, color = Color.Gray)
                 }
             }
@@ -245,21 +79,21 @@ fun CommentItem(
             // Action Buttons matching widget_comment_action.xml
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onLike, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "أعجبني")
+                    Icon(androidx.compose.material.icons.Icons.Default.KeyboardArrowUp, contentDescription = "أعجبني")
                 }
                 Text("12", fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp))
                 
                 Spacer(modifier = Modifier.width(16.dp))
                 
                 IconButton(onClick = onDislike, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "لم يعجبني")
+                    Icon(androidx.compose.material.icons.Icons.Default.KeyboardArrowDown, contentDescription = "لم يعجبني")
                 }
                 Text("2", fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp))
                 
                 Spacer(modifier = Modifier.width(16.dp))
                 
                 IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = "رد")
+                    Icon(androidx.compose.material.icons.Icons.Default.ChatBubbleOutline, contentDescription = "رد")
                 }
                 Text("5", fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp))
                 
@@ -267,7 +101,7 @@ fun CommentItem(
                 
                 Box {
                     IconButton(onClick = { showMenu = true }, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "خيارات")
+                        Icon(androidx.compose.material.icons.Icons.Default.MoreVert, contentDescription = "خيارات")
                     }
                     DropdownMenu(
                         expanded = showMenu,
@@ -279,7 +113,7 @@ fun CommentItem(
                                 showMenu = false
                                 showReportDialog = true
                             },
-                            leadingIcon = { Icon(Icons.Default.Warning, null) }
+                            leadingIcon = { Icon(androidx.compose.material.icons.Icons.Default.Report, null) }
                         )
                         DropdownMenuItem(
                             text = { Text("حذف التعليق", color = MaterialTheme.colorScheme.error) },
@@ -287,16 +121,21 @@ fun CommentItem(
                                 showMenu = false
                                 onDelete() 
                             },
-                            leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
+                            leadingIcon = { Icon(androidx.compose.material.icons.Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
                         )
                     }
                 }
             }
         }
     }
-}
+}"""
 
-@Composable
+old_comment_item_pattern = r"@Composable\s*fun CommentItem\(.*?fun CommentInputBar"
+comment_item_match = re.search(old_comment_item_pattern, content, flags=re.DOTALL)
+if comment_item_match:
+    content = content[:comment_item_match.start()] + new_comment_item + "\n\n@Composable\nfun CommentInputBar" + content[comment_item_match.end():]
+
+new_input_bar = """@Composable
 fun CommentInputBar(onSend: (String, Boolean) -> Unit) {
     var text by remember { mutableStateOf("") }
     var isSpoiler by remember { mutableStateOf(false) }
@@ -321,7 +160,7 @@ fun CommentInputBar(onSend: (String, Boolean) -> Unit) {
                 // Spoiler Button (Fire Icon Placeholder)
                 IconButton(onClick = { isSpoiler = !isSpoiler }) {
                     Icon(
-                        Icons.Default.Warning,
+                        androidx.compose.material.icons.Icons.Default.Warning,
                         contentDescription = "سبويلر",
                         tint = if (isSpoiler) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -367,7 +206,7 @@ fun CommentInputBar(onSend: (String, Boolean) -> Unit) {
                             enabled = text.isNotBlank()
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.Send,
+                                androidx.compose.material.icons.Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "إرسال",
                                 tint = if (text.isNotBlank()) MaterialTheme.colorScheme.primary else Color.Gray
                             )
@@ -387,25 +226,10 @@ fun CommentInputBar(onSend: (String, Boolean) -> Unit) {
             }
         }
     }
-}
+}"""
 
-@Composable
-fun RulesDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("قوانين التعليقات", fontWeight = FontWeight.Bold) },
-        text = {
-            Column {
-                Text("1. يمنع الشتم والسب بأي شكل من الأشكال.")
-                Text("2. يرجى استخدام زر حرق الأحداث عند كتابة أحداث مستقبلية.")
-                Text("3. احترام آراء الآخرين.")
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("موافق")
-            }
-        }
-    )
-}
+old_input_bar_pattern = r"@Composable\s*fun CommentInputBar\(onSend: \(String, Boolean\) -> Unit\)\s*\{.*\Z"
+content = re.sub(old_input_bar_pattern, new_input_bar, content, flags=re.DOTALL)
 
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/comments/MangaCommentsActivity.kt", "w") as f:
+    f.write(content)

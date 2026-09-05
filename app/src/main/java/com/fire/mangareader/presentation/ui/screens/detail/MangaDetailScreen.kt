@@ -3,47 +3,37 @@ package com.fire.mangareader.presentation.ui.screens.detail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.runtime.LaunchedEffect
-
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import com.fire.mangareader.presentation.ui.screens.detail.RatingDialog
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-
-import androidx.compose.ui.platform.LocalContext
 import com.fire.mangareader.data.download.DownloadManager
+import com.fire.mangareader.presentation.ui.screens.detail.RatingDialog
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -170,7 +160,10 @@ fun MangaDetailScreen(
                 }
                 
                 item {
-                    SectionRating()
+                    SectionRating(
+                        onAddRatingClick = { showRatingDialog = true },
+                        onManageListClick = { showListSheet = true }
+                    )
                 }
                 
                 item {
@@ -324,38 +317,87 @@ fun SectionMangaInfo(title: String, status: String) {
 }
 
 @Composable
-fun SectionRating() {
+fun SectionRating(
+    onAddRatingClick: () -> Unit,
+    onManageListClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-            Text("4.8", style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold))
-            Row {
-                repeat(5) {
-                    Icon(androidx.compose.material.icons.Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
-                }
+        // App Rating
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f).clickable { }
+        ) {
+            Icon(
+                Icons.Default.Star,
+                contentDescription = null,
+                tint = Color(0xFFFFC107),
+                modifier = Modifier.size(28.dp).padding(bottom = 4.dp)
+            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text("8.70", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                Text("/10", style = MaterialTheme.typography.bodySmall)
             }
-            Text("15,243 تقييم", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text("15.2K", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
         }
         
-        Column(modifier = Modifier.weight(2f)) {
-            listOf(5 to 0.8f, 4 to 0.15f, 3 to 0.03f, 2 to 0.01f, 1 to 0.01f).forEach { (star, progress) ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("$star", modifier = Modifier.padding(end = 4.dp), fontSize = 12.sp)
-                    androidx.compose.material3.LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(8.dp)
-                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(4.dp)),
-                        color = Color(0xFFFFC107),
-                        trackColor = Color.LightGray
-                    )
-                }
+        // MAL Rating
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f).clickable { }
+        ) {
+            Icon(
+                Icons.Default.Star, // Use standard star as fallback for MAL icon
+                contentDescription = null,
+                tint = Color(0xFF2E51A2), // MAL blue color
+                modifier = Modifier.size(28.dp).padding(bottom = 4.dp)
+            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text("8.50", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                Text("/10", style = MaterialTheme.typography.bodySmall)
             }
+            Text("120K", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+        }
+        
+        // Your Rating
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f).clickable { onAddRatingClick() }
+        ) {
+            Icon(
+                Icons.Outlined.Star,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(28.dp).padding(bottom = 4.dp)
+            )
+            Text(
+                "إضافة تقييم", 
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+        
+        // Manage List
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f).clickable { onManageListClick() }
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(28.dp).padding(bottom = 4.dp)
+            )
+            Text(
+                "إدارة", 
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
@@ -428,3 +470,4 @@ fun SectionRelatedManga() {
         }
     }
 }
+

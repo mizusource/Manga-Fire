@@ -1,18 +1,22 @@
 import re
 
-with open('app/src/main/java/com/fire/mangareader/activity/MainActivity.java', 'r') as f:
-    main_content = f.read()
+# Fix MangaDetailScreen imports
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "r") as f:
+    content = f.read()
 
-# Fix Glide replacement mess
-main_content = main_content.replace('com.bumptech.glide.navHeaderImage.setColorFilter(null);\n                    Glide.with', 'navHeaderImage.setColorFilter(null);\n                    com.bumptech.glide.Glide.with')
-main_content = main_content.replace('com.bumptech.glide.navHeaderImage.setColorFilter(null);\n                    Glide.with', 'navHeaderImage.setColorFilter(null);\n                    com.bumptech.glide.Glide.with')
+# Replace multiple Icons imports
+content = re.sub(r"import androidx\.compose\.material\.icons\.Icons\nimport androidx\.compose\.material\.icons\.Icons", "import androidx.compose.material.icons.Icons", content)
 
-# Fix colorPrimary issue
-main_content = main_content.replace('getResources().getColor(R.color.colorPrimary, getTheme())', 'android.graphics.Color.GRAY')
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "w") as f:
+    f.write(content)
 
-# Fix btnEditProfile definition
-main_content = main_content.replace('android.widget.ImageView btnEditProfile = headerView.findViewById(R.id.btnEditProfile);', 'android.widget.ImageView btnEditProfile = headerView.findViewById(R.id.btnEditProfile);', 1)
-main_content = main_content.replace('android.widget.ImageView btnEditProfile = headerView.findViewById(R.id.btnEditProfile);', 'btnEditProfile = headerView.findViewById(R.id.btnEditProfile);') # second occurrence
+# Fix MangaCommentsActivity duplicate ReportCommentDialog
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/comments/MangaCommentsActivity.kt", "r") as f:
+    content = f.read()
 
-with open('app/src/main/java/com/fire/mangareader/activity/MainActivity.java', 'w') as f:
-    f.write(main_content)
+pattern = r"@Composable\s*fun ReportCommentDialog\(onDismissRequest: \(\) -> Unit, onReportSubmitted: \(String\) -> Unit\) \{.*"
+content = re.sub(pattern, "", content, flags=re.DOTALL)
+
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/comments/MangaCommentsActivity.kt", "w") as f:
+    f.write(content)
+
