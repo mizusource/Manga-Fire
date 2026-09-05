@@ -11,15 +11,28 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    viewModel: AuthViewModel = viewModel()
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val isSuccess by viewModel.isSuccess.collectAsState()
+
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
+            viewModel.resetState()
+            onRegisterSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -36,11 +49,20 @@ fun RegisterScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
+        if (error != null) {
+            Text(
+                text = error!!,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
+
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             label = { Text("الاسم") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            enabled = !isLoading
         )
 
         OutlinedTextField(
@@ -48,7 +70,8 @@ fun RegisterScreen(
             onValueChange = { email = it },
             label = { Text("البريد الإلكتروني") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            enabled = !isLoading
         )
 
         OutlinedTextField(
@@ -57,19 +80,29 @@ fun RegisterScreen(
             label = { Text("كلمة المرور") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            enabled = !isLoading
         )
 
         Button(
-            onClick = onRegisterSuccess,
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            onClick = { viewModel.register(name, email, password) },
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            enabled = !isLoading
         ) {
-            Text("إنشاء حساب", fontSize = 16.sp)
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text("إنشاء حساب", fontSize = 16.sp)
+            }
         }
 
         TextButton(
-            onClick = onNavigateToLogin,
-            modifier = Modifier.padding(top = 16.dp)
+            onClick = {
+                viewModel.resetState()
+                onNavigateToLogin()
+            },
+            modifier = Modifier.padding(top = 16.dp),
+            enabled = !isLoading
         ) {
             Text("لديك حساب بالفعل؟ تسجيل الدخول")
         }
