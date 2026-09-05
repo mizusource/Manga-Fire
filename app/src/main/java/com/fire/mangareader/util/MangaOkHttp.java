@@ -10,6 +10,8 @@ import com.fire.mangareader.data.network.interceptor.DirectIpInterceptor;
 
 import java.util.concurrent.TimeUnit;
 import okhttp3.ConnectionPool;
+import okhttp3.Cache;
+import java.io.File;
 
 import com.fire.mangareader.data.network.cookie.AndroidCookieJar;
 import com.fire.mangareader.data.network.ssl.SSLHelper;
@@ -36,6 +38,7 @@ public class MangaOkHttp {
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS)
+                    .cache(new Cache(new File(appContext.getCacheDir(), "manga_cache"), 20L * 1024L * 1024L))
                     .connectionPool(new ConnectionPool(8, 5L, TimeUnit.MINUTES))
                     .cookieJar(new AndroidCookieJar())
                     .addInterceptor(new CommonHeadersInterceptor(appContext))

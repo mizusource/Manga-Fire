@@ -468,11 +468,19 @@ public class MangaDetailActivity extends AppCompatActivity {
                 if (chapterElements.isEmpty()) chapterElements = doc.select(".row-content-chapter a, .chapter-lieb a, .listing-chapters_wrap a, #manga-chapters-holder a[href*='chapter'], .eplister a, #chapterlist a");
                 if (chapterElements.isEmpty()) {
                     try {
-                        org.jsoup.nodes.Document ajaxDoc = org.jsoup.Jsoup.connect(mangaUrl + (mangaUrl.endsWith("/") ? "" : "/") + "ajax/chapters/")
-                            .userAgent(com.fire.mangareader.data.network.MangaScraper.globalUserAgent)
-                            .header("Cookie", com.fire.mangareader.data.network.MangaScraper.globalCookies)
-                            .post();
-                        chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, .row-content-chapter li, a[href*='chapter']");
+                        okhttp3.OkHttpClient client = com.fire.mangareader.util.MangaOkHttp.getClient();
+                        okhttp3.RequestBody reqBody = okhttp3.RequestBody.create(null, new byte[0]);
+                        okhttp3.Request request = new okhttp3.Request.Builder()
+                            .url(mangaUrl + (mangaUrl.endsWith("/") ? "" : "/") + "ajax/chapters/")
+                            .post(reqBody)
+                            .addHeader("User-Agent", com.fire.mangareader.data.network.MangaScraper.globalUserAgent)
+                            .addHeader("Cookie", com.fire.mangareader.data.network.MangaScraper.globalCookies)
+                            .build();
+                        okhttp3.Response response = client.newCall(request).execute();
+                        if (response.isSuccessful() && response.body() != null) {
+                            org.jsoup.nodes.Document ajaxDoc = org.jsoup.Jsoup.parse(response.body().string(), mangaUrl);
+                            chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, .row-content-chapter li, a[href*='chapter']");
+                        }
                     } catch (Exception e) {}
                 }
                 if (chapterElements.isEmpty()) {
@@ -494,13 +502,23 @@ public class MangaDetailActivity extends AppCompatActivity {
                         try {
                             java.net.URL urlObj = new java.net.URL(mangaUrl);
                             String ajaxUrl = urlObj.getProtocol() + "://" + urlObj.getHost() + "/wp-admin/admin-ajax.php";
-                            org.jsoup.nodes.Document ajaxDoc = org.jsoup.Jsoup.connect(ajaxUrl)
-                                .userAgent(com.fire.mangareader.data.network.MangaScraper.globalUserAgent)
-                                .header("Cookie", com.fire.mangareader.data.network.MangaScraper.globalCookies)
-                                .data("action", "manga_get_chapters")
-                                .data("manga", mangaId)
-                                .post();
-                            chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, .row-content-chapter li, a[href*='chapter']");
+                            okhttp3.OkHttpClient client = com.fire.mangareader.util.MangaOkHttp.getClient();
+                            okhttp3.RequestBody requestBody = new okhttp3.FormBody.Builder()
+                                    .add("action", "manga_get_chapters")
+                                    .add("manga", mangaId)
+                                    .build();
+                            okhttp3.Request request = new okhttp3.Request.Builder()
+                                    .url(ajaxUrl)
+                                    .post(requestBody)
+                                    .addHeader("X-Requested-With", "XMLHttpRequest")
+                                    .addHeader("User-Agent", com.fire.mangareader.data.network.MangaScraper.globalUserAgent)
+                                    .addHeader("Cookie", com.fire.mangareader.data.network.MangaScraper.globalCookies)
+                                    .build();
+                            okhttp3.Response response = client.newCall(request).execute();
+                            if (response.isSuccessful() && response.body() != null) {
+                                org.jsoup.nodes.Document ajaxDoc = org.jsoup.Jsoup.parse(response.body().string(), ajaxUrl);
+                                chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, .row-content-chapter li, a[href*='chapter']");
+                            }
                         } catch (Exception e) {}
                     }
                 }

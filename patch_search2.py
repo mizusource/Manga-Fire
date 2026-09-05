@@ -3,19 +3,21 @@ import re
 with open("app/src/main/java/com/fire/mangareader/data/network/MangaScraper.java", "r") as f:
     content = f.read()
 
-new_search = """    public static void searchManga(String query, ScrapingCallback callback) {
+new_search = """    public static void searchMangaPaginated(String query, int page, ScrapingCallback callback) {
         new Thread(() -> {
             try {
-                String searchUrl = BASE_URL + "?s=" + query.replace(" ", "+") + "&post_type=wp-manga";
-                Document doc = getDocument(searchUrl);
+                String encodedQuery = query.replace(" ", "+");
+                String searchUrl = page <= 1 
+                        ? BASE_URL + "?s=" + encodedQuery + "&post_type=wp-manga"
+                        : BASE_URL + "page/" + page + "/?s=" + encodedQuery + "&post_type=wp-manga";
 
+                Document doc = getDocument(searchUrl);
                 List<Manga> mangaList = new ArrayList<>();
                 Set<String> uniqueUrls = new HashSet<>();
 
                 Elements mangaElements = doc.select(".c-tabs-item__content, .page-item-detail");
                 for (Element element : mangaElements) {
                     Manga manga = new Manga();
-
                     Element titleElement = element.select("h3 a, .post-title a").first();
                     if (titleElement != null) {
                         manga.setTitle(titleElement.text().trim());
@@ -51,13 +53,13 @@ new_search = """    public static void searchManga(String query, ScrapingCallbac
 
             } catch (Exception e) {
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    callback.onError("خطأ في جلب بيانات البحث: " + e.getMessage());
+                    callback.onError("All search URLs returned 404: " + e.getMessage());
                 });
             }
         }).start();
     }"""
 
-pattern = r"public static void searchManga\(String query, ScrapingCallback callback\) \{.*?\}\)\.start\(\);\s*\}"
+pattern = r"public static void searchMangaPaginated\(String query, int page, ScrapingCallback callback\) \{.*?\}\)\.start\(\);\s*\}"
 content = re.sub(pattern, new_search.strip(), content, flags=re.DOTALL)
 
 with open("app/src/main/java/com/fire/mangareader/data/network/MangaScraper.java", "w") as f:
