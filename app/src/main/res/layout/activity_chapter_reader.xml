@@ -215,7 +215,7 @@
             android:layout_gravity="center"
             android:visibility="gone" />
             
-        <View
+        <com.fire.mangareader.presentation.reader.viewer.ReaderColorFilterView
             android:id="@+id/colorFilterView"
             android:layout_width="1dp"
             android:layout_height="1dp"

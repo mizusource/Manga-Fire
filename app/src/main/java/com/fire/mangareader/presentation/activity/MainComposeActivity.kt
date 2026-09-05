@@ -140,7 +140,7 @@ class MainComposeActivity : ComponentActivity() {
                             )
                         }
 composable("settings") { 
-                            ProfileScreen(
+                            com.fire.mangareader.presentation.ui.screens.settings.SettingsScreen(
                                 onDownloadsClick = { navController.navigate("downloads") },
                                 onNotificationsClick = { navController.navigate("notifications") }
                             ) 
