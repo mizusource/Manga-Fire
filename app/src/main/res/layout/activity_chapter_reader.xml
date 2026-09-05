@@ -11,21 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- متصفح كلودفلير الخفي (نقطة واحدة لكي يعمل بدون مشاكل) -->
         <WebView
             android:id="@+id/scraperWebView"
             android:layout_width="1dp"
             android:layout_height="1dp"
             android:alpha="0.0" />
 
-        <!-- قائمة الفصول (القارئ) -->
         <com.fire.mangareader.presentation.reader.viewer.WebtoonRecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="none" />
 
-        <!-- مؤشر الصفحات العائم بالأسفل -->
         <TextView
             android:id="@+id/tvPageIndicator"
             android:layout_width="wrap_content"
@@ -41,7 +38,7 @@
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold" />
-    
+            
         <!-- Color Filter Overlay (حماية العين و الوضع الليلي) -->
         <View
             android:id="@+id/eyeFilterOverlay"
@@ -65,34 +62,7 @@
 
     </FrameLayout>
 
-    <!-- فلتر حماية العين (الذي برمجناه مسبقاً) -->
-    <com.fire.mangareader.presentation.reader.viewer.ReaderColorFilterView
-        android:id="@+id/colorFilterView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
-
-        <!-- عداد وقت القراءة -->
-        <TextView
-            android:id="@+id/tvReadingTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            android:layout_marginTop="24dp"
-            android:background="#A6000000"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="00:00"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:elevation="4dp"
-            android:visibility="visible" />
- 
-
-    <!-- القائمة العلوية والسفلية (التي تظهر وتختفي عند لمس الشاشة) -->
+    <!-- واجهة المستخدم (تظهر عند لمس الشاشة) -->
     <FrameLayout
         android:id="@+id/uiOverlay"
         android:layout_width="match_parent"
@@ -128,7 +98,6 @@
                         android:src="@android:drawable/ic_menu_revert"
                         app:tint="#FFFFFF" />
 
-                    <!-- 🚀 تم الإصلاح هنا بإضافة +id لكي لا يحدث خطأ برمجي -->
                     <TextView
                         android:id="@+id/tvChapterTitle"
                         android:layout_width="wrap_content"
@@ -146,14 +115,15 @@
                         android:textStyle="bold" />
 
                         <ImageView android:id="@+id/btnToggleDirection" 
-                        android:layout_width="48dp" 
-                        android:layout_height="48dp" 
-                        android:layout_toStartOf="@+id/btnEyeFilter" 
-                        android:layout_centerVertical="true" 
-                        android:background="?attr/selectableItemBackgroundBorderless" 
-                        android:padding="12dp" 
-                        android:src="@android:drawable/ic_menu_sort_by_size" 
-                        app:tint="#FFFFFF" />
+                         android:layout_width="48dp" 
+                         android:layout_height="48dp" 
+                         android:layout_toStartOf="@+id/btnEyeFilter" 
+                         android:layout_centerVertical="true" 
+                         android:background="?attr/selectableItemBackgroundBorderless" 
+                         android:padding="12dp" 
+                         android:src="@android:drawable/ic_menu_sort_by_size" 
+                         app:tint="#FFFFFF" />
+
                         <ImageView android:id="@+id/btnEyeFilter"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
@@ -169,7 +139,6 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <!-- الشريط السفلي (شريط التمرير السريع وأزرار التنقل) -->
-        <!-- Brightness Slider -->
         <SeekBar
             android:id="@+id/brightnessSeekBar"
             android:layout_width="200dp"
@@ -192,7 +161,6 @@
             android:orientation="horizontal"
             android:padding="8dp">
 
-            <!-- زر الفصل السابق (على اليمين في اللغة العربية) -->
             <ImageButton
                 android:id="@+id/btnPreviousChapter"
                 android:layout_width="48dp"
@@ -229,7 +197,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
-            <!-- زر الفصل التالي (على اليسار في اللغة العربية) -->
             <ImageButton
                 android:id="@+id/btnNextChapter"
                 android:layout_width="48dp"
@@ -238,50 +205,21 @@
                 android:padding="12dp"
                 android:src="@android:drawable/ic_media_next"
                 app:tint="#FFFFFF" />
+
         </LinearLayout>
-    
-        <!-- Color Filter Overlay (حماية العين و الوضع الليلي) -->
-        <View
-            android:id="@+id/eyeFilterOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:elevation="100dp"
-            android:clickable="false"
-            android:focusable="false" />
-            
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabSettings"
+        
+        <ProgressBar
+            android:id="@+id/loadingProgressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="24dp"
-            android:src="@drawable/ic_drawer_settings"
-            app:backgroundTint="#88000000"
-            app:tint="@android:color/white"
-            app:elevation="0dp" />
-
-    </FrameLayout>
-
-        <!-- Color Filter Overlay (حماية العين و الوضع الليلي) -->
-        <View
-            android:id="@+id/eyeFilterOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:elevation="100dp"
-            android:clickable="false"
-            android:focusable="false" />
+            android:layout_gravity="center"
+            android:visibility="gone" />
             
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="24dp"
-            android:src="@drawable/ic_drawer_settings"
-            app:backgroundTint="#88000000"
-            app:tint="@android:color/white"
-            app:elevation="0dp" />
+        <View
+            android:id="@+id/colorFilterView"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:visibility="gone" />
 
     </FrameLayout>
+</FrameLayout>

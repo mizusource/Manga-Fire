@@ -44,7 +44,6 @@ public class ChapterReaderActivity extends AppCompatActivity {
     private com.google.android.material.floatingactionbutton.FloatingActionButton fabSettings;
     private int currentFilterMode = 0;
 
-    private android.widget.TextView tvReadingTimer;
     private long readingStartTime;
     private android.os.Handler timerHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable timerRunnable = new Runnable() {
@@ -54,9 +53,6 @@ public class ChapterReaderActivity extends AppCompatActivity {
             int seconds = (int) (millis / 1000);
             int minutes = seconds / 60;
             seconds = seconds % 60;
-            if (tvReadingTimer != null) {
-                tvReadingTimer.setText(String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds));
-            }
             timerHandler.postDelayed(this, 1000);
         }
     };
@@ -102,7 +98,6 @@ public class ChapterReaderActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_chapter_reader);
 
-        tvReadingTimer = findViewById(R.id.tvReadingTimer);
         readingStartTime = System.currentTimeMillis();
         timerHandler.postDelayed(timerRunnable, 1000);
 
