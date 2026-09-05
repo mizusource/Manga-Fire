@@ -39,6 +39,11 @@ import java.util.List;
 import java.util.Set;
 
 public class ChapterReaderActivity extends AppCompatActivity {
+
+    private android.view.View eyeFilterOverlay;
+    private com.google.android.material.floatingactionbutton.FloatingActionButton fabSettings;
+    private int currentFilterMode = 0;
+
     private android.widget.TextView tvReadingTimer;
     private long readingStartTime;
     private android.os.Handler timerHandler = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -119,6 +124,24 @@ public class ChapterReaderActivity extends AppCompatActivity {
         }
 
         recyclerView = findViewById(R.id.recyclerView);
+
+        eyeFilterOverlay = findViewById(R.id.eyeFilterOverlay);
+        fabSettings = findViewById(R.id.fabSettings);
+        
+        // Hide/Show FAB on scroll (optional, but good for UX)
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 0 && fabSettings.isShown()) {
+                    fabSettings.hide();
+                } else if (dy < 0 && !fabSettings.isShown()) {
+                    fabSettings.show();
+                }
+            }
+        });
+        
+        fabSettings.setOnClickListener(v -> showReaderSettings());
+
         colorFilterView = findViewById(R.id.colorFilterView);
         uiOverlay = findViewById(R.id.uiOverlay);
         tvPageIndicator = findViewById(R.id.tvPageIndicator);
@@ -284,6 +307,34 @@ public class ChapterReaderActivity extends AppCompatActivity {
 
         checkIfChapterIsDownloadedAndLoad();
     }
+    private void showReaderSettings() {
+        String[] options = {"بدون فلتر", "تظليل", "دافيء (حماية العين)", "ليلي قوي"};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("إعدادات القراءة")
+            .setSingleChoiceItems(options, currentFilterMode, (dialog, which) -> {
+                currentFilterMode = which;
+                if (which == 0) {
+                    eyeFilterOverlay.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                } else if (which == 1) {
+                    eyeFilterOverlay.setBackgroundColor(android.graphics.Color.parseColor("#66000000")); // Black 40%
+                } else if (which == 2) {
+                    eyeFilterOverlay.setBackgroundColor(android.graphics.Color.parseColor("#33FF9800")); // Warm Orange 20%
+                } else if (which == 3) {
+                    eyeFilterOverlay.setBackgroundColor(android.graphics.Color.parseColor("#4D000000")); // Black 30%
+                }
+                
+                // Save setting locally if you want
+                android.preference.PreferenceManager.getDefaultSharedPreferences(this).edit().putInt("eye_filter_mode", which).apply();
+                dialog.dismiss();
+            })
+            .setPositiveButton("إبقاء الشاشة مضاءة", (dialog, which) -> {
+                getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                com.fire.mangareader.util.SystemUtils.safeToast(this, "تم تفعيل إبقاء الشاشة مضاءة");
+            })
+            .setNegativeButton("إلغاء", null)
+            .show();
+    }
+
     
     private void loadChapterListFromDb() {
         new Thread(() -> {
