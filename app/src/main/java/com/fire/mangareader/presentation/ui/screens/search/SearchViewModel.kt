@@ -17,7 +17,9 @@ data class SearchFilter(
     val query: String = "",
     val status: String = "",
     val type: String = "",
-    val genres: List<String> = emptyList()
+    val genres: List<String> = emptyList(),
+    val yearRange: ClosedFloatingPointRange<Float> = 1975f..2025f,
+    val chapterRange: ClosedFloatingPointRange<Float> = 0f..3000f
 )
 
 class SearchViewModel : ViewModel() {
@@ -71,7 +73,15 @@ class SearchViewModel : ViewModel() {
     }
     
     fun clearFilters() {
-        _filter.update { it.copy(status = "", type = "", genres = emptyList()) }
+        _filter.update { it.copy(status = "", type = "", genres = emptyList(), yearRange = 1975f..2025f, chapterRange = 0f..3000f) }
+    }
+
+    fun onYearRangeChange(range: ClosedFloatingPointRange<Float>) {
+        _filter.value = _filter.value.copy(yearRange = range)
+    }
+
+    fun onChapterRangeChange(range: ClosedFloatingPointRange<Float>) {
+        _filter.value = _filter.value.copy(chapterRange = range)
     }
 
     private fun extractIdFromUrl(url: String?): String {

@@ -26,11 +26,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.fire.mangareader.presentation.theme.MangaFireTheme
 import com.fire.mangareader.presentation.ui.screens.detail.MangaDetailScreen
+import com.fire.mangareader.presentation.ui.screens.auth.LoginScreen
+import com.fire.mangareader.presentation.ui.screens.auth.RegisterScreen
+import com.fire.mangareader.presentation.ui.screens.splash.SplashScreen
+import com.fire.mangareader.presentation.ui.screens.admin.AdminDashboardScreen
+import com.fire.mangareader.presentation.ui.screens.settings.StorageManagerScreen
 import com.fire.mangareader.presentation.ui.screens.home.HomeScreen
 import com.fire.mangareader.presentation.ui.screens.search.SearchScreen
 import com.fire.mangareader.presentation.ui.screens.reader.ChapterReaderScreen
 import com.fire.mangareader.presentation.ui.screens.library.LibraryScreen
 import com.fire.mangareader.presentation.ui.screens.profile.ProfileScreen
+import com.fire.mangareader.presentation.ui.screens.settings.SettingsScreen
+
 import com.fire.mangareader.presentation.ui.screens.notifications.NotificationsScreen
 
 
@@ -76,9 +83,50 @@ class MainComposeActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = "splash",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        
+                        composable("splash") {
+                            SplashScreen(
+                                onSplashFinished = {
+                                    navController.navigate("home") {
+                                        popUpTo("splash") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+                        
+                        composable("login") {
+                            LoginScreen(
+                                onLoginSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToRegister = { navController.navigate("register") }
+                            )
+                        }
+                        
+                        composable("register") {
+                            RegisterScreen(
+                                onRegisterSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("register") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToLogin = { navController.popBackStack() }
+                            )
+                        }
+                        
+                        composable("admin") {
+                            AdminDashboardScreen(onBackClick = { navController.popBackStack() })
+                        }
+                        
+                        composable("storage") {
+                            StorageManagerScreen(onBackClick = { navController.popBackStack() })
+                        }
+
                         composable("home") { 
                             HomeScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
@@ -139,12 +187,8 @@ class MainComposeActivity : ComponentActivity() {
                                 }
                             )
                         }
-composable("settings") { 
-                            com.fire.mangareader.presentation.ui.screens.settings.SettingsScreen(
-                                onDownloadsClick = { navController.navigate("downloads") },
-                                onNotificationsClick = { navController.navigate("notifications") }
-                            ) 
-                        }
+                        composable("settings") { SettingsScreen() }
+                        
                         composable("notifications") {
                             NotificationsScreen(
                                 onBackClick = { navController.popBackStack() }
@@ -218,12 +262,5 @@ fun BottomNavigationBar(navController: NavHostController) {
                 }
             )
         }
-    }
-}
-
-@Composable
-fun SettingsScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("الإعدادات (Settings)", style = MaterialTheme.typography.titleLarge)
     }
 }

@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import com.fire.mangareader.presentation.ui.screens.detail.RatingDialog
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -69,6 +71,7 @@ fun MangaDetailScreen(
     val error by viewModel.error.collectAsState()
     
     var showListSheet by remember { mutableStateOf(false) }
+    var showRatingDialog by remember { mutableStateOf(false) }
     var selectedList by remember { mutableStateOf("reading") }
     
 
@@ -82,6 +85,11 @@ fun MangaDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "رجوع", tint = Color.White)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showRatingDialog = true }) {
+                        Icon(Icons.Default.Star, contentDescription = "تقييم", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -213,7 +221,18 @@ fun MangaDetailScreen(
         }
     }
     
-    if (showListSheet) {
+    
+        if (showRatingDialog) {
+            RatingDialog(
+                onDismissRequest = { showRatingDialog = false },
+                onRatingSubmit = { story, characters, art ->
+                    // Handle rating submission
+                    showRatingDialog = false
+                }
+            )
+        }
+
+        if (showListSheet) {
         androidx.compose.material3.ModalBottomSheet(
             onDismissRequest = { showListSheet = false },
             sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)

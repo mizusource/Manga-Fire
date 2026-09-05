@@ -80,12 +80,25 @@ fun CommentsScreen(viewModel: CommentsViewModel) {
         RulesDialog(onDismiss = { showRules = false })
     }
 
+    var showSortDialog by remember { mutableStateOf(false) }
+    
+    if (showSortDialog) {
+        SortCommentsDialog(
+            onDismissRequest = { showSortDialog = false },
+            onSortSelected = { sort, hide ->
+                viewModel.changeSortOption(sort)
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("التعليقات (Comments)") },
                 actions = {
-                    SortDropdown(currentSort = sortOption, onSortChange = { viewModel.changeSortOption(it) })
+                    IconButton(onClick = { showSortDialog = true }) {
+                        Icon(androidx.compose.material.icons.Icons.Default.MoreVert, contentDescription = "ترتيب")
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -162,6 +175,17 @@ fun CommentItem(
 ) {
     var spoilerRevealed by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
+    
+    if (showReportDialog) {
+        ReportCommentDialog(
+            onDismissRequest = { showReportDialog = false },
+            onReportSubmitted = { reason -> 
+                // Handle report logic
+                showReportDialog = false
+            }
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -202,7 +226,7 @@ fun CommentItem(
                         if (comment.userId == "current_user_123") {
                             DropdownMenuItem(text = { Text("Delete") }, onClick = { onDelete(); showMenu = false })
                         } else {
-                            DropdownMenuItem(text = { Text("Report") }, onClick = { showMenu = false })
+                            DropdownMenuItem(text = { Text("Report") }, onClick = { showReportDialog = true; showMenu = false })
                         }
                     }
                 }

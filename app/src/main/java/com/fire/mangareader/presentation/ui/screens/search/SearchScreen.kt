@@ -1,4 +1,6 @@
 package com.fire.mangareader.presentation.ui.screens.search
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -132,7 +134,9 @@ fun SearchScreen(
                 onStatusChange = viewModel::onStatusChange,
                 onTypeChange = viewModel::onTypeChange,
                 onGenreToggle = viewModel::toggleGenre,
-                onClearFilters = viewModel::clearFilters
+                onClearFilters = viewModel::clearFilters,
+                onYearRangeChange = viewModel::onYearRangeChange,
+                onChapterRangeChange = viewModel::onChapterRangeChange
             )
         }
     }
@@ -145,15 +149,17 @@ fun FilterSheetContent(
     onStatusChange: (String) -> Unit,
     onTypeChange: (String) -> Unit,
     onGenreToggle: (String) -> Unit,
-    onClearFilters: () -> Unit
+    onClearFilters: () -> Unit,
+    onYearRangeChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onChapterRangeChange: (ClosedFloatingPointRange<Float>) -> Unit
 ) {
     val statuses = listOf("مستمرة" to "on-going", "مكتملة" to "end", "متوقفة" to "canceled", "في الانتظار" to "on-hold")
     val types = listOf("مانجا" to "manga", "مانهوا" to "manhwa", "مانها" to "manhua", "ويب تون" to "webtoon")
-    val genres = listOf("أكشن" to "action", "مغامرات" to "adventure", "كوميدي" to "comedy", "دراما" to "drama", 
-                        "رومانسي" to "romance", "خيال" to "fantasy", "إيسيكاي" to "isekai", "رعب" to "horror", 
-                        "غموض" to "mystery", "نفسي" to "psychological", "حياة مدرسية" to "school-life", "رياضة" to "sports")
+    val genres = listOf("أكشن" to "action", "مغامرات" to "adventure", "كوميدي" to "comedy", "دراما" to "drama",
+                         "رومانسي" to "romance", "خيال" to "fantasy", "إيسيكاي" to "isekai", "رعب" to "horror",
+                         "غموض" to "mystery", "نفسي" to "psychological", "حياة مدرسية" to "school-life", "رياضة" to "sports")
 
-    Column(modifier = Modifier.padding(16.dp).fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars)) {
+    Column(modifier = Modifier.padding(16.dp).fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).verticalScroll(rememberScrollState())) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -175,7 +181,7 @@ fun FilterSheetContent(
             statuses.forEach { (label, value) ->
                 FilterChip(
                     selected = filter.status == value,
-                    onClick = { onStatusChange(value) },
+                    onClick = { onStatusChange(if (filter.status == value) "" else value) },
                     label = { Text(label) }
                 )
             }
@@ -190,10 +196,36 @@ fun FilterSheetContent(
             types.forEach { (label, value) ->
                 FilterChip(
                     selected = filter.type == value,
-                    onClick = { onTypeChange(value) },
+                    onClick = { onTypeChange(if (filter.type == value) "" else value) },
                     label = { Text(label) }
                 )
             }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("سنة الإنتاج", style = MaterialTheme.typography.titleMedium)
+        RangeSlider(
+            value = filter.yearRange,
+            onValueChange = onYearRangeChange,
+            valueRange = 1975f..2025f,
+            steps = 50
+        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("${filter.yearRange.start.toInt()}")
+            Text("${filter.yearRange.endInclusive.toInt()}")
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("عدد الفصول", style = MaterialTheme.typography.titleMedium)
+        RangeSlider(
+            value = filter.chapterRange,
+            onValueChange = onChapterRangeChange,
+            valueRange = 0f..3000f,
+            steps = 300
+        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("${filter.chapterRange.start.toInt()}")
+            Text("${filter.chapterRange.endInclusive.toInt()}")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

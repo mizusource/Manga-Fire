@@ -1,24 +1,37 @@
-with open('app/src/main/java/com/fire/mangareader/activity/CommentsActivity.java', 'r') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/comments/MangaCommentsActivity.kt", "r") as f:
     content = f.read()
 
-import re
+# Add imports
+if "import com.fire.mangareader.presentation.ui.comments.SortCommentsDialog" not in content:
+    content = content.replace("import androidx.compose.runtime.Composable", "import androidx.compose.runtime.Composable\nimport com.fire.mangareader.presentation.ui.comments.SortCommentsDialog\nimport com.fire.mangareader.presentation.ui.comments.ReportCommentDialog")
 
-old = '''        adapter = new CommentAdapter(this, commentList);
-        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));'''
+# Find CommentsScreen
+old_topbar = """        topBar = {
+            TopAppBar(
+                title = { Text("التعليقات (Comments)") },
+                actions = {
+                    SortDropdown(currentSort = sortOption, onSortChange = { viewModel.changeSortOption(it) })
+                },"""
+new_topbar = """        var showSortDialog by remember { mutableStateOf(false) }
+        
+        if (showSortDialog) {
+            SortCommentsDialog(
+                onDismissRequest = { showSortDialog = false },
+                onSortSelected = { sort, hide ->
+                    viewModel.changeSortOption(sort)
+                }
+            )
+        }
 
-new = '''        adapter = new CommentAdapter(this, commentList);
-        adapter.setMangaDocId(mangaUrl.replaceAll("[^a-zA-Z0-9]", "_"));
-        adapter.setOnReplyClickListener(comment -> {
-            String username = comment.username != null ? comment.username : comment.user_name;
-            etComment.setText("@" + username + " ");
-            etComment.setSelection(etComment.getText().length());
-            etComment.requestFocus();
-            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.showSoftInput(etComment, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
-            }
-        });'''
-content = content.replace(old, new)
+        topBar = {
+            TopAppBar(
+                title = { Text("التعليقات (Comments)") },
+                actions = {
+                    IconButton(onClick = { showSortDialog = true }) {
+                        Icon(androidx.compose.material.icons.Icons.Default.MoreVert, contentDescription = "ترتيب")
+                    }
+                },"""
+content = content.replace(old_topbar, new_topbar)
 
-with open('app/src/main/java/com/fire/mangareader/activity/CommentsActivity.java', 'w') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/ui/comments/MangaCommentsActivity.kt", "w") as f:
     f.write(content)
