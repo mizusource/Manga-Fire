@@ -782,61 +782,83 @@ public class MangaScraper {
     public static void fetchChapterPages(String chapterUrl, ChapterPagesCallback callback) {
         new Thread(() -> {
             try {
-                Document doc = getDocument(chapterUrl);
-                
+                // 1. Fetch raw HTML instead of full DOM parsing
+                okhttp3.Request request = new okhttp3.Request.Builder()
+                        .url(chapterUrl)
+                        .build();
+                okhttp3.Response response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
+                if (!response.isSuccessful()) {
+                    throw new Exception("HTTP " + response.code());
+                }
+                String html = response.body().string();
+
                 List<String> imageUrls = new ArrayList<>();
                 Set<String> uniqueUrls = new HashSet<>();
 
-                String[] imgSelectors = {
-                    "div.reading-content img", "div.page-break img", ".wp-manga-chapter-img",
-                    "div.single-chapter img", ".reader-area img", "#readerarea img",
-                    ".read-container img", ".chapter-content img", ".reading-content-wrap img",
-                    "div.entry-content img", "div.entry-content p img", "div.text-center img",
-                    "div.text-left img", "div[id*='chapter'] img", "div[class*='chapter'] img",
-                    ".main-col img", "div.post-content img", ".chapter-image img"
-                };
-                
-                for (String sel : imgSelectors) {
-                    Elements images = doc.select(sel);
-                    for (Element img : images) {
-                        String url = extractImageUrlFromImgTag(img);
-                        if (isChapterPageImage(url, img) && !uniqueUrls.contains(url)) {
-                            imageUrls.add(getHighResImageUrl(url));
-                            uniqueUrls.add(url);
-                        }
-                    }
-                    if (imageUrls.size() >= 3) break;
-                }
-
-                // Generic <img> selector fallback
-                if (imageUrls.isEmpty()) {
-                    Elements allImages = doc.select("img");
-                    for (Element img : allImages) {
-                        String url = extractImageUrlFromImgTag(img);
-                        if (isChapterPageImage(url, img) && !uniqueUrls.contains(url)) {
+                // 2. Fast Regex extraction
+                // This regex looks for <img> tags and captures src, data-src, data-lazy-src, etc.
+                java.util.regex.Pattern imgPattern = java.util.regex.Pattern.compile(
+                        "<img[^>]+(?:data-src|data-lazy-src|src)=["'](https?://[^"']+\.(?:jpg|jpeg|png|webp|gif|avif)[^"']*)["'][^>]*>",
+                        java.util.regex.Pattern.CASE_INSENSITIVE
+                );
+                java.util.regex.Matcher matcher = imgPattern.matcher(html);
+                while (matcher.find()) {
+                    String fullTag = matcher.group(0).toLowerCase(java.util.Locale.ROOT);
+                    String url = matcher.group(1).trim();
+                    
+                    // Basic sanity check to avoid logos, headers, etc.
+                    if (!fullTag.contains("logo") && !fullTag.contains("avatar") && !fullTag.contains("sidebar") && !url.contains("logo") && !url.contains("avatar") && !url.contains("icon")) {
+                        // Check class attributes inside the tag
+                        if (fullTag.contains("wp-manga-chapter-img") || fullTag.contains("chapter-img") || fullTag.contains("page-break")) {
+                            if (!uniqueUrls.contains(url)) {
+                                imageUrls.add(getHighResImageUrl(url));
+                                uniqueUrls.add(url);
+                            }
+                        } else if (!uniqueUrls.contains(url) && isChapterPageImage(url, null)) {
                             imageUrls.add(getHighResImageUrl(url));
                             uniqueUrls.add(url);
                         }
                     }
                 }
 
-                // 🌟 Script Regex Fallback (in case pages are rendered dynamically via JavaScript array)
+                // 3. Fallback: Parse with JSoup if regex missed images
                 if (imageUrls.isEmpty()) {
-                    Elements scripts = doc.select("script");
-                    java.util.regex.Pattern regex = java.util.regex.Pattern.compile("https?://[^\\s\"'<>]+\\.(?:jpg|jpeg|png|webp|gif|avif)(?:\\?[^\\s\"'<>]*)?", java.util.regex.Pattern.CASE_INSENSITIVE);
-                    for (Element script : scripts) {
-                        String html = script.html().replace("\\/", "/");
-                        java.util.regex.Matcher matcher = regex.matcher(html);
-                        while (matcher.find()) {
-                            String foundUrl = matcher.group();
-                            if (isChapterPageImage(foundUrl, null) && !uniqueUrls.contains(foundUrl)) {
-                                imageUrls.add(getHighResImageUrl(foundUrl));
-                                uniqueUrls.add(foundUrl);
+                    Document doc = Jsoup.parse(html, chapterUrl);
+                    String[] imgSelectors = {
+                        "div.reading-content img", "div.page-break img", ".wp-manga-chapter-img",
+                        "div.single-chapter img", ".reader-area img", "#readerarea img",
+                        ".read-container img", ".chapter-content img", ".reading-content-wrap img"
+                    };
+                    for (String sel : imgSelectors) {
+                        Elements images = doc.select(sel);
+                        for (Element img : images) {
+                            String url = extractImageUrlFromImgTag(img);
+                            if (isChapterPageImage(url, img) && !uniqueUrls.contains(url)) {
+                                imageUrls.add(getHighResImageUrl(url));
+                                uniqueUrls.add(url);
                             }
                         }
+                        if (imageUrls.size() >= 3) break;
                     }
                 }
-                
+
+                // 4. JS array fallback (Preloaded images)
+                if (imageUrls.isEmpty()) {
+                    java.util.regex.Pattern jsArrayPattern = java.util.regex.Pattern.compile(
+                            ""(https?://[^"]+\.(?:jpg|jpeg|png|webp|gif|avif)[^"]*)"",
+                            java.util.regex.Pattern.CASE_INSENSITIVE
+                    );
+                    // Match inside <script> blocks
+                    java.util.regex.Matcher jsMatcher = jsArrayPattern.matcher(html);
+                    while (jsMatcher.find()) {
+                        String url = jsMatcher.group(1).replace("\/", "/").trim();
+                        if (isChapterPageImage(url, null) && !uniqueUrls.contains(url)) {
+                            imageUrls.add(getHighResImageUrl(url));
+                            uniqueUrls.add(url);
+                        }
+                    }
+                }
+
                 new Handler(Looper.getMainLooper()).post(() -> {
                     if (!imageUrls.isEmpty()) callback.onSuccess(imageUrls);
                     else callback.onError("لم يتم العثور على صفحات الفصل.");
