@@ -277,6 +277,17 @@ public class MangaDetailActivity extends AppCompatActivity {
         setupRatingButtons();
 
 
+        
+        ImageView btnCustomList = findViewById(R.id.btnCustomList);
+        if (btnCustomList != null) {
+            btnCustomList.setOnClickListener(v -> {
+                v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                    showAddToListDialog();
+                }).start();
+            });
+        }
+
         ImageView btnDownloadMultiple = findViewById(R.id.btnDownloadMultiple);
         if (btnDownloadMultiple != null) {
             btnDownloadMultiple.setOnClickListener(v -> {
@@ -347,9 +358,13 @@ public class MangaDetailActivity extends AppCompatActivity {
             btnComments.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-                    Intent intent = new Intent(MangaDetailActivity.this, CommentsActivity.class);
-                    intent.putExtra("mangaUrl", mangaUrl);
-                    startActivity(intent);
+                    if (!com.fire.mangareader.util.AppAdminSettings.commentsEnabled) {
+                        Toast.makeText(MangaDetailActivity.this, "التعليقات معطلة من قبل الإدارة", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.presentation.ui.comments.MangaCommentsActivity.class);
+                        intent.putExtra("mangaUrl", mangaUrl);
+                        startActivity(intent);
+                    }
                 }).start();
             });
         }
@@ -478,11 +493,10 @@ public class MangaDetailActivity extends AppCompatActivity {
                             if (html.contains("Just a moment...") || html.contains("cf-browser-verification") || html.contains("Cloudflare") || html.contains("you have been blocked") || html.contains("cf-error-details")) { 
                                 runOnUiThread(() -> { 
                                     progressBar.setVisibility(View.GONE); 
-                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
-                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT, 
-                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT)); 
-                                    webView.setAlpha(1.0f); 
-                                    Toast.makeText(MangaDetailActivity.this, "يرجى حل اختبار التحقق (Cloudflare) للمتابعة", Toast.LENGTH_LONG).show(); 
+                                    webView.setAlpha(0.0f);
+                                    Intent cfIntent = new Intent(MangaDetailActivity.this, CloudflareBypassActivity.class);
+                                    cfIntent.putExtra("url", mangaUrl);
+                                    startActivity(cfIntent);
                                 });
                                 return; 
                             }
@@ -980,8 +994,14 @@ public class MangaDetailActivity extends AppCompatActivity {
                     if (finalStatus.equals("favorite")) {
                         item.setFavorite(true);
                         // don't overwrite reading status if just favoriting
+                        com.fire.mangareader.data.local.DatabaseBridge.toggleFavorite(MangaDetailActivity.this, mangaUrl, mangaTitle, mangaCover, true);
                     } else {
                         item.setStatus(finalStatus);
+                        if (finalStatus.equals("reading") || finalStatus.equals("completed") || finalStatus.equals("plan_to_read")) {
+                            com.fire.mangareader.data.local.DatabaseBridge.toggleFavorite(MangaDetailActivity.this, mangaUrl, mangaTitle, mangaCover, true);
+                        } else {
+                            com.fire.mangareader.data.local.DatabaseBridge.toggleFavorite(MangaDetailActivity.this, mangaUrl, mangaTitle, mangaCover, false);
+                        }
                     }
                     AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().insert(item);
                     
@@ -1010,6 +1030,52 @@ public class MangaDetailActivity extends AppCompatActivity {
             tvDropped.setOnClickListener(statusClickListener);
             
             bottomSheetDialog.show();
+        }).start();
+    }
+
+    private void showAddToListDialog() {
+        new Thread(() -> {
+            try {
+                java.util.List<com.fire.mangareader.data.local.entity.CustomListEntity> lists = com.fire.mangareader.data.local.AppDatabase.Companion.getDatabase(this).customListDao().getAllCustomLists();
+                if (lists == null || lists.isEmpty()) {
+                    runOnUiThread(() -> android.widget.Toast.makeText(this, "لا توجد قوائم مخصصة، قم بإنشاء واحدة أولاً.", android.widget.Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                
+                String[] listNames = new String[lists.size()];
+                for (int i = 0; i < lists.size(); i++) listNames[i] = lists.get(i).getName();
+                
+                runOnUiThread(() -> {
+                    new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("إضافة إلى قائمة مخصصة")
+                        .setItems(listNames, (dialog, which) -> {
+                            com.fire.mangareader.data.local.entity.CustomListEntity selectedList = lists.get(which);
+                            new Thread(() -> {
+                                try {
+                                    // Ensure manga exists in library first
+                                    com.fire.mangareader.data.database.LibraryItem item = AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().getItemById(mangaUrl);
+                                    if (item == null) {
+                                        item = new com.fire.mangareader.data.database.LibraryItem();
+                                        item.setMangaId(mangaUrl);
+                                        item.setTitle(mangaTitle);
+                                        item.setCoverUrl(mangaCover);
+                                        AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().insert(item);
+                                    }
+                                    
+                                    com.fire.mangareader.data.local.entity.CustomListMangaCrossRef crossRef = new com.fire.mangareader.data.local.entity.CustomListMangaCrossRef(selectedList.getListId(), mangaUrl, System.currentTimeMillis());
+                                    com.fire.mangareader.data.local.AppDatabase.Companion.getDatabase(MangaDetailActivity.this).customListDao().insertMangaToList(crossRef);
+                                    
+                                    runOnUiThread(() -> android.widget.Toast.makeText(MangaDetailActivity.this, "تمت الإضافة إلى " + selectedList.getName(), android.widget.Toast.LENGTH_SHORT).show());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }).start();
+                        })
+                        .show();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 }

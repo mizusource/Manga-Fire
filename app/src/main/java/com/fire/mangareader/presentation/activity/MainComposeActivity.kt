@@ -88,9 +88,12 @@ class MainComposeActivity : ComponentActivity() {
                     ) {
                         
                         composable("splash") {
+                            val context = androidx.compose.ui.platform.LocalContext.current
+                            val prefs = com.fire.mangareader.util.PreferenceManager(context)
                             SplashScreen(
                                 onSplashFinished = {
-                                    navController.navigate("home") {
+                                    val destination = if (prefs.isLoggedIn()) "home" else "login"
+                                    navController.navigate(destination) {
                                         popUpTo("splash") { inclusive = true }
                                     }
                                 }
@@ -130,65 +133,47 @@ class MainComposeActivity : ComponentActivity() {
                         composable("home") { 
                             HomeScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
-                                    val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
-                                        putExtra("mangaUrl", decodeUrl(mangaId))
-                                        putExtra("mangaTitle", mangaTitle)
-                                        putExtra("mangaCover", mangaCover)
-                                    }
-                                    startActivity(intent)
+                                    val safeId = java.net.URLEncoder.encode(mangaId, "UTF-8")
+                                    navController.navigate("detail/$safeId")
                                 }
                             ) 
                         }
                         composable("search") { 
                             SearchScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
-                                    val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
-                                        putExtra("mangaUrl", decodeUrl(mangaId))
-                                        putExtra("mangaTitle", mangaTitle)
-                                        putExtra("mangaCover", mangaCover)
-                                    }
-                                    startActivity(intent)
+                                    val safeId = java.net.URLEncoder.encode(mangaId, "UTF-8")
+                                    navController.navigate("detail/$safeId")
                                 }
                             ) 
                         }
                         composable("library") { 
                             LibraryScreen(
                                 onMangaClick = { mangaId: String, mangaTitle: String, mangaCover: String -> 
-                                    val intent = Intent(this@MainComposeActivity, MangaDetailActivity::class.java).apply {
-                                        putExtra("mangaUrl", decodeUrl(mangaId))
-                                        putExtra("mangaTitle", mangaTitle)
-                                        putExtra("mangaCover", mangaCover)
-                                    }
-                                    startActivity(intent)
+                                    val safeId = java.net.URLEncoder.encode(mangaId, "UTF-8")
+                                    navController.navigate("detail/$safeId")
                                 },
                                 onChapterClick = { chapterId: String, mangaId: String, chapterTitle: String, mangaTitle: String, mangaCover: String -> 
-                                    val intent = Intent(this@MainComposeActivity, ChapterReaderActivity::class.java).apply {
-                                        putExtra("chapterUrl", decodeUrl(chapterId))
-                                        putExtra("mangaUrl", decodeUrl(mangaId))
-                                        putExtra("chapterTitle", chapterTitle)
-                                        putExtra("mangaTitle", mangaTitle)
-                                        putExtra("mangaCover", mangaCover)
-                                    }
-                                    startActivity(intent)
+                                    val safeChapterId = java.net.URLEncoder.encode(chapterId, "UTF-8")
+                                    navController.navigate("reader/$safeChapterId")
                                 }
                             ) 
                         }
                         composable("downloads") {
                             DownloadsScreen(
                                 onChapterClick = { chapterId: String, mangaId: String, chapterTitle: String, mangaTitle: String, mangaCover: String -> 
-                                    val intent = Intent(this@MainComposeActivity, ChapterReaderActivity::class.java).apply {
-                                        putExtra("chapterUrl", decodeUrl(chapterId))
-                                        putExtra("mangaUrl", decodeUrl(mangaId))
-                                        putExtra("chapterTitle", chapterTitle)
-                                        putExtra("mangaTitle", mangaTitle)
-                                        putExtra("mangaCover", mangaCover)
-                                    }
-                                    startActivity(intent)
+                                    val safeChapterId = java.net.URLEncoder.encode(chapterId, "UTF-8")
+                                    navController.navigate("reader/$safeChapterId")
                                 }
                             )
                         }
-                        composable("settings") { SettingsScreen() }
+                        composable("settings") { SettingsScreen(navController = navController) }
                         
+                        composable("profile") {
+                            com.fire.mangareader.presentation.ui.screens.profile.ProfileScreen(
+                                onDownloadsClick = { navController.navigate("downloads") },
+                                onNotificationsClick = { navController.navigate("notifications") }
+                            )
+                        }
                         composable("notifications") {
                             NotificationsScreen(
                                 onBackClick = { navController.popBackStack() }

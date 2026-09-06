@@ -27,7 +27,21 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        
+        com.fire.mangareader.util.AppAdminSettings.initialize(this);
+        
+        if (com.fire.mangareader.util.AppAdminSettings.maintenanceMode) {
+            new AlertDialog.Builder(this)
+                .setTitle("صيانة دورية")
+                .setMessage(com.fire.mangareader.util.AppAdminSettings.maintenanceMessage)
+                .setCancelable(false)
+                .setPositiveButton("خروج", (dialog, which) -> finish())
+                .show();
+            return;
+        }
+
         checkAppUpdate();
+
     }
 
     private void checkAppUpdate() {
@@ -97,12 +111,7 @@ public class SplashActivity extends AppCompatActivity {
     private void proceedToNextScreen() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             PreferenceManager prefs = new PreferenceManager(this);
-            Intent intent;
-            if (prefs.isFirstLaunch() || !prefs.isLoggedIn()) {
-                intent = new Intent(this, LoginActivity.class);
-            } else {
-                intent = new Intent(this, MainComposeActivity.class);
-            }
+            Intent intent = new Intent(this, MainComposeActivity.class);
             startActivity(intent);
             finish();
         }, 500);

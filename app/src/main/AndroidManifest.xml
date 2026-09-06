@@ -35,13 +35,8 @@
 
         <activity
             android:name=".presentation.activity.SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MangaFire.Splash">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false"
+            android:theme="@style/Theme.MangaFire.Splash" />
 
         <activity
             android:name=".presentation.ui.comments.MangaCommentsActivity"
@@ -51,7 +46,14 @@
 
         <activity android:name=".presentation.activity.LoginActivity" />
         <activity android:name=".presentation.activity.RegisterActivity" />
-        <activity android:name=".presentation.activity.MainComposeActivity" />
+        <activity
+            android:name=".presentation.activity.MainComposeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".presentation.activity.CloudflareBypassActivity" />
         <activity android:name=".presentation.activity.MangaDetailActivity" />
         <activity android:name=".presentation.activity.ChapterReaderActivity" />

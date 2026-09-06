@@ -166,6 +166,16 @@
                             app:tint="#FFFFFF" />
 
                         <ImageView
+                            android:id="@+id/btnCustomList"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:layout_marginStart="12dp"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_view_list"
+                            android:background="@drawable/bg_glass_icon"
+                            app:tint="#FFFFFF" />
+
+                        <ImageView
                             android:id="@+id/btnFavorite"
                             android:layout_width="44dp"
                             android:layout_height="44dp"

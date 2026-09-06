@@ -21,6 +21,7 @@ import com.fire.mangareader.presentation.activity.CustomListManagerActivity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    navController: androidx.navigation.NavController,
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -45,6 +46,18 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
+            SettingsHeader(title = "حسابي")
+            SettingsItem(
+                title = "الملف الشخصي",
+                onClick = { navController.navigate("profile") }
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+            SettingsItem(
+                title = "الإشعارات",
+                onClick = { navController.navigate("notifications") }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             SettingsHeader(title = "مكتبتي")
             SettingsItem(
                 title = "القوائم المخصصة",
@@ -56,9 +69,7 @@ fun SettingsScreen(
 
             SettingsItem(
                 title = "تنزيلاتي",
-                onClick = {
-                    context.startActivity(Intent(context, DownloadsActivity::class.java))
-                }
+                onClick = { navController.navigate("downloads") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -83,9 +94,7 @@ fun SettingsScreen(
             
             SettingsItem(
                 title = "إدارة التخزين والذاكرة",
-                onClick = {
-                    context.startActivity(Intent(context, StorageManagerActivity::class.java))
-                }
+                onClick = { navController.navigate("storage") }
             )
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -98,6 +107,13 @@ fun SettingsScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
+            SettingsHeader(title = "الإدارة")
+            SettingsItem(
+                title = "لوحة تحكم المسؤول",
+                onClick = { navController.navigate("admin") }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Other Settings
             SettingsHeader(title = "أخرى")
             

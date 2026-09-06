@@ -1,16 +1,22 @@
 import re
 
-filepath = 'app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt'
-with open(filepath, 'r') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt", "r") as f:
     content = f.read()
 
-content = content.replace('import com.fire.mangareader.presentation.ui.screens.search.SearchScreen\nimport com.fire.mangareader.presentation.ui.screens.reader.ChapterReaderScreen',
-                          'import com.fire.mangareader.presentation.ui.screens.search.SearchScreen\nimport com.fire.mangareader.presentation.ui.screens.reader.ChapterReaderScreen\nimport com.fire.mangareader.presentation.ui.screens.library.LibraryScreen')
+# Pass NavController to SettingsScreen
+content = content.replace('composable("settings") { SettingsScreen() }', 'composable("settings") { SettingsScreen(navController = navController) }')
 
-content = content.replace('composable("library") { LibraryScreen() }',
-                          'composable("library") { LibraryScreen(onMangaClick = { mangaId -> navController.navigate("detail/$mangaId") }, onChapterClick = { chapterId -> navController.navigate("reader/$chapterId") }) }')
+# Add profile route
+profile_route = '''
+                        composable("profile") {
+                            com.fire.mangareader.presentation.ui.screens.profile.ProfileScreen(
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+                        composable("notifications")'''
 
-content = re.sub(r'@Composable\nfun LibraryScreen\(\).*?\}\n', '', content, flags=re.DOTALL)
+content = content.replace('composable("notifications")', profile_route.strip())
 
-with open(filepath, 'w') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt", "w") as f:
     f.write(content)
+

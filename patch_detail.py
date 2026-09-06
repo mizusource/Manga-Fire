@@ -1,48 +1,37 @@
-with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "r") as f:
+import re
+
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java", "r") as f:
     content = f.read()
 
-# Add imports
-if "import com.fire.mangareader.presentation.ui.screens.detail.RatingDialog" not in content:
-    content = content.replace("import androidx.compose.runtime.Composable", "import androidx.compose.runtime.Composable\nimport com.fire.mangareader.presentation.ui.screens.detail.RatingDialog\nimport androidx.compose.runtime.mutableStateOf")
+cloudflare_hack_old = '''                                    webView.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT, 
+                                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT)); 
+                                    webView.setAlpha(1.0f); 
+                                    Toast.makeText(MangaDetailActivity.this, "يرجى حل اختبار التحقق (Cloudflare) للمتابعة", Toast.LENGTH_LONG).show(); 
+                                });'''
 
-# Add showRatingDialog state
-if "var showRatingDialog by remember { mutableStateOf(false) }" not in content:
-    content = content.replace("var showListSheet by remember { mutableStateOf(false) }", "var showListSheet by remember { mutableStateOf(false) }\n    var showRatingDialog by remember { mutableStateOf(false) }")
+cloudflare_hack_new = '''                                    webView.setAlpha(0.0f);
+                                    Intent cfIntent = new Intent(MangaDetailActivity.this, CloudflareBypassActivity.class);
+                                    cfIntent.putExtra("url", mangaUrl);
+                                    startActivity(cfIntent);
+                                });'''
 
-# Add TopAppBar Rating Icon
-old_top_bar = """navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "رجوع", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors("""
-new_top_bar = """navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "رجوع", tint = Color.White)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showRatingDialog = true }) {
-                        Icon(Icons.Default.Star, contentDescription = "تقييم", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors("""
-content = content.replace(old_top_bar, new_top_bar)
+content = content.replace(cloudflare_hack_old, cloudflare_hack_new)
 
-# Add RatingDialog UI
-dialog_code = """
-        if (showRatingDialog) {
-            RatingDialog(
-                onDismissRequest = { showRatingDialog = false },
-                onRatingSubmit = { story, characters, art ->
-                    // Handle rating submission
-                    showRatingDialog = false
-                }
-            )
-        }
-"""
-if "if (showRatingDialog)" not in content:
-    content = content.replace("if (showListSheet) {", dialog_code + "\n        if (showListSheet) {")
+comments_intent_old = '''                    Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.presentation.ui.comments.MangaCommentsActivity.class);
+                    intent.putExtra("mangaUrl", mangaUrl);
+                    startActivity(intent);'''
 
-with open("app/src/main/java/com/fire/mangareader/presentation/ui/screens/detail/MangaDetailScreen.kt", "w") as f:
+comments_intent_new = '''                    if (!com.fire.mangareader.util.AppAdminSettings.commentsEnabled) {
+                        Toast.makeText(MangaDetailActivity.this, "التعليقات معطلة من قبل الإدارة", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent intent = new Intent(MangaDetailActivity.this, com.fire.mangareader.presentation.ui.comments.MangaCommentsActivity.class);
+                        intent.putExtra("mangaUrl", mangaUrl);
+                        startActivity(intent);
+                    }'''
+
+content = content.replace(comments_intent_old, comments_intent_new)
+
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java", "w") as f:
     f.write(content)
+
