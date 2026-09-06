@@ -31,25 +31,30 @@ public class MangaScraper {
         void onError(String errorMessage);
     }
 
-    
-    public static Document getDocument(String url) throws Exception {
-        okhttp3.Request request = new okhttp3.Request.Builder()
-                .url(url)
-                .build();
-        okhttp3.Response response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new Exception("HTTP " + response.code());
-        }
-        String html = response.body().string();
-        return Jsoup.parse(html, url);
-    }
-
     public interface ChapterPagesCallback {
         void onSuccess(List<String> imageUrls);
         void onError(String errorMessage);
     }
 
     
+    public static Document getDocument(String url) throws Exception {
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(url)
+                .addHeader("User-Agent", globalUserAgent)
+                .addHeader("Cookie", globalCookies)
+                .addHeader("Referer", BASE_URL)
+                .build();
+        okhttp3.Response response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
+        try {
+            if (!response.isSuccessful()) {
+                throw new Exception("HTTP " + response.code());
+            }
+            String html = response.body().string();
+            return Jsoup.parse(html, url);
+        } finally {
+            response.close();
+        }
+    }
 
     
     public static List<Manga> fetchLatestSingleSource(String sourceUrl) throws Exception {
@@ -128,49 +133,53 @@ public class MangaScraper {
                 .build();
                 
         okhttp3.Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new Exception("HTTP " + response.code());
+        try {
+            if (!response.isSuccessful()) {
+                throw new Exception("HTTP " + response.code());
+            }
+            
+            String html = response.body().string();
+            Document doc = Jsoup.parse(html, baseUrl);
+            
+            List<Manga> mangaList = new ArrayList<>();
+            Set<String> uniqueUrls = new HashSet<>();
+
+            Elements mangaElements = doc.select(".page-item-detail");
+            for (Element element : mangaElements) {
+                Manga manga = new Manga();
+
+                Element titleElement = element.select("h3 a, .post-title a").first();
+                if (titleElement != null) {
+                    manga.setTitle(titleElement.text().trim());
+                    manga.setUrl(titleElement.absUrl("href"));
+                }
+
+                if (manga.getUrl() != null && uniqueUrls.contains(manga.getUrl())) continue;
+
+                Element imgElement = element.select(".tab-thumb img, .item-thumb img").first();
+                if (imgElement != null) {
+                    manga.setCoverUrl(extractImageUrlFromImgTag(imgElement));
+                }
+
+                Element chapterElement = element.select(".chapter-item .chapter, .list-chapter .chapter").first();
+                if (chapterElement != null) {
+                    manga.setLatestChapter(chapterElement.text().trim());
+                }
+
+                Element ratingElement = element.select(".score").first();
+                if (ratingElement != null) {
+                    manga.setRating(ratingElement.text().trim());
+                }
+
+                if (manga.getUrl() != null && !manga.getUrl().isEmpty()) {
+                    uniqueUrls.add(manga.getUrl());
+                    mangaList.add(manga);
+                }
+            }
+            return mangaList;
+        } finally {
+            response.close();
         }
-        
-        String html = response.body().string();
-        Document doc = Jsoup.parse(html, baseUrl);
-        
-        List<Manga> mangaList = new ArrayList<>();
-        Set<String> uniqueUrls = new HashSet<>();
-
-        Elements mangaElements = doc.select(".page-item-detail");
-        for (Element element : mangaElements) {
-            Manga manga = new Manga();
-
-            Element titleElement = element.select("h3 a, .post-title a").first();
-            if (titleElement != null) {
-                manga.setTitle(titleElement.text().trim());
-                manga.setUrl(titleElement.absUrl("href"));
-            }
-
-            if (manga.getUrl() != null && uniqueUrls.contains(manga.getUrl())) continue;
-
-            Element imgElement = element.select(".tab-thumb img, .item-thumb img").first();
-            if (imgElement != null) {
-                manga.setCoverUrl(extractImageUrlFromImgTag(imgElement));
-            }
-
-            Element chapterElement = element.select(".chapter-item .chapter, .list-chapter .chapter").first();
-            if (chapterElement != null) {
-                manga.setLatestChapter(chapterElement.text().trim());
-            }
-
-            Element ratingElement = element.select(".score").first();
-            if (ratingElement != null) {
-                manga.setRating(ratingElement.text().trim());
-            }
-
-            if (manga.getUrl() != null && !manga.getUrl().isEmpty()) {
-                uniqueUrls.add(manga.getUrl());
-                mangaList.add(manga);
-            }
-        }
-        return mangaList;
     }
 
 
@@ -213,7 +222,7 @@ public class MangaScraper {
         }).start();
     }
 
-        public static void fetchLatestManga(ScrapingCallback callback) {
+    public static void fetchLatestManga(ScrapingCallback callback) {
         if (BASE_URL.contains("dilar.tube")) {
             DilarScraper.fetchLatestManga(callback);
             return;
@@ -307,7 +316,8 @@ public class MangaScraper {
                         Element link = element.select("a").first();
                         if (link != null) {
                             manga.setUrl(link.absUrl("href"));
-                            manga.setTitle(link.attr("title"));
+                            String linkTitle = link.attr("title");
+                            manga.setTitle(linkTitle != null && !linkTitle.isEmpty() ? linkTitle : link.text().trim());
                         }
                     }
 
@@ -351,7 +361,7 @@ public class MangaScraper {
                                 }
                             }
                         }
-                    } finally {
+                    } catch (Exception ignored) {} finally {
                         latch.countDown();
                     }
                 });
@@ -368,7 +378,7 @@ public class MangaScraper {
         }).start();
     }
 
-            public static List<Manga> searchSingleSourcePaginated(String sourceUrl, String query, java.util.List<String> genres, String status, String type, int page) throws Exception {
+    public static List<Manga> searchSingleSourcePaginated(String sourceUrl, String query, java.util.List<String> genres, String status, String type, int page) throws Exception {
         String encodedQuery = query.replace(" ", "+");
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(sourceUrl).append("page/").append(page).append("/?s=").append(encodedQuery).append("&post_type=wp-manga");
@@ -389,48 +399,52 @@ public class MangaScraper {
                 .build();
                 
         okhttp3.Response response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
-        if (!response.isSuccessful() || response.body() == null) {
-            throw new Exception("HTTP " + response.code());
-        }
-        
-        String html = response.body().string();
-        Document doc = Jsoup.parse(html, urlBuilder.toString());
+        try {
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new Exception("HTTP " + response.code());
+            }
+            
+            String html = response.body().string();
+            Document doc = Jsoup.parse(html, urlBuilder.toString());
 
-        List<Manga> mangaList = new ArrayList<>();
-        Set<String> uniqueUrls = new HashSet<>();
-        
-        Elements mangaElements = doc.select(".c-tabs-item__content, .page-item-detail");
-        
-        for (Element element : mangaElements) {
-            Manga manga = new Manga();
-            Element titleElement = element.select("h3 a, .post-title a").first();
-            if (titleElement != null) {
-                manga.setTitle(titleElement.text().trim());
-                manga.setUrl(titleElement.absUrl("href"));
-            }
-            if (manga.getUrl() != null && uniqueUrls.contains(manga.getUrl())) continue;
+            List<Manga> mangaList = new ArrayList<>();
+            Set<String> uniqueUrls = new HashSet<>();
             
-            Element imgElement = element.select(".tab-thumb img, .item-thumb img").first();
-            if (imgElement != null) {
-                manga.setCoverUrl(extractImageUrlFromImgTag(imgElement));
-            }
+            Elements mangaElements = doc.select(".c-tabs-item__content, .page-item-detail");
             
-            Element chapterElement = element.select(".chapter-item .chapter, .list-chapter .chapter, .font-meta").first();
-            if (chapterElement != null) {
-                manga.setLatestChapter(chapterElement.text().trim());
+            for (Element element : mangaElements) {
+                Manga manga = new Manga();
+                Element titleElement = element.select("h3 a, .post-title a").first();
+                if (titleElement != null) {
+                    manga.setTitle(titleElement.text().trim());
+                    manga.setUrl(titleElement.absUrl("href"));
+                }
+                if (manga.getUrl() != null && uniqueUrls.contains(manga.getUrl())) continue;
+                
+                Element imgElement = element.select(".tab-thumb img, .item-thumb img").first();
+                if (imgElement != null) {
+                    manga.setCoverUrl(extractImageUrlFromImgTag(imgElement));
+                }
+                
+                Element chapterElement = element.select(".chapter-item .chapter, .list-chapter .chapter, .font-meta").first();
+                if (chapterElement != null) {
+                    manga.setLatestChapter(chapterElement.text().trim());
+                }
+                
+                Element ratingElement = element.select(".score").first();
+                if (ratingElement != null) {
+                    manga.setRating(ratingElement.text().trim());
+                }
+                
+                if (manga.getUrl() != null && !manga.getUrl().isEmpty()) {
+                    uniqueUrls.add(manga.getUrl());
+                    mangaList.add(manga);
+                }
             }
-            
-            Element ratingElement = element.select(".score").first();
-            if (ratingElement != null) {
-                manga.setRating(ratingElement.text().trim());
-            }
-            
-            if (manga.getUrl() != null && !manga.getUrl().isEmpty()) {
-                uniqueUrls.add(manga.getUrl());
-                mangaList.add(manga);
-            }
+            return mangaList;
+        } finally {
+            response.close();
         }
-        return mangaList;
     }
 
     public static void searchAdvancedPaginated(String query, java.util.List<String> genres, String status, String type, int page, ScrapingCallback callback) {
@@ -586,11 +600,6 @@ public class MangaScraper {
             return;
         }
 
-        if (mangaUrl.contains("dilar.tube")) {
-            DilarScraper.fetchMangaDetails(mangaUrl, callback);
-            return;
-        }
-
         new Thread(() -> {
             try {
                 Document doc = getDocument(mangaUrl);
@@ -655,13 +664,17 @@ public class MangaScraper {
                                     .addHeader("Cookie", globalCookies)
                                     .build();
                             okhttp3.Response response = client.newCall(request).execute();
-                            if (response.isSuccessful() && response.body() != null) {
-                                String ajaxHtml = response.body().string();
-                                Document ajaxDoc = Jsoup.parse(ajaxHtml, mangaUrl);
-                                chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, ul.main.version-chap li, .chapters-list li, .row-content-chapter li");
-                                if (chapterElements.isEmpty()) {
-                                    chapterElements = ajaxDoc.select(".row-content-chapter a, .chapter-lieb a, .listing-chapters_wrap a");
+                            try {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    String ajaxHtml = response.body().string();
+                                    Document ajaxDoc = Jsoup.parse(ajaxHtml, mangaUrl);
+                                    chapterElements = ajaxDoc.select("li.wp-manga-chapter, .listing-chapters_wrap li, ul.main.version-chap li, .chapters-list li, .row-content-chapter li");
+                                    if (chapterElements.isEmpty()) {
+                                        chapterElements = ajaxDoc.select(".row-content-chapter a, .chapter-lieb a, .listing-chapters_wrap a");
+                                    }
                                 }
+                            } finally {
+                                response.close();
                             }
                         } catch (Exception ignored) { }
                     }
@@ -781,12 +794,16 @@ public class MangaScraper {
 
     public static void fetchChapterPages(String chapterUrl, ChapterPagesCallback callback) {
         new Thread(() -> {
+            okhttp3.Response response = null;
             try {
                 // 1. Fetch raw HTML instead of full DOM parsing
                 okhttp3.Request request = new okhttp3.Request.Builder()
                         .url(chapterUrl)
+                        .addHeader("User-Agent", globalUserAgent)
+                        .addHeader("Cookie", globalCookies)
+                        .addHeader("Referer", BASE_URL)
                         .build();
-                okhttp3.Response response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
+                response = com.fire.mangareader.util.MangaOkHttp.getClient().newCall(request).execute();
                 if (!response.isSuccessful()) {
                     throw new Exception("HTTP " + response.code());
                 }
@@ -798,7 +815,7 @@ public class MangaScraper {
                 // 2. Fast Regex extraction
                 // This regex looks for <img> tags and captures src, data-src, data-lazy-src, etc.
                 java.util.regex.Pattern imgPattern = java.util.regex.Pattern.compile(
-                        "<img[^>]+(?:data-src|data-lazy-src|src)=["'](https?://[^"']+\.(?:jpg|jpeg|png|webp|gif|avif)[^"']*)["'][^>]*>",
+                        "<img[^>]+(?:data-src|data-lazy-src|src)=['\"](https?://[^'\"]+\\.(?:jpg|jpeg|png|webp|gif|avif)[^'\"]*)['\"][^>]*>",
                         java.util.regex.Pattern.CASE_INSENSITIVE
                 );
                 java.util.regex.Matcher matcher = imgPattern.matcher(html);
@@ -845,13 +862,13 @@ public class MangaScraper {
                 // 4. JS array fallback (Preloaded images)
                 if (imageUrls.isEmpty()) {
                     java.util.regex.Pattern jsArrayPattern = java.util.regex.Pattern.compile(
-                            ""(https?://[^"]+\.(?:jpg|jpeg|png|webp|gif|avif)[^"]*)"",
+                            "\"(https?://[^\"]+\\.(?:jpg|jpeg|png|webp|gif|avif)[^\"]*)\"",
                             java.util.regex.Pattern.CASE_INSENSITIVE
                     );
                     // Match inside <script> blocks
                     java.util.regex.Matcher jsMatcher = jsArrayPattern.matcher(html);
                     while (jsMatcher.find()) {
-                        String url = jsMatcher.group(1).replace("\/", "/").trim();
+                        String url = jsMatcher.group(1).replace("\\/", "/").trim();
                         if (isChapterPageImage(url, null) && !uniqueUrls.contains(url)) {
                             imageUrls.add(getHighResImageUrl(url));
                             uniqueUrls.add(url);
@@ -859,12 +876,17 @@ public class MangaScraper {
                     }
                 }
 
+                final List<String> finalImageUrls = imageUrls;
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    if (!imageUrls.isEmpty()) callback.onSuccess(imageUrls);
+                    if (!finalImageUrls.isEmpty()) callback.onSuccess(finalImageUrls);
                     else callback.onError("لم يتم العثور على صفحات الفصل.");
                 });
             } catch (Exception e) {
                 new Handler(Looper.getMainLooper()).post(() -> callback.onError("خطأ في تحميل الفصل: " + e.getMessage()));
+            } finally {
+                if (response != null) {
+                    response.close();
+                }
             }
         }).start();
     }
