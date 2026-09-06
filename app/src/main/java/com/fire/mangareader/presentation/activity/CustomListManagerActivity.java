@@ -52,7 +52,10 @@ public class CustomListManagerActivity extends AppCompatActivity {
                 addMangaToList(list);
             } else {
                 // Open list details (Optional)
-                Toast.makeText(this, "Opening list: " + list.getName(), Toast.LENGTH_SHORT).show();
+                android.content.Intent intent = new android.content.Intent(this, CustomListDetailActivity.class);
+                intent.putExtra("listId", list.getListId());
+                intent.putExtra("listName", list.getName());
+                startActivity(intent);
             }
         });
         rvLists.setLayoutManager(new LinearLayoutManager(this));

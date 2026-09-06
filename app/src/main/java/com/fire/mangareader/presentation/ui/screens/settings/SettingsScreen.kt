@@ -1,5 +1,6 @@
 package com.fire.mangareader.presentation.ui.screens.settings
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,15 +9,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+import com.fire.mangareader.presentation.activity.DownloadsActivity
+import com.fire.mangareader.presentation.activity.StorageManagerActivity
+import com.fire.mangareader.presentation.activity.CustomListManagerActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     var isDarkMode by remember { mutableStateOf(false) }
     var isNotificationsEnabled by remember { mutableStateOf(true) }
 
@@ -38,6 +45,24 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
+            SettingsHeader(title = "مكتبتي")
+            SettingsItem(
+                title = "القوائم المخصصة",
+                onClick = {
+                    context.startActivity(Intent(context, CustomListManagerActivity::class.java))
+                }
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+            SettingsItem(
+                title = "تنزيلاتي",
+                onClick = {
+                    context.startActivity(Intent(context, DownloadsActivity::class.java))
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // General Settings
             SettingsHeader(title = "عام")
             
@@ -56,17 +81,11 @@ fun SettingsScreen(
             
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
             
-            SettingsActionItem(
-                title = "مسح الذاكرة المؤقتة",
-                actionText = "12mb",
-                onClick = { /* TODO */ }
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
             SettingsItem(
-                title = "تغيير جودة الصور",
-                onClick = { /* TODO */ }
+                title = "إدارة التخزين والذاكرة",
+                onClick = {
+                    context.startActivity(Intent(context, StorageManagerActivity::class.java))
+                }
             )
             
             Spacer(modifier = Modifier.height(8.dp))
