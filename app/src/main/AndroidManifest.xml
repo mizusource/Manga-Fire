@@ -92,6 +92,13 @@
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="dataSync"
             tools:node="merge" />
-</application>
+
+        <activity
+            android:name=".presentation.activity.CustomListManagerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+    </application>
 </manifest>
 

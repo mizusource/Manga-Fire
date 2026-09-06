@@ -154,6 +154,17 @@
                             android:background="@drawable/bg_glass_icon"
                             app:tint="#FFFFFF" />
 
+                        
+                        <ImageView
+                            android:id="@+id/btnNotification"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:layout_marginStart="12dp"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_notifications_none"
+                            android:background="@drawable/bg_glass_icon"
+                            app:tint="#FFFFFF" />
+
                         <ImageView
                             android:id="@+id/btnFavorite"
                             android:layout_width="44dp"
@@ -180,6 +191,7 @@
             app:tabIndicatorHeight="3dp">
             <com.google.android.material.tabs.TabItem android:text="التفاصيل" />
             <com.google.android.material.tabs.TabItem android:text="الفصول" />
+            <com.google.android.material.tabs.TabItem android:text="الإحصائيات" />
         </com.google.android.material.tabs.TabLayout>
 
         <View

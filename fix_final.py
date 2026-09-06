@@ -1,79 +1,56 @@
 import re
-import os
 
-# CommentsActivity.java
-with open('app/src/main/java/com/fire/mangareader/activity/CommentsActivity.java', 'r') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/CustomListManagerActivity.java", "r") as f:
     content = f.read()
-content = re.sub(r'db\.collection.*?;', '', content, flags=re.DOTALL)
-content = re.sub(r'db\.collection.*?\}\);', '', content, flags=re.DOTALL)
-with open('app/src/main/java/com/fire/mangareader/activity/CommentsActivity.java', 'w') as f:
+
+content = content.replace("Toast.newInstance", "Toast.makeText")
+content = content.replace("AppDatabase.getInstance(this).customListDao()", "com.fire.mangareader.data.local.AppDatabase.Companion.getDatabase(this).customListDao()")
+
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/CustomListManagerActivity.java", "w") as f:
     f.write(content)
 
-# CommentsBottomSheetDialog.java
-with open('app/src/main/java/com/fire/mangareader/activity/CommentsBottomSheetDialog.java', 'r') as f:
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java", "r") as f:
     content = f.read()
-content = re.sub(r'db\.collection.*?;', '', content, flags=re.DOTALL)
-content = re.sub(r'db\.collection.*?\}\);', '', content, flags=re.DOTALL)
-with open('app/src/main/java/com/fire/mangareader/activity/CommentsBottomSheetDialog.java', 'w') as f:
-    f.write(content)
 
-# CommentAdapter.java
-with open('app/src/main/java/com/fire/mangareader/adapter/CommentAdapter.java', 'w') as f:
-    f.write("""package com.fire.mangareader.adapter;
+# Fix checkLibraryStatus DataCallback vs AuthCallback
+content = content.replace("new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n            @Override\n            public void onResult", "new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n            @Override\n            public void onSuccess")
+# checkLibraryStatus requires DataCallback!
+content = content.replace("checkLibraryStatus(mangaUrl, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n            @Override\n            public void onSuccess(org.json.JSONArray data)", "checkLibraryStatus(mangaUrl, new com.fire.mangareader.data.network.SupabaseManager.DataCallback() {\n            @Override\n            public void onSuccess(org.json.JSONArray data)")
+content = content.replace("checkLibraryStatus(mangaUrl, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback()", "checkLibraryStatus(mangaUrl, new com.fire.mangareader.data.network.SupabaseManager.DataCallback()")
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import com.fire.mangareader.R;
-import com.fire.mangareader.model.Comment;
-import java.util.List;
-import android.widget.ImageButton;
+# Fix addToLibrary AuthCallback
+# addToLibrary takes AuthCallback, which has onSuccess(String message) and onError(String error)
+content = content.replace("addToLibrary(mangaUrl, mangaTitle, mangaCover, finalStatus, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n                        @Override\n                        public void onSuccess(org.json.JSONArray data)", "addToLibrary(mangaUrl, mangaTitle, mangaCover, finalStatus, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n                        @Override\n                        public void onSuccess(String message)")
+content = content.replace("addToLibrary(mangaUrl, mangaTitle, mangaCover, finalStatus, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n                        @Override\n                        public void onResult(boolean success, String message) { }", "addToLibrary(mangaUrl, mangaTitle, mangaCover, finalStatus, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {\n                        @Override\n                        public void onSuccess(String message) { }\n                        @Override\n                        public void onError(String error) { }\n")
 
-public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
-    private final Context context;
-    private final List<Comment> comments;
-
-    public CommentAdapter(Context context, List<Comment> comments) {
-        this.context = context;
-        this.comments = comments;
+# Missing openCustomListManager
+open_method = """
+    private void openCustomListManager() {
+        android.content.Intent intent = new android.content.Intent(this, CustomListManagerActivity.class);
+        intent.putExtra("mangaUrl", mangaUrl);
+        intent.putExtra("mangaTitle", mangaTitle);
+        intent.putExtra("mangaCover", mangaCover);
+        startActivity(intent);
     }
-
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_comment, parent, false);
-        return new ViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Comment comment = comments.get(position);
-        holder.tvCommenterName.setText(comment.userName != null ? comment.userName : "User");
-        holder.tvCommentText.setText(comment.text != null ? comment.text : "");
-        holder.tvLikesCount.setText(String.valueOf(comment.likes));
-    }
-
-    @Override
-    public int getItemCount() {
-        return comments != null ? comments.size() : 0;
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvCommenterName, tvCommentText, tvLikesCount;
-        public ImageButton btnLike, btnMore;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvCommenterName = itemView.findViewById(R.id.tvCommenterName);
-            tvCommentText = itemView.findViewById(R.id.tvCommentText);
-            tvLikesCount = itemView.findViewById(R.id.tvLikesCount);
-            btnLike = itemView.findViewById(R.id.btnLike);
-            btnMore = itemView.findViewById(R.id.btnMore);
+    
+    private void updateFavoriteIcon() {
+        if (btnFavorite == null) return;
+        if (currentLibraryStatus.equals("favorite") || currentLibraryStatus.equals("reading") || currentLibraryStatus.equals("completed") || currentLibraryStatus.equals("plan_to_read")) {
+            btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+            btnFavorite.setColorFilter(android.graphics.Color.parseColor("#E91E63"));
+        } else {
+            btnFavorite.setImageResource(android.R.drawable.btn_star_big_off);
+            btnFavorite.setColorFilter(android.graphics.Color.WHITE);
         }
     }
-}
-""")
+"""
+if "private void openCustomListManager" not in content:
+    content = content.replace("public class MangaDetailActivity extends AppCompatActivity {", "public class MangaDetailActivity extends AppCompatActivity {\n" + open_method)
+
+# Remove the broken toggleNotificationSubscription call if method is missing
+if "private void toggleNotificationSubscription" not in content:
+    content = content.replace("btnNotification.setOnClickListener(v -> toggleNotificationSubscription());", "")
+
+with open("app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java", "w") as f:
+    f.write(content)
+

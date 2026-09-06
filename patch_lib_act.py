@@ -15,16 +15,14 @@ new_load = """
                 manga.setTitle(item.getTitle());
                 manga.setUrl(item.getMangaId());
                 manga.setCoverUrl(item.getCoverUrl());
-                manga.setRating("❤️");
+                manga.setFavorite(item.isFavorite());
+                manga.setStoryStatus(item.getStatus() == null ? "" : item.getStatus());
                 
                 String statusAr = "";
                 if (item.getStatus() != null) {
                     if (item.getStatus().equals("reading")) statusAr = "أقرأها حالياً";
                     else if (item.getStatus().equals("plan_to_read")) statusAr = "سأقرأها";
                     else if (item.getStatus().equals("completed")) statusAr = "مكتملة";
-                }
-                if (item.isFavorite() && statusAr.isEmpty()) {
-                    statusAr = "مفضلة";
                 }
                 manga.setLatestChapter(statusAr);
                 mappedList.add(manga);
@@ -40,11 +38,11 @@ new_load = """
             if (com.fire.mangareader.data.network.SupabaseManager.getInstance(LibraryActivity.this).isLoggedIn()) {
                 com.fire.mangareader.data.network.SupabaseManager.getInstance(LibraryActivity.this).getUserLibrary(new com.fire.mangareader.data.network.SupabaseManager.DataCallback() {
                     @Override
-                    public void onSuccess(JSONArray data) {
+                    public void onSuccess(org.json.JSONArray data) {
                         new Thread(() -> {
                             try {
                                 for (int i = 0; i < data.length(); i++) {
-                                    JSONObject obj = data.getJSONObject(i);
+                                    org.json.JSONObject obj = data.getJSONObject(i);
                                     String mangaId = obj.getString("manga_url");
                                     String title = obj.optString("manga_title", "مجهول");
                                     String cover = obj.optString("cover_url", "");
@@ -62,7 +60,6 @@ new_load = """
                                         item.setFavorite(true);
                                     } else {
                                         item.setStatus(status);
-                                        // A manga can be both a status and a favorite, but based on supabase model it's a single string, let's just map appropriately.
                                     }
                                     AppDatabase.getInstance(LibraryActivity.this).mangaDao().insert(item);
                                 }
@@ -76,16 +73,14 @@ new_load = """
                                     manga.setTitle(item.getTitle());
                                     manga.setUrl(item.getMangaId());
                                     manga.setCoverUrl(item.getCoverUrl());
-                                    manga.setRating("❤️");
+                                    manga.setFavorite(item.isFavorite());
+                                    manga.setStoryStatus(item.getStatus() == null ? "" : item.getStatus());
                                     
                                     String statusAr = "";
                                     if (item.getStatus() != null) {
                                         if (item.getStatus().equals("reading")) statusAr = "أقرأها حالياً";
                                         else if (item.getStatus().equals("plan_to_read")) statusAr = "سأقرأها";
                                         else if (item.getStatus().equals("completed")) statusAr = "مكتملة";
-                                    }
-                                    if (item.isFavorite() && statusAr.isEmpty()) {
-                                        statusAr = "مفضلة";
                                     }
                                     manga.setLatestChapter(statusAr);
                                     freshList.add(manga);
@@ -110,9 +105,37 @@ new_load = """
             }
         }).start();
     }
+
+    private void filterList(int tabPosition) {
+        displayList.clear();
+        String targetStatus = "";
+        if (tabPosition == 1) targetStatus = "reading";
+        else if (tabPosition == 2) targetStatus = "plan_to_read";
+        else if (tabPosition == 3) targetStatus = "completed";
+
+        for (Manga manga : allLibraryItems) {
+            if (tabPosition == 0) {
+                displayList.add(manga);
+            } else if (tabPosition == 4) {
+                if (manga.isFavorite()) displayList.add(manga);
+            } else {
+                if (manga.getStoryStatus() != null && manga.getStoryStatus().equals(targetStatus)) {
+                    displayList.add(manga);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
+        if (displayList.isEmpty()) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+            rvLibrary.setVisibility(View.GONE);
+        } else {
+            emptyStateLayout.setVisibility(View.GONE);
+            rvLibrary.setVisibility(View.VISIBLE);
+        }
+    }
 """
 
-content = re.sub(r'private void loadLibraryFromSupabase\(\) \{.*?\}\s+private void filterList', new_load.strip() + '\n\n    private void filterList', content, flags=re.DOTALL)
+content = re.sub(r'private void loadLibraryFromSupabase\(\) \{.*?(?=\}\s*\})', new_load.strip() + "\n", content, flags=re.DOTALL)
 
 with open("app/src/main/java/com/fire/mangareader/presentation/activity/LibraryActivity.java", "w") as f:
     f.write(content)

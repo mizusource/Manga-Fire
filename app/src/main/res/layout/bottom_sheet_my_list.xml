@@ -49,6 +49,24 @@
         android:background="?attr/selectableItemBackground"
         android:drawableEnd="@android:drawable/ic_menu_view" />
 
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="?attr/colorSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/statusCustomList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="إضافة إلى قائمة مخصصة"
+        android:textSize="18sp"
+        android:paddingVertical="12dp"
+        android:textColor="?attr/colorPrimary"
+        android:background="?attr/selectableItemBackground"
+        android:drawableEnd="@android:drawable/ic_menu_agenda" />
+
     <TextView
         android:id="@+id/statusDropped"
         android:layout_width="match_parent"

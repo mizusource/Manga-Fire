@@ -3,54 +3,7 @@ import re
 with open("app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java", "r") as f:
     content = f.read()
 
-# Fix variables
-class_vars = """
-    private android.widget.ImageView btnFavorite;
-    private android.widget.ImageView btnNotification;
-    private boolean isSubscribedToNotifications = false;
-"""
-content = re.sub(r'private ImageView btnFavorite, btnComments;', class_vars + '\n    private ImageView btnComments;', content)
-
-# Fix the TabLayout listener
-tab_layout = """
-                    if (tab.getPosition() == 0) {
-                        detailsContainer.setVisibility(View.VISIBLE);
-                        chaptersRecycler.setVisibility(View.GONE);
-                    } else if (tab.getPosition() == 1) {
-                        detailsContainer.setVisibility(View.GONE);
-                        chaptersRecycler.setVisibility(View.VISIBLE);
-                    }
-"""
-content = re.sub(r'if \(tab\.getPosition\(\) == 0\) \{[\s\S]*?setupRadarChart\(\);\n                \}', tab_layout.strip(), content)
-
-# Fix Glide messed up part
-bad_glide = """
-                                        ImageView         btnFavorite = findViewById(R.id.btnFavorite);
-        btnNotification = findViewById(R.id.btnNotification);
-        // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
-        // btnCommentsContainer
-"""
-content = content.replace(bad_glide, "")
-
-bad_glide2 = """
-        btnNotification = findViewById(R.id.btnNotification);
-        // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
-        // btnCommentsContainer
-        // tvFavoriteText
-"""
-content = content.replace(bad_glide2, "")
-
-# Ensure btnFavorite and btnNotification are mapped ONCE in onCreate
-content = content.replace("btnFavorite = findViewById(R.id.btnFavorite);\n        btnFavorite.setOnClickListener(v -> toggleFavorite());", 
-"""
-        btnFavorite = findViewById(R.id.btnFavorite);
-        btnNotification = findViewById(R.id.btnNotification);
-        btnFavorite.setOnClickListener(v -> toggleFavorite());
-""")
-
-# If checkNotificationStatus doesn't exist, we must provide it.
-if "private void checkNotificationStatus" not in content:
-    notif_logic = """
+notif_logic = """
     private void checkNotificationStatus() {
         if (btnNotification == null) return;
         android.content.SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this);
@@ -82,7 +35,11 @@ if "private void checkNotificationStatus" not in content:
         }
     }
 """
-    content = content.replace("private void checkLibraryStatus", notif_logic + "\n    private void checkLibraryStatus")
+
+if "toggleNotificationSubscription" not in content:
+    content = content.replace("public class MangaDetailActivity extends AppCompatActivity {", "public class MangaDetailActivity extends AppCompatActivity {\n" + notif_logic)
+
+content = content.replace("btnNotification = findViewById(R.id.btnNotification);\n        btnFavorite.setOnClickListener(v -> toggleFavorite());", "btnNotification = findViewById(R.id.btnNotification);\n        btnFavorite.setOnClickListener(v -> toggleFavorite());\n        btnNotification.setOnClickListener(v -> toggleNotificationSubscription());\n        checkNotificationStatus();")
 
 with open("app/src/main/java/com/fire/mangareader/presentation/activity/MangaDetailActivity.java", "w") as f:
     f.write(content)

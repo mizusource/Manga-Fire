@@ -29,7 +29,69 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.mikephil.charting.charts.RadarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.RadarData;
+import com.github.mikephil.charting.data.RadarDataSet;
+import com.github.mikephil.charting.data.RadarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import android.graphics.Color;
+
+
 public class MangaDetailActivity extends AppCompatActivity {
+
+    private void checkNotificationStatus() {
+        if (btnNotification == null) return;
+        android.content.SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this);
+        isSubscribedToNotifications = prefs.getBoolean("notify_" + mangaUrl, false);
+        btnNotification.setImageResource(isSubscribedToNotifications ? R.drawable.ic_notifications_active : R.drawable.ic_notifications_none);
+        btnNotification.setColorFilter(isSubscribedToNotifications ? android.graphics.Color.parseColor("#39FF14") : android.graphics.Color.WHITE);
+    }
+
+    private void toggleNotificationSubscription() {
+        if (btnNotification == null) return;
+        isSubscribedToNotifications = !isSubscribedToNotifications;
+        android.content.SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.edit().putBoolean("notify_" + mangaUrl, isSubscribedToNotifications).apply();
+        
+        btnNotification.setImageResource(isSubscribedToNotifications ? R.drawable.ic_notifications_active : R.drawable.ic_notifications_none);
+        btnNotification.setColorFilter(isSubscribedToNotifications ? android.graphics.Color.parseColor("#39FF14") : android.graphics.Color.WHITE);
+        
+        String topic = "manga_" + mangaUrl.hashCode();
+        if (isSubscribedToNotifications) {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) android.widget.Toast.makeText(this, "تم تفعيل إشعارات الفصول الجديدة", android.widget.Toast.LENGTH_SHORT).show();
+                });
+        } else {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) android.widget.Toast.makeText(this, "تم إلغاء إشعارات الفصول الجديدة", android.widget.Toast.LENGTH_SHORT).show();
+                });
+        }
+    }
+
+
+    private void openCustomListManager() {
+        android.content.Intent intent = new android.content.Intent(this, CustomListManagerActivity.class);
+        intent.putExtra("mangaUrl", mangaUrl);
+        intent.putExtra("mangaTitle", mangaTitle);
+        intent.putExtra("mangaCover", mangaCover);
+        startActivity(intent);
+    }
+    
+    private void updateFavoriteIcon() {
+        if (btnFavorite == null) return;
+        if (currentLibraryStatus.equals("favorite") || currentLibraryStatus.equals("reading") || currentLibraryStatus.equals("completed") || currentLibraryStatus.equals("plan_to_read")) {
+            btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+            btnFavorite.setColorFilter(android.graphics.Color.parseColor("#E91E63"));
+        } else {
+            btnFavorite.setImageResource(android.R.drawable.btn_star_big_off);
+            btnFavorite.setColorFilter(android.graphics.Color.WHITE);
+        }
+    }
+
 
     private androidx.recyclerview.widget.RecyclerView relatedRecyclerView;
 
@@ -38,7 +100,12 @@ public class MangaDetailActivity extends AppCompatActivity {
     private RecyclerView chaptersRecycler;
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout; 
-    private ImageView btnFavorite, btnComments;
+    
+    private android.widget.ImageView btnFavorite;
+    private android.widget.ImageView btnNotification;
+    private boolean isSubscribedToNotifications = false;
+
+    private ImageView btnComments;
     private android.widget.LinearLayout btnFavoriteContainer, btnCommentsContainer;
     private TextView tvFavoriteText;
     private Chapter nextChapterToRead = null;
@@ -106,7 +173,10 @@ public class MangaDetailActivity extends AppCompatActivity {
             recommendationsRecycler.setAdapter(recsAdapter);
         }
  
+        
         btnFavorite = findViewById(R.id.btnFavorite);
+        btnNotification = findViewById(R.id.btnNotification);
+
         // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
         // btnCommentsContainer
         // tvFavoriteText
@@ -147,7 +217,7 @@ public class MangaDetailActivity extends AppCompatActivity {
                     if (tab.getPosition() == 0) {
                         detailsContainer.setVisibility(View.VISIBLE);
                         chaptersRecycler.setVisibility(View.GONE);
-                    } else {
+                    } else if (tab.getPosition() == 1) {
                         detailsContainer.setVisibility(View.GONE);
                         chaptersRecycler.setVisibility(View.VISIBLE);
                     }
@@ -172,7 +242,10 @@ public class MangaDetailActivity extends AppCompatActivity {
                         
                         
 
-                        ImageView btnFavorite = findViewById(R.id.btnFavorite);
+                        ImageView 
+        btnFavorite = findViewById(R.id.btnFavorite);
+        btnNotification = findViewById(R.id.btnNotification);
+
         // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
         // btnCommentsContainer
         // tvFavoriteText
@@ -236,6 +309,11 @@ public class MangaDetailActivity extends AppCompatActivity {
             btnFavoriteContainer.setOnClickListener(v -> toggleFavorite());
         } else {
             btnFavorite.setOnClickListener(v -> toggleFavorite());
+        
+        if (btnNotification != null) {
+            
+        }
+
         }
 
                 View btnUserRating = findViewById(R.id.btnUserRating);
@@ -618,7 +696,10 @@ public class MangaDetailActivity extends AppCompatActivity {
             
             isFavorite = true;
             runOnUiThread(() -> {
-                ImageView btnFavorite = findViewById(R.id.btnFavorite);
+                ImageView 
+        btnFavorite = findViewById(R.id.btnFavorite);
+        btnNotification = findViewById(R.id.btnNotification);
+
         // btnFavoriteContainer = findViewById(R.id.btnFavoriteContainer);
         // btnCommentsContainer
         // tvFavoriteText
@@ -854,11 +935,6 @@ public class MangaDetailActivity extends AppCompatActivity {
     }
 
     private void toggleFavorite() {
-        if (!com.fire.mangareader.data.network.SupabaseManager.getInstance(this).isLoggedIn()) {
-            com.fire.mangareader.util.SystemUtils.safeToast(this, "يجب تسجيل الدخول لإضافة المانجا للمكتبة");
-            return;
-        }
-        
         android.view.View targetView = btnFavoriteContainer != null ? btnFavoriteContainer : btnFavorite;
         targetView.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
             targetView.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
@@ -872,41 +948,71 @@ public class MangaDetailActivity extends AppCompatActivity {
             android.widget.TextView tvCompleted = sheetView.findViewById(R.id.statusCompleted);
             android.widget.TextView tvDropped = sheetView.findViewById(R.id.statusDropped);
             
+            
             if (currentLibraryStatus.equals("reading")) tvWatching.setTextColor(android.graphics.Color.parseColor("#E91E63"));
             else if (currentLibraryStatus.equals("plan_to_read")) tvPlan.setTextColor(android.graphics.Color.parseColor("#E91E63"));
             else if (currentLibraryStatus.equals("completed")) tvCompleted.setTextColor(android.graphics.Color.parseColor("#E91E63"));
-            else if (currentLibraryStatus.equals("dropped")) tvDropped.setTextColor(android.graphics.Color.parseColor("#E91E63"));
             
-            android.view.View.OnClickListener listener = v -> {
-                String selectedStatus = "";
-                if (v.getId() == R.id.statusWatching) selectedStatus = "reading";
-                else if (v.getId() == R.id.statusPlan) selectedStatus = "plan_to_read";
-                else if (v.getId() == R.id.statusCompleted) selectedStatus = "completed";
-                else if (v.getId() == R.id.statusDropped) selectedStatus = "dropped";
-                
-                bottomSheetDialog.dismiss();
-final String finalSelectedStatus = selectedStatus;
-                
-                com.fire.mangareader.data.network.SupabaseManager.getInstance(MangaDetailActivity.this).addToLibrary(mangaUrl, mangaTitle, mangaCover, finalSelectedStatus, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {
-                    @Override
-                    public void onSuccess(String message) {
-                        isFavorite = true;
-                        currentLibraryStatus = finalSelectedStatus;
-                        btnFavorite.setImageResource(R.drawable.ic_favorite);
-                        btnFavorite.setColorFilter(android.graphics.Color.RED);
-                        Toast.makeText(MangaDetailActivity.this, "تمت الإضافة لقائمتك", Toast.LENGTH_SHORT).show();
-                    }
-                    @Override
-                    public void onError(String error) {
-                        Toast.makeText(MangaDetailActivity.this, error, Toast.LENGTH_SHORT).show();
-                    }
+            
+            
+            android.widget.TextView tvCustomList = sheetView.findViewById(R.id.statusCustomList);
+            if (tvCustomList != null) {
+                tvCustomList.setOnClickListener(v -> {
+                    bottomSheetDialog.dismiss();
+                    openCustomListManager();
                 });
+            }
+
+            android.view.View.OnClickListener statusClickListener = v -> {
+                String newStatus = "";
+                if (v.getId() == R.id.statusWatching) newStatus = "reading";
+                else if (v.getId() == R.id.statusPlan) newStatus = "plan_to_read";
+                else if (v.getId() == R.id.statusCompleted) newStatus = "completed";
+                else newStatus = "favorite";
+                
+                String finalStatus = newStatus;
+                
+                // 1. Update Local DB
+                new Thread(() -> {
+                    com.fire.mangareader.data.database.LibraryItem item = AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().getItemById(mangaUrl);
+                    if (item == null) {
+                        item = new com.fire.mangareader.data.database.LibraryItem();
+                        item.setMangaId(mangaUrl);
+                        item.setTitle(mangaTitle);
+                        item.setCoverUrl(mangaCover);
+                        item.setAddedTime(System.currentTimeMillis());
+                    }
+                    if (finalStatus.equals("favorite")) {
+                        item.setFavorite(true);
+                        // don't overwrite reading status if just favoriting
+                    } else {
+                        item.setStatus(finalStatus);
+                    }
+                    AppDatabase.getInstance(MangaDetailActivity.this).mangaDao().insert(item);
+                    
+                    runOnUiThread(() -> {
+                        currentLibraryStatus = finalStatus;
+                        updateFavoriteIcon();
+                        Toast.makeText(MangaDetailActivity.this, "تم الحفظ في المكتبة", Toast.LENGTH_SHORT).show();
+                        bottomSheetDialog.dismiss();
+                    });
+                }).start();
+                
+                // 2. Sync to Supabase if logged in
+                if (com.fire.mangareader.data.network.SupabaseManager.getInstance(MangaDetailActivity.this).isLoggedIn()) {
+                    com.fire.mangareader.data.network.SupabaseManager.getInstance(MangaDetailActivity.this).addToLibrary(mangaUrl, mangaTitle, mangaCover, finalStatus, new com.fire.mangareader.data.network.SupabaseManager.AuthCallback() {
+                        @Override
+                        public void onSuccess(String message) { }
+                        @Override
+                        public void onError(String error) { }
+                    });
+                }
             };
             
-            tvWatching.setOnClickListener(listener);
-            tvPlan.setOnClickListener(listener);
-            tvCompleted.setOnClickListener(listener);
-            tvDropped.setOnClickListener(listener);
+            tvWatching.setOnClickListener(statusClickListener);
+            tvPlan.setOnClickListener(statusClickListener);
+            tvCompleted.setOnClickListener(statusClickListener);
+            tvDropped.setOnClickListener(statusClickListener);
             
             bottomSheetDialog.show();
         }).start();
