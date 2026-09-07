@@ -111,7 +111,7 @@ public class SplashActivity extends AppCompatActivity {
     private void proceedToNextScreen() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             PreferenceManager prefs = new PreferenceManager(this);
-            Intent intent = new Intent(this, MainComposeActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         }, 500);

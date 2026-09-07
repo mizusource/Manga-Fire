@@ -1,27 +1,47 @@
-with open("app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt", "r") as f:
+import re
+with open('app/src/main/java/com/fire/mangareader/presentation/activity/MainActivity.java', 'r') as f:
     content = f.read()
 
-replacement = """
-import com.fire.mangareader.presentation.ui.screens.notifications.NotificationsScreen
+old_nav = '''    private void setupNavigation() {
+        if (navigationView == null) return;
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                // Already here
+            } else if (id == R.id.nav_downloads) {
+                startActivity(new Intent(this, DownloadsActivity.class));
+            } else if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+            }
+            if (drawerLayout != null) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            }
+            return true;
+        });
+    }'''
 
-class MainComposeActivity : ComponentActivity() {
-"""
-content = content.replace("class MainComposeActivity : ComponentActivity() {", replacement)
-
-nav_host_replacement = """
-                        composable("settings") { 
-                            ProfileScreen(
-                                onDownloadsClick = { navController.navigate("downloads") }
-                            ) 
-                        }
-                        composable("notifications") {
-                            NotificationsScreen(
-                                onBackClick = { navController.popBackStack() }
-                            )
-                        }
-"""
-import re
-content = re.sub(r'composable\("settings"\) \{ \n                            ProfileScreen\(\n                                onDownloadsClick = \{ navController.navigate\("downloads"\) \}\n                            ) \n                        }', nav_host_replacement.strip(), content, flags=re.DOTALL)
-
-with open("app/src/main/java/com/fire/mangareader/presentation/activity/MainComposeActivity.kt", "w") as f:
+new_nav = '''    private void setupNavigation() {
+        if (navigationView == null) return;
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                // Already here
+            } else if (id == R.id.nav_currently_reading || id == R.id.nav_want_to_read || id == R.id.nav_completed || id == R.id.nav_favorites) {
+                Intent intent = new Intent(this, LibraryActivity.class);
+                startActivity(intent);
+            } else if (id == R.id.nav_downloads) {
+                startActivity(new Intent(this, DownloadsActivity.class));
+            } else if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+            } else if (id == R.id.nav_admin) {
+                startActivity(new Intent(this, AdminDashboardActivity.class));
+            }
+            if (drawerLayout != null) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            }
+            return true;
+        });
+    }'''
+content = content.replace(old_nav, new_nav)
+with open('app/src/main/java/com/fire/mangareader/presentation/activity/MainActivity.java', 'w') as f:
     f.write(content)

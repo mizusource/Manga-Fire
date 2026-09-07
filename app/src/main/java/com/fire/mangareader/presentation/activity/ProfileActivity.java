@@ -106,7 +106,7 @@ public class ProfileActivity extends AppCompatActivity {
                         .setPositiveButton("نعم", (d, w) -> {
                             SupabaseManager.getInstance(this).signOut();
                             prefs.clearUser();
-                            startActivity(new Intent(this, MainComposeActivity.class));
+                            startActivity(new Intent(this, MainActivity.class));
                             finishAffinity();
                         })
                         .setNegativeButton("إلغاء", null)
