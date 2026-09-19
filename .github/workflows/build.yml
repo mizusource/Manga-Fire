@@ -21,10 +21,61 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
-          
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Ensure Gradle Wrapper and Permissions
+        run: |
+          if [ ! -f "gradlew" ] || [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Generating Gradle wrapper..."
+            gradle wrapper
+          fi
+          chmod +x gradlew
+
+      - name: Restore google-services.json
+        env:
+          GOOGLE_SERVICES_SECRET: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ ! -f "app/google-services.json" ]; then
+            echo "Restoring google-services.json..."
+            if [ -n "$GOOGLE_SERVICES_SECRET" ]; then
+              echo "$GOOGLE_SERVICES_SECRET" > app/google-services.json
+            else
+              cat << 'EOF' > app/google-services.json
+{
+  "project_info": {
+    "project_number": "876524751666",
+    "firebase_url": "https://anime-glover-default-rtdb.firebaseio.com",
+    "project_id": "anime-glover",
+    "storage_bucket": "anime-glover.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:876524751666:android:da12e159815b9125b6e52b",
+        "android_client_info": {
+          "package_name": "com.fire.mangareader"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoqemz_egd-MhExdN6dmgmW_Ni-hn1O38"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+EOF
+            fi
+          fi
 
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon
