@@ -1,1 +1,0 @@
-sed -i '128s/                                    }/                                    })); } for (java.util.concurrent.Future<?> f : futures) { try { f.get(); } catch (Exception ignored) {} } executor.shutdown();/g' app/src/main/java/com/fire/mangareader/utils/MangaDownloader.java

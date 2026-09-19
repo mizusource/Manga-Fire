@@ -1,8 +1,13 @@
 pluginManagement {
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
         gradlePluginPortal()
     }
 }
@@ -11,8 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
+        maven { url = java.net.URI("https://jitpack.io") }
     }
 }
-rootProject.name = "MangaFire"
+
+rootProject.name = "MangaReader"
 include(":app")
